@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.Executor &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.Executor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.Executor</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># File Executor.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: April 18, 2022</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#         Davide Maino</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">configobj</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigObj</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_Products.DpdMdbDataBase</span><span class="w"> </span><span class="kn">import</span> <span class="n">DpdMdbDataBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_Products.DpdSirConfigurationSet</span><span class="w"> </span><span class="kn">import</span> <span class="n">DpdSirConfigurationSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_CreateCuts</span><span class="w"> </span><span class="kn">import</span> <span class="n">CutoutCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.ExposureSet</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExposureSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.LocationTableSet</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocationTableSet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.LocationTableSetInfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocationTableSetInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectraDecontaminator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectraDecontaminator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.DecontaminatedSpectraCollection</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecontaminatedSpectraCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_Products.DpdSirRelativeFluxScaling</span><span class="w"> </span><span class="kn">import</span> <span class="n">DpdSirRelativeFluxScaling</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ST_DataModelBindings.dpd.sir</span><span class="w"> </span><span class="kn">import</span> <span class="n">absoluteflux_stub</span>
+
+<span class="c1">#from ElementsKernel import Auxiliary</span>
+
+<div class="viewcode-block" id="concatenate"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Executor.concatenate">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">concatenate</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="s1">&#39;argparse.Namespace&#39;</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">work_dir</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">workdir</span>
+
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+    <span class="n">location_tables_json_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">loc_tables</span><span class="p">)</span>
+
+    <span class="n">mdb</span> <span class="o">=</span> <span class="n">DpdMdbDataBase</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">mdb</span><span class="p">,</span> <span class="n">workdir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">)</span>
+
+    <span class="n">location_table_info</span> <span class="o">=</span> <span class="n">LocationTableSetInfo</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span>
+                                               <span class="n">location_tables_json_filename</span><span class="p">,</span>
+                                               <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="n">location_tables</span> <span class="o">=</span> <span class="n">LocationTableSet</span><span class="p">(</span><span class="n">location_table_info</span><span class="p">)</span>
+
+    <span class="n">DecontaminatedSpectraCollection</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span>
+                                                <span class="n">detector</span><span class="p">,</span>
+                                                <span class="n">args</span><span class="o">.</span><span class="n">dec_spectra</span><span class="p">,</span>
+                                                <span class="n">data_dir</span><span class="p">,</span>
+                                                <span class="n">location_tables</span><span class="p">,</span>
+                                                <span class="n">mdb</span><span class="p">,</span>
+                                                <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Executor"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Executor.Executor">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Executor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles the process of actually running the SpectraDecontaminator.</span>
+
+<span class="sd">    The Executor runs the decontamination code on a set of detectors, or a section of a single detector,</span>
+<span class="sd">    depending on the arguments provided.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">FINISHED_ALL_PARTS</span> <span class="o">=</span> <span class="mi">23</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit code indicating that this is the final part in the series of parts of a detector.&quot;&quot;&quot;</span>
+
+    <span class="n">COMMAND_LINE_ERROR</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit code indicating that there is an error in the command line.&quot;&quot;&quot;</span>
+
+    <span class="n">FILE_COUNTER</span> <span class="o">=</span> <span class="s1">&#39;DECON_FILE_COUNTER&#39;</span>
+    <span class="n">FILE_PART</span> <span class="o">=</span> <span class="s1">&#39;DECON_FILE_PART_NUMBER&#39;</span>
+    <span class="n">DITHER</span> <span class="o">=</span> <span class="s1">&#39;DECON_DITHER_NUMBER&#39;</span>
+    <span class="n">DETECTOR</span> <span class="o">=</span> <span class="s1">&#39;DECON_DETECTOR_NUMBER&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="s1">&#39;argparse.Namespace&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="s1">&#39;logging.Logger&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        args: argparse.Namespace</span>
+<span class="sd">            The Namespace instance, containing data provided via the command line interface.</span>
+
+<span class="sd">        logger: logging.Logger</span>
+<span class="sd">           A logging.Logger instance for logging progress data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+        <span class="n">work_dir</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+        <span class="n">config_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_conf_filename</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="n">config_filename</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_relflux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;OPTIONS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">as_bool</span><span class="p">(</span><span class="s1">&#39;use_relflux&#39;</span><span class="p">)</span>
+
+        <span class="n">location_tables_json_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">loc_tables</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span> <span class="o">!=</span> <span class="s1">&#39;None&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_relflux</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xml&#39;</span><span class="p">):</span>
+                <span class="n">rel_flux_dpd</span> <span class="o">=</span> <span class="n">DpdSirRelativeFluxScaling</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="p">))</span>
+                <span class="n">fits_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">rel_flux_dpd</span><span class="o">.</span><span class="n">get_sens_fits_file</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fits_name</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded relative flux flat file: </span><span class="si">{</span><span class="n">fits_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.fits&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded relative flux flat file: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;The relative flux filename argument appears to be invalid. Ignoring.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_relflux</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span> <span class="o">!=</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;A relative flux flat filename was provided, but use_relflux was not set in the &quot;</span>
+                               <span class="s2">&quot;configuration file. The flat will be ignored. If this is not what you wanted to do, then &quot;</span>
+                               <span class="s2">&quot;set use_relflux = True in the config file, under [OPTIONS].&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_relflux</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;use_relflux was set to True, but no filename was provided via --relflux_flat.&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COMMAND_LINE_ERROR</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">relflux_flat</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_relflux</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;The relative flux correction will not be performed. Add --relflux_flat &lt;filename&gt; and set &quot;</span>
+                           <span class="s2">&quot;use_relflux = True in the config file, under [OPTIONS] if you want to use the relative &quot;</span>
+                           <span class="s2">&quot;flux flat when building model spectra.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sens</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">sens</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;The calibrated grism sensitivity curve was not provided; The value in the MDB will be used &quot;</span>
+                           <span class="s2">&quot;instead. If this is a mistake, provide the sensitivity using --sens.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">sens</span><span class="p">)):</span>
+            <span class="n">sens_dpd_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">sens</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loading sensitivity data product, </span><span class="si">{</span><span class="n">sens_dpd_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">sens_dpd_filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">sens_xml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">sens_dpd</span> <span class="o">=</span> <span class="n">absoluteflux_stub</span><span class="o">.</span><span class="n">CreateFromDocument</span><span class="p">(</span><span class="n">sens_xml</span><span class="p">)</span>
+            <span class="n">sens_fits_filename</span> <span class="o">=</span> <span class="n">sens_dpd</span><span class="o">.</span><span class="n">Data</span><span class="o">.</span><span class="n">DataStorage</span><span class="o">.</span><span class="n">DataContainer</span><span class="o">.</span><span class="n">FileName</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loading sensitivity file, </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span><span class="w"> </span><span class="n">sens_fits_filename</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sens</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span><span class="p">,</span> <span class="n">sens_fits_filename</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The sensitivity data product, </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">sens</span><span class="si">}</span><span class="s2">, could not be found.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">cutouts</span> <span class="o">!=</span> <span class="s1">&#39;None&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">passthrough</span><span class="p">:</span>
+            <span class="n">cutouts_json_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cutouts</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span> <span class="o">=</span> <span class="n">CutoutCollection</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">cutouts_json_filename</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="o">.</span><span class="n">use_gaussian_fit</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">gaussian_profile</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">nisp_exposures_json_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">sci_frames</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading the input files, beginning with the MDB file, </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">mdb</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span> <span class="o">=</span> <span class="n">DpdMdbDataBase</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">mdb</span><span class="p">,</span> <span class="n">workdir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span> <span class="o">=</span> <span class="n">LocationTableSetInfo</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span>
+                                                         <span class="n">location_tables_json_filename</span><span class="p">,</span>
+                                                         <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                         <span class="n">logger</span><span class="p">)</span>
+
+        <span class="n">lt_list_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="o">.</span><span class="n">get_lt_identifiers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span> <span class="o">=</span> <span class="n">ExposureSet</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">nisp_exposures_json_filename</span><span class="p">,</span> <span class="n">lt_list_ids</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_input_files</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_det_str</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">detectors</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">pipeline</span><span class="p">:</span>
+            <span class="n">detector</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getDetectorName</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_det_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;*.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2"> will be decontaminated.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using detector specifier </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_det_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Executor.exec"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Executor.Executor.exec">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">exec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">max_spectra</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_run_full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_det_str</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">max_spectra</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">file_part</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FILE_PART</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">file_part</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_run_one_part</span><span class="p">(</span><span class="n">file_part</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_run_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_det_str</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the code on a full detector or set of detectors, all in one process.</span>
+
+<span class="sd">        This is the main mode of operation when all of the data will fit into system memory because this is much</span>
+<span class="sd">        more computationally efficient, due to the re-use of model contaminants.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        det_str: str</span>
+<span class="sd">            A string specifying which detectors should be decontaminated. Refer to the documentation for</span>
+<span class="sd">            SpectraDecontaminator.run() for more details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;overwrite&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">overwrite</span> <span class="k">else</span> <span class="s1">&#39;create&#39;</span>
+
+        <span class="n">location_tables</span> <span class="o">=</span> <span class="n">LocationTableSet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="o">.</span><span class="n">_make_index</span><span class="p">(</span><span class="n">location_tables</span><span class="o">.</span><span class="n">objects_ids</span><span class="p">)</span>        
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">location_tables</span><span class="o">.</span><span class="n">empty_detectors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;WARNING: One or more of the LocationTables contained no spectra. Exiting.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished loading input files. Preparing to construct the SpectraDecontaminator.&quot;</span><span class="p">)</span>
+
+        <span class="n">decon</span> <span class="o">=</span> <span class="n">SpectraDecontaminator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">,</span>
+                                      <span class="n">location_tables</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_sens</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">limit_band</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">limit_mag</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">zeroth_order_limit</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">second_order_limit</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">padding</span><span class="p">)</span>
+
+        <span class="n">decon_spectra</span> <span class="o">=</span> <span class="n">decon</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">det_str</span><span class="p">,</span>
+                                  <span class="n">decont_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+                                  <span class="n">passthrough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">passthrough</span><span class="p">,</span>
+                                  <span class="n">skip_measuring</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">no_measure</span><span class="p">)</span>
+
+        <span class="n">decon_spectra</span><span class="o">.</span><span class="n">mdb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving a file containing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">decon_spectra</span><span class="p">)</span><span class="si">}</span><span class="s2"> decontaminated spectra...&quot;</span><span class="p">)</span>
+<span class="c1">#        decon_spectra.save(self._data_dir, self._args.dec_spectra, location_tables, mode, parallel=True)</span>
+        <span class="n">decon_spectra</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">dec_spectra</span><span class="p">,</span> <span class="n">location_tables</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the code on sections of a detector by launching subprocesses.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        det_str: str</span>
+<span class="sd">            A string specifying which detectors should be decontaminated. Refer to the documentation for</span>
+<span class="sd">            SpectraDecontaminator.run() for more details.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">detector_map</span> <span class="o">=</span> <span class="n">SpectraDecontaminator</span><span class="o">.</span><span class="n">parse_detectors</span><span class="p">(</span><span class="n">det_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="p">)</span>
+
+        <span class="n">file_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">]:</span>
+                <span class="n">part</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">part</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">file_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Beginning on detector </span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">, part </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="n">exit_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_part_in_subprocess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">part</span><span class="p">,</span> <span class="n">file_counter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">exit_code</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">FINISHED_ALL_PARTS</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished multi-part decontamination for detector </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_concatenate_in_subprocess</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">elif</span> <span class="n">exit_code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exiting detector </span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">, part </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> with error code </span><span class="si">{</span><span class="n">exit_code</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">exit_code</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_one_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_part</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs the code on a single part of a detector.&quot;&quot;&quot;</span>
+
+        <span class="n">dither</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DITHER</span><span class="p">)</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">)</span>
+        <span class="n">file_number</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FILE_COUNTER</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dither</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">file_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;When </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">FILE_PART</span><span class="si">}</span><span class="s2"> is set, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DITHER</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DETECTOR</span><span class="si">}</span><span class="s2">, &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;and </span><span class="si">{</span><span class="n">Executor</span><span class="o">.</span><span class="n">FILE_COUNTER</span><span class="si">}</span><span class="s2"> must also be set.&quot;</span><span class="p">)</span>
+
+        <span class="n">location_tables</span> <span class="o">=</span> <span class="n">LocationTableSet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="o">.</span><span class="n">_make_index</span><span class="p">(</span><span class="n">location_tables</span><span class="o">.</span><span class="n">objects_ids</span><span class="p">)</span>        
+
+        <span class="n">decon</span> <span class="o">=</span> <span class="n">SpectraDecontaminator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">,</span>
+                                      <span class="n">location_tables</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_sens</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">limit_band</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">limit_mag</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">zeroth_order_limit</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">second_order_limit</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">padding</span><span class="p">)</span>
+
+        <span class="n">decon_spectra</span> <span class="o">=</span> <span class="n">decon</span><span class="o">.</span><span class="n">run_part</span><span class="p">(</span><span class="n">dither</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">dither</span><span class="p">),</span>
+                                       <span class="n">detector</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">detector</span><span class="p">),</span>
+                                       <span class="n">part</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">file_part</span><span class="p">),</span>
+                                       <span class="n">max_spectra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">max_spectra</span><span class="p">,</span>
+                                       <span class="n">decont_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+                                       <span class="n">passthrough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">passthrough</span><span class="p">,</span>
+                                       <span class="n">skip_measuring</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">no_measure</span><span class="p">)</span>
+        <span class="n">decon_spectra</span><span class="o">.</span><span class="n">mdb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">overwrite</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;overwrite&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;create&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">dec_spectra</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;append&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving a file containing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">decon_spectra</span><span class="p">)</span><span class="si">}</span><span class="s2"> decontaminated spectra...&quot;</span><span class="p">)</span>
+
+        <span class="n">decon_spectra</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="o">.</span><span class="n">dec_spectra</span><span class="p">,</span> <span class="n">location_tables</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">decon_spectra</span><span class="o">.</span><span class="n">is_final_part</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FINISHED_ALL_PARTS</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_input_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks that the input files are consistent with one another and makes sure that the files are monochromatic.</span>
+
+<span class="sd">        Creates basic descriptions of each location table and exposure: (dither, observation ID, grism name, tilt).</span>
+<span class="sd">        Then verifies that each table has a corresponding exposure with the same description. An exception is raised</span>
+<span class="sd">        if no matching values of the dither, observation ID, grism name, and tilt can be found.</span>
+
+<span class="sd">        Also raises an exception if a mixture of red and blue grisms were provided as input.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError:</span>
+
+<span class="sd">        Raised if the dither, exposure ID, grism, and, tilt in the location tables do not match any of</span>
+<span class="sd">        the exposures OR if a mixture of RGS and BGS data files are provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table_descriptions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">exposure_descriptions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">grism_color</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">tables</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_table_info</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
+                <span class="n">descr</span> <span class="o">=</span> <span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">getObservationID</span><span class="p">(),</span> <span class="n">table</span><span class="o">.</span><span class="n">getGWAPositionName</span><span class="p">(),</span> <span class="n">table</span><span class="o">.</span><span class="n">getGWATilt</span><span class="p">())</span>
+                <span class="n">table_descriptions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">isdigit</span><span class="p">(),</span> <span class="n">table</span><span class="o">.</span><span class="n">getGWAPositionName</span><span class="p">()))</span>
+                <span class="n">grism_color</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">exposure</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>           
+            <span class="n">descr</span> <span class="o">=</span> <span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OBS_ID&#39;</span><span class="p">),</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GWA_POS&#39;</span><span class="p">),</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GWA_TILT&#39;</span><span class="p">))</span>
+            <span class="n">exposure_descriptions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">isdigit</span><span class="p">(),</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GWA_POS&#39;</span><span class="p">)))</span>
+            <span class="n">grism_color</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table_descriptions</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">exposure_descriptions</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Comparing (dither number, OBS_ID, grism, tilt) of the tables and exposures. &quot;</span>
+            <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">table_descriptions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">exposure_descriptions</span><span class="p">:</span>
+                    <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;There is no exposure corresponding to the table: </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;The exposures that we have are: </span><span class="si">{</span><span class="n">exposure_descriptions</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grism_color</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># at this point, the set should only contain &quot;RGS&quot; or &quot;BGS&quot;; if the color set is &gt; 1, there is an issue.</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input files must use the red-only or blue-only grisms. A mixture of blue and red &quot;</span>
+                             <span class="s2">&quot;grism data cannot be processed.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_conf_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sir_config</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the fully-qualified filename of the .ini file containing decontamination parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        work_dir: str</span>
+<span class="sd">            The working directory.</span>
+
+<span class="sd">        sir_config: str</span>
+<span class="sd">            The filename of the XML file containing configuration parameters for the SIR Pipeline.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        factory_parameter_filename: str</span>
+<span class="sd">            Fully-qualified name of the .ini parameter file for the SpectraDecontamination class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config_set</span> <span class="o">=</span> <span class="n">DpdSirConfigurationSet</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">sir_config</span><span class="p">))</span>
+        <span class="n">parameter_file</span> <span class="o">=</span> <span class="n">config_set</span><span class="o">.</span><span class="n">get_parameter_file</span><span class="p">(</span><span class="s1">&#39;SpectraDecontamination&#39;</span><span class="p">)</span>
+        <span class="n">ini_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">parameter_file</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">ini_file</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No parameter file </span><span class="si">{</span><span class="n">ini_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ini_file</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_concatenate_in_subprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Concatenating file parts...&quot;</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">concatenate</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">))</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_part_in_subprocess</span><span class="p">(</span><span class="n">prog_args</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">part</span><span class="p">,</span> <span class="n">file_counter</span><span class="p">):</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SIR_SpectraDecontamination&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;--workdir&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span>
+                   <span class="s1">&#39;--sci_frames&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">sci_frames</span><span class="p">,</span>
+                   <span class="s1">&#39;--loc_tables&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">loc_tables</span><span class="p">,</span>
+                   <span class="s1">&#39;--padding&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">padding</span><span class="p">),</span>
+                   <span class="s1">&#39;--mdb&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">mdb</span><span class="p">,</span>
+                   <span class="s1">&#39;--relflux_flat&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">relflux_flat</span><span class="p">,</span>
+                   <span class="s1">&#39;--sens&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">sens</span><span class="p">,</span>
+                   <span class="s1">&#39;--cutouts&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">cutouts</span><span class="p">,</span>
+                   <span class="s1">&#39;--limit_mag&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">limit_mag</span><span class="p">),</span>
+                   <span class="s1">&#39;--limit_band&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">limit_band</span><span class="p">,</span>
+                   <span class="s1">&#39;--detectors&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">detectors</span><span class="p">,</span>
+                   <span class="s1">&#39;--zeroth_order_limit&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">zeroth_order_limit</span><span class="p">),</span>
+                   <span class="s1">&#39;--second_order_limit&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">second_order_limit</span><span class="p">),</span>
+                   <span class="s1">&#39;--order&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">order</span><span class="p">),</span>
+                   <span class="s1">&#39;--max_spectra&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">max_spectra</span><span class="p">),</span>
+                   <span class="s1">&#39;--dec_spectra&#39;</span><span class="p">,</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">dec_spectra</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">overwrite</span> <span class="ow">and</span> <span class="n">file_counter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--overwrite&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">no_measure</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--no_measure&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">passthrough</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--passthrough&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">pipeline</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--pipeline&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">logdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--logdir&#39;</span><span class="p">)</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">logdir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prog_args</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">)</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prog_args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+        <span class="n">env</span><span class="p">[</span><span class="n">Executor</span><span class="o">.</span><span class="n">FILE_COUNTER</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_counter</span><span class="p">)</span>
+        <span class="n">env</span><span class="p">[</span><span class="n">Executor</span><span class="o">.</span><span class="n">FILE_PART</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+        <span class="n">env</span><span class="p">[</span><span class="n">Executor</span><span class="o">.</span><span class="n">DITHER</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dither</span><span class="p">)</span>
+        <span class="n">env</span><span class="p">[</span><span class="n">Executor</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+
+        <span class="n">completed</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">completed</span><span class="o">.</span><span class="n">returncode</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

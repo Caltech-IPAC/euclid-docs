@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.SearchGrid &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.SearchGrid</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.SearchGrid</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File SearchGrid.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: Feb 27, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">jit</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+
+
+<div class="viewcode-block" id="SearchGrid"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SearchGrid.SearchGrid">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SearchGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Manages a data structure that can be used to quickly search for overlapping boxes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_info_list</span><span class="p">,</span> <span class="n">tilt_angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">grid_res</span><span class="o">=</span><span class="mi">34</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs a SearchGrid.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spectrum_info_list: list</span>
+
+<span class="sd">            A list of `SpectrumInfo` objects falling within a single detector.</span>
+
+<span class="sd">        tilt: float</span>
+<span class="sd">            The angle, in degrees, between the mean +wavelength direction and the +x axis of the detector.</span>
+
+<span class="sd">        grid_res: int (optional)</span>
+<span class="sd">            The number of search grid cells in the x and y directions. The total number of search grid cells will</span>
+<span class="sd">            scale as the square of this number, grid_res^2, and the number of pixels in each cell dimension scales</span>
+<span class="sd">            inversely with grid_res.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">            If the entries in the spectrum_info_list do not all share the same DetectorGrism object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum_info_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">detector_grism_info</span> <span class="o">=</span> <span class="n">spectrum_info_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grism_model</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spectrum_info_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">grism_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">detector_grism_info</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;All spectra added to the grid must belong to the same detector, which means they all&#39;</span>
+                                 <span class="s1">&#39; share the same detector info. It appears that spectra from more than one detector &#39;</span>
+                                 <span class="s1">&#39;have been added to the `spectrum_info_list`.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tilt_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">tilt_angle</span><span class="p">)</span>
+
+        <span class="n">x_corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">detector_grism_info</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span> <span class="n">detector_grism_info</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+        <span class="n">y_corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">detector_grism_info</span><span class="o">.</span><span class="n">yres</span><span class="p">,</span> <span class="n">detector_grism_info</span><span class="o">.</span><span class="n">yres</span><span class="p">])</span>
+
+        <span class="n">x_rot</span><span class="p">,</span> <span class="n">y_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate</span><span class="p">(</span><span class="n">x_corners</span><span class="p">,</span> <span class="n">y_corners</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_tilt_angle</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_rot</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y_rot</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_rot</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">y_rot</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="n">grid_width</span> <span class="o">=</span> <span class="n">right</span> <span class="o">-</span> <span class="n">left</span>
+        <span class="n">grid_height</span> <span class="o">=</span> <span class="n">top</span> <span class="o">-</span> <span class="n">bottom</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+
+        <span class="c1"># the number of grid cells in the x and y directions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span> <span class="o">=</span> <span class="n">grid_res</span>
+
+        <span class="c1"># the total number of grid cells</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ncells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span>
+
+        <span class="c1"># the width of each grid cell in pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">grid_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span><span class="p">)</span>
+
+        <span class="c1"># the height of each grid cell, in pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">grid_height</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span><span class="p">)</span>
+
+        <span class="c1"># the height of the grid, in units of pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span>
+
+        <span class="c1"># the width of the grid, in units of pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span>
+
+        <span class="c1"># the grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ncells</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+        <span class="c1"># initialize the lists within the grid cells:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ncells</span><span class="p">)]</span>
+
+        <span class="c1"># populate the grid</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spectrum_info_list</span><span class="p">:</span>
+
+            <span class="c1"># identify cells in the region of the model_spec</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">searchgrid_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_grid_bbox</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">boundary</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">spec</span><span class="o">.</span><span class="n">boundary</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">cells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells_in_region</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">searchgrid_bbox</span><span class="p">)</span>
+
+            <span class="c1"># populate these grid cells with spectrum info</span>
+            <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">cells</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span><span class="p">[</span><span class="n">cell</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SearchGrid.find_contaminants"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SearchGrid.SearchGrid.find_contaminants">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_contaminants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid_box</span><span class="p">,</span> <span class="n">ignore_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">mag_band</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;SpectrumInfo&#39;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a list of the contaminants that overlap the specified box.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        grid_box: tuple</span>
+<span class="sd">            A bounding box, specified as a tuple (left, bottom, width, height), in grid coordinates.</span>
+
+<span class="sd">        ignore_idx: int (optional)</span>
+<span class="sd">            If specified, the object with this index will be ignored; it will not be added to the list</span>
+<span class="sd">            of contaminants.</span>
+
+<span class="sd">        mag_limit: float</span>
+<span class="sd">            The maximum magnitude to include as a contaminant.</span>
+
+<span class="sd">        mag_band: str</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        contaminating spectra: list</span>
+<span class="sd">            A list of contaminating spectra (`SpectrumInfo` objects) that overlap the specified box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Identify the cells in the search grid that this box overlaps</span>
+        <span class="n">cells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells_in_region</span><span class="p">(</span><span class="n">grid_box</span><span class="p">)</span>
+
+        <span class="c1"># Now, identify all potential contaminating boxes by looking at the contents of all of the cells:</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">cell_idx</span> <span class="ow">in</span> <span class="n">cells</span><span class="p">:</span>
+            <span class="n">candidates_in_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span><span class="p">[</span><span class="n">cell_idx</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">can</span> <span class="ow">in</span> <span class="n">candidates_in_cell</span><span class="p">:</span>
+                <span class="n">bright_enough</span> <span class="o">=</span> <span class="n">can</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">invalid_mag</span> <span class="ow">or</span> <span class="n">can</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">mag_band</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">mag_limit</span>
+                <span class="k">if</span> <span class="n">can</span><span class="o">.</span><span class="n">object_id</span> <span class="o">!=</span> <span class="n">ignore_idx</span> <span class="ow">and</span> <span class="n">bright_enough</span><span class="p">:</span>
+                    <span class="n">candidates</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">can</span><span class="p">)</span>
+
+        <span class="n">contaminants</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># check to see which of the candidate boxes actually overlap with the box of interest:</span>
+        <span class="k">for</span> <span class="n">can</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlaps</span><span class="p">(</span><span class="n">grid_box</span><span class="p">,</span> <span class="n">can</span><span class="o">.</span><span class="n">searchgrid_bbox</span><span class="p">):</span>
+                <span class="n">contaminants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">can</span><span class="p">)</span>
+
+        <span class="c1"># contaminants now contains info about the boxes that definitely overlap with the box of interest</span>
+        <span class="k">return</span> <span class="n">contaminants</span></div>
+
+<div class="viewcode-block" id="SearchGrid.get_grid_bbox"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SearchGrid.SearchGrid.get_grid_bbox">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_grid_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_image</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">y_image</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the bounding box of the input coordinates in the coordinate system of the grid.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        x_image: Iterable[float]</span>
+<span class="sd">            The x-coordinates of the points that will be transformed to the coordinate system of the grid.</span>
+
+<span class="sd">        y_image: Iterable[float]</span>
+<span class="sd">            The x-coordinates of the points that will be transformed to the coordinate system of the grid.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        grid_bbox: Tuple[int]</span>
+<span class="sd">            The tuple of ints (left, bottom, width, height) of the bounding box of the points specified by</span>
+<span class="sd">            the x_image and y_image coordinates, in the coordinate system of the grid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_image</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_image</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input arrays must be of the same length and describe at least 3 points.&quot;</span><span class="p">)</span>
+
+        <span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_to_grid_coordinates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_grid</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_width</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_grid</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y_grid</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grid_height</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">y_grid</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">,</span> <span class="n">top</span> <span class="o">-</span> <span class="n">bottom</span></div>
+
+<div class="viewcode-block" id="SearchGrid.mask_grid_bbox"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SearchGrid.SearchGrid.mask_grid_bbox">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">mask_grid_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_image</span><span class="p">,</span> <span class="n">y_image</span><span class="p">,</span> <span class="n">grid_box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Masks pixels falling within the SearchGrid bounding box, grid_box, given pixel</span>
+<span class="sd">        coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        x_image: np.ndarray</span>
+<span class="sd">            An array of x-coordinates of pixels in the image.</span>
+
+<span class="sd">        y_image: np.ndarray</span>
+<span class="sd">            An array of x-coordinates of pixels in the image.</span>
+
+<span class="sd">        grid_box: tuple</span>
+<span class="sd">            The bounding box, specified in grid coordinates (left, bottom, width, height)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        in_box_mask: np.ndarray</span>
+<span class="sd">            A Boolean array the same size of x_image and y_image, with True entries</span>
+<span class="sd">            corresponding to coordinates that fall within the bounding box (grid_box).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_to_grid_coordinates</span><span class="p">(</span><span class="n">x_image</span><span class="p">,</span> <span class="n">y_image</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Utils</span><span class="o">.</span><span class="n">mask_in_bounding_box</span><span class="p">(</span><span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span><span class="p">,</span> <span class="n">grid_box</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cell_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the bounding box of the specified grid cell</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        idx: int</span>
+<span class="sd">            The index of the cell within the search grid</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        bounding box: tuple</span>
+<span class="sd">            The bounding box of the cell (left, bottom , width, height) with the specified index, in image coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span>
+
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span>
+
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cells_in_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid_box</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies all boxes in the region defined by grid_box.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        grid_box: tuple</span>
+<span class="sd">            The bounding box, specified in grid coordinates (left, bottom, width, height)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        indices: list</span>
+<span class="sd">            A list of indices of grid cells that overlap the specified box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">grid_box</span>
+
+        <span class="n">i_min</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">left</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span><span class="p">)),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">j_min</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">bottom</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span><span class="p">)),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">i_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">left</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dw</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span><span class="p">)</span>
+        <span class="n">j_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">bottom</span> <span class="o">+</span> <span class="n">height</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dh</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span><span class="p">)</span>
+
+        <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j_min</span><span class="p">,</span> <span class="n">j_max</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_min</span><span class="p">,</span> <span class="n">i_max</span><span class="p">):</span>
+                <span class="n">cell_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid_resolution</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">i</span>
+                <span class="n">cell_box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cell_box</span><span class="p">(</span><span class="n">cell_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlaps</span><span class="p">(</span><span class="n">cell_box</span><span class="p">,</span> <span class="n">grid_box</span><span class="p">):</span>
+                    <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ids</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_to_grid_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_image</span><span class="p">:</span> <span class="s1">&#39;np.ndarray&#39;</span><span class="p">,</span> <span class="n">y_image</span><span class="p">:</span> <span class="s1">&#39;np.ndarray&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;np.ndarray&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms the input image coordinates to grid coordinates.</span>
+
+<span class="sd">        x_image: np.ndarray</span>
+<span class="sd">            An array of x-coordinates of pixels in the image.</span>
+
+<span class="sd">        y_image: np.ndarray</span>
+<span class="sd">            An array of x-coordinates of pixels in the image.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        x_grid, y_grid: Tuple</span>
+<span class="sd">            A tuple of np.ndarray objects containing the x- and y-coordinates in the coordinate</span>
+<span class="sd">            system of the grid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x_image</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">y_image</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input arrays must be of the same length.&quot;</span><span class="p">)</span>
+
+        <span class="n">rot_x</span><span class="p">,</span> <span class="n">rot_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate</span><span class="p">(</span><span class="n">x_image</span><span class="p">,</span> <span class="n">y_image</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_tilt_angle</span><span class="p">)</span>
+
+        <span class="n">x_grid</span> <span class="o">=</span> <span class="n">rot_x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y_grid</span> <span class="o">=</span> <span class="n">rot_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_overlaps</span><span class="p">(</span><span class="n">box_a</span><span class="p">,</span> <span class="n">box_b</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;&#39;</span>
+<span class="sd">        Tests whether boxes intersect / overlap</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        box_a: tuple</span>
+<span class="sd">            A bounding box, specified as a tuple (left, bottom, width, height)</span>
+
+<span class="sd">        box_b: tuple</span>
+<span class="sd">            A bounding box, specified as a tuple (left, bottom, width, height)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        overlaps: bool</span>
+<span class="sd">            True if box1 and box2 overlap; False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">intersection_a</span><span class="p">,</span> <span class="n">intersection_b</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">bounding_indices</span><span class="p">(</span><span class="n">box_a</span><span class="p">,</span> <span class="n">box_b</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="n">intersection_a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">intersection_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@jit</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotates the points with the specified x and y vectors by theta, counter-clockwise and returns</span>
+<span class="sd">        the coordinates of the rotated points.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">ct</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">st</span>
+        <span class="n">yp</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">st</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">ct</span>
+
+        <span class="k">return</span> <span class="n">xp</span><span class="p">,</span> <span class="n">yp</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

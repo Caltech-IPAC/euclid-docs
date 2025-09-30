@@ -1,0 +1,7 @@
+SIR_SpectraDecontamination
+==========================
+
+.. toctree::
+   :maxdepth: 4
+
+   SIR_SpectraDecontamination

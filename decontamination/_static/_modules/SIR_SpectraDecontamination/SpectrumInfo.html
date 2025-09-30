@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.SpectrumInfo &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.SpectrumInfo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.SpectrumInfo</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># File SpectrumInfo.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: March 12, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.DetectorModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectrumCutout</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrumCutout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.ModelSpectrum</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelSpectrum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.ConvolutionKernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvolutionKernel</span>
+
+
+<div class="viewcode-block" id="SpectrumInfo"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectrumInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores information about an instance of a 2D spectral order on a specific detector.</span>
+
+<span class="sd">    This class handles all information regarding a single 2D spectral segment. For example,</span>
+<span class="sd">    all information about the first-order spectrum of object A in detector 3 of dither 2 could</span>
+<span class="sd">    be stored in this class. Several SpectrumInfo objects can be associated with a single</span>
+<span class="sd">    star or galaxy. So, multiple SpectrumInfo objects can share a single AstroObjectInfo object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_object_id&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_astro_object_info&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_loc_spec&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_grism_model&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_model_spec&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_padding&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_spectral_cutout&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_convolution_kernel&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_const_kernel&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_sigma_major&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_sigma_minor&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_theta&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_wav_min&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_wav_max&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_bbox&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_boundary&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_searchgrid_bbox&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_relflux_correction&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_zeroth_order_size&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;__weakref__&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">astro_object_info</span><span class="p">,</span> <span class="n">spectrum_location</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs the SpecInfo object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        astro_object_info: AstroObjectInfo</span>
+<span class="sd">            Contains information about the physical object associated with the spectrum.</span>
+
+<span class="sd">        spectrum_location: LocationSpectrum</span>
+<span class="sd">            An object extracted from a LocationTable, describing the spectrum location and inverse dispersion solution</span>
+<span class="sd">            mapping from pixel positions to wavelength values.</span>
+
+<span class="sd">        grism_model: DetectorGrism</span>
+<span class="sd">            Contains info about the grism and the detector associated with this particular spectrum.</span>
+
+<span class="sd">        padding: int</span>
+<span class="sd">            The number of pixels that should be inserted between the bounding box of each spectral cutout</span>
+<span class="sd">            (specified in a `SpectrumInfo` object) and the rectangle defined by the `LocationSpectrum` object</span>
+<span class="sd">            in the LocationTable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># the integer ID number of the star or galaxy that produced this spectrum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_id</span> <span class="o">=</span> <span class="n">astro_object_info</span><span class="o">.</span><span class="n">object_id</span>
+
+        <span class="c1"># the AstroObjectInfo object associated with the galaxy or star whose ID is self._object_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_astro_object_info</span> <span class="o">=</span> <span class="n">astro_object_info</span>
+
+        <span class="c1"># the LocationSpectrum object associated with this spectrum, constructed from an entry in the LocationTable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span> <span class="o">=</span> <span class="n">spectrum_location</span>
+
+        <span class="c1"># the DetectorGrism object associated with the dither in which this spectrum is located</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span> <span class="o">=</span> <span class="n">grism_model</span>
+
+        <span class="c1"># the padding around the spectrum, in pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="n">padding</span>
+
+        <span class="c1"># The 2D model of this spectrum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1">#  A reference to associated DecontaminatedSpectrum object, if one exists.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectral_cutout</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the ConvolutionKernel object associated with this spectrum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># contains a representative sample of the 2D kernel, even after the convolution kernel has been deleted.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># if a 2D Gaussian has been fit to the convolution kernel. The fitting parameters are stored here.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">wav_min</span><span class="p">,</span> <span class="n">wav_max</span> <span class="o">=</span> <span class="n">grism_model</span><span class="o">.</span><span class="n">full_wavelength_range</span>
+
+        <span class="c1"># the minimum and maximum wavelengths passing through the grism</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wav_min</span> <span class="o">=</span> <span class="n">wav_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wav_max</span> <span class="o">=</span> <span class="n">wav_max</span>
+
+        <span class="c1"># the box bounding the spectrum, after taking padding into account: (left, bottom, width, height)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the bounding box of the spectrum in the coordinate system of the SearchGrid containing the spectrum.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_searchgrid_bbox</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the flux correction vector from the Relative Flux Calibration module.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_correction</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the x and y coordinates of a set of points describing the boundary of the spectrum.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># if this is a zeroth-order spectrum. The size of the zeroth-order masking box is stored here.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_size</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SpectrumInfo.get_offset"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.get_offset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span>
+        <span class="k">return</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SpectrumInfo.make_2d_model"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.make_2d_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">make_2d_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the 2-D model of the spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelengths: NumPy 1-D array of floats or None</span>
+<span class="sd">            The wavelengths corresponding to the flux values in the one dimensional spectrum of the object</span>
+<span class="sd">            (in `self.astro_object_info.one_dimensional_spec`). If None: use the default wavelengths.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Sets the `model_spec` property.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        RuntimeError: if the wavelengths have not been specified directly or indirectly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">wavelengths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astro_object_info</span><span class="o">.</span><span class="n">WAVELENGTHS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">wavelengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astro_object_info</span><span class="o">.</span><span class="n">WAVELENGTHS</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;The WAVELENGTHS of the AstroObjectInfo class needs to be set first.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span> <span class="o">=</span> <span class="n">ModelSpectrum</span><span class="o">.</span><span class="n">from_spec_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">disperse</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span><span class="o">.</span><span class="n">pixels</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span><span class="o">.</span><span class="n">interpolated_pixels</span> <span class="o">=</span> <span class="n">mask</span></div>
+
+<div class="viewcode-block" id="SpectrumInfo.get_trace_position"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.get_trace_position">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_trace_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the position of the center of the spectrum at the specified wavelength.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength in question, in units of Angstroms.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        position: tuple</span>
+<span class="sd">           returns (float x, float y) specifying the x and y coordinates of the center of the spectrum at the specified</span>
+<span class="sd">           wavelength, with sub-pixel precision.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wavelength</span><span class="p">)</span>
+        <span class="n">max_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getApertureSize</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">max_row</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span><span class="p">),</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpectrumInfo.clear_convolution_kernel"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.clear_convolution_kernel">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clear_convolution_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">clear_history</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">_spectrum_info</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="SpectrumInfo.free_memory"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.free_memory">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">free_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_convolution_kernel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectral_cutout</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">astro_object_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astro_object_info</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getOrder</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getDetectorNumber</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detector_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DetectorModel</span><span class="o">.</span><span class="n">getDetectorID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dither</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span><span class="o">.</span><span class="n">dither</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getObservationID</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">field_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getFieldID</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pointing_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getPointingID</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">grism_position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getGWAPosition</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nisp_detector_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">detector_id</span> <span class="o">=</span> <span class="n">DetectorModel</span><span class="o">.</span><span class="n">getDetectorID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">detector_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">one_dim_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the sum of continuum model and the emission line model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">get_1d_spectrum</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">one_dim_wavelengths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astro_object_info</span><span class="o">.</span><span class="n">WAVELENGTHS</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convolution_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvolutionKernel</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the ConvolutionKernel object associated with this spectrum.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_convolution_kernel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span>
+
+<div class="viewcode-block" id="SpectrumInfo.create_convolution_kernel"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumInfo.SpectrumInfo.create_convolution_kernel">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">create_convolution_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">exposure_direction</span> <span class="o">=</span> <span class="n">ConvolutionKernel</span><span class="o">.</span><span class="n">compute_nisp_exposure_direction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">nisp_exposure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="o">=</span> <span class="n">ConvolutionKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure_direction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">const_kernel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">gaussian_sigma_major</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">gaussian_sigma_minor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span><span class="o">.</span><span class="n">gaussian_theta</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">const_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_convolution_kernel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_major</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_convolution_kernel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_minor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_convolution_kernel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolution_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_convolution_kernel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spectrum_cutout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The 2D spectral cutout data (i.e., the pixel data) wrapped by this object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectral_cutout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_spectrum_cutout</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectral_cutout</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelSpectrum</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The 2-D model of this spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_spec</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">location_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;LocationSpectrum&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The corresponding LocationSpectrum object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The x and y coordinates of a set of points describing the boundary of the spectrum, in the format:</span>
+<span class="sd">        </span>
+<span class="sd">        array([[x0, y0],</span>
+<span class="sd">                x1, y1],</span>
+<span class="sd">                x2, y2],</span>
+<span class="sd">                 ...</span>
+<span class="sd">                xN, yN]])</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_boundary</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zeroth_order_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_size</span>
+
+    <span class="nd">@zeroth_order_size</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zeroth_order_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_size</span> <span class="o">=</span> <span class="n">size</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">relflux_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_correction</span>
+
+    <span class="nd">@relflux_correction</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">relflux_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">correction</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">correction</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a NumPy array.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_correction</span> <span class="o">=</span> <span class="n">correction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_correction</span><span class="p">[</span><span class="n">correction</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A tuple of (left, bottom, width, height), specifying the coordinates of the lower-left corner, width, and</span>
+<span class="sd">        height of the spectrum&#39;s bounding box in the pixel coordinates of the detector. The coordinates and dimensions</span>
+<span class="sd">        are provided as integer values so that this bounding box can be used as a crop box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_bounding_box</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">searchgrid_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A tuple of integers (left, bottom, width, height), specifying the coordinates of the lower-left corner, width,</span>
+<span class="sd">        and height of the spectrum&#39;s bounding box in the pixel coordinates of a SearchGrid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_searchgrid_bbox</span>
+
+    <span class="nd">@searchgrid_bbox</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">searchgrid_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The searchgrid bbox is expected to be a tuple, encountered </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_searchgrid_bbox</span> <span class="o">=</span> <span class="n">bbox</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">padding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The pixel area of the cutout&quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span>
+        <span class="k">return</span> <span class="n">w</span> <span class="o">*</span> <span class="n">h</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">grism_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The `DetectorGrism.DetectorGrism` object associated with this spectrum.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_spectrum_cutout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a `SpectrumCutout` object.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectral_cutout</span> <span class="o">=</span> <span class="n">SpectrumCutout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_wavelength_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines the wavelength limits (min, max) for the current spectral order.&quot;&quot;&quot;</span>
+        <span class="n">wav_min</span><span class="p">,</span> <span class="n">wav_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span><span class="o">.</span><span class="n">full_wavelength_range</span>
+
+        <span class="k">return</span> <span class="n">wav_min</span><span class="p">,</span> <span class="n">wav_max</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the coordinates of points along the boundary of the spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wav_min</span><span class="p">,</span> <span class="n">wav_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_wavelength_limits</span><span class="p">()</span>
+        <span class="n">central_wav</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">wav_min</span> <span class="o">+</span> <span class="n">wav_max</span><span class="p">)</span>
+        <span class="n">max_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">getApertureSize</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wav_min</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">central_wav</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wav_max</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x3</span><span class="p">,</span> <span class="n">y3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wav_max</span><span class="p">,</span> <span class="n">max_row</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x4</span><span class="p">,</span> <span class="n">y4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">central_wav</span><span class="p">,</span> <span class="n">max_row</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+        <span class="n">x5</span><span class="p">,</span> <span class="n">y5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc_spec</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wav_min</span><span class="p">,</span> <span class="n">max_row</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+
+        <span class="n">boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">],</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span> <span class="p">[</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">x3</span><span class="p">,</span> <span class="n">y3</span><span class="p">],</span> <span class="p">[</span><span class="n">x4</span><span class="p">,</span> <span class="n">y4</span><span class="p">],</span> <span class="p">[</span><span class="n">x5</span><span class="p">,</span> <span class="n">y5</span><span class="p">]])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The size of the zeroth-order masking box must be manually set.&quot;</span><span class="p">)</span>
+            <span class="n">length</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zeroth_order_size</span>
+
+            <span class="c1"># find center, the spectral direction and the spatial direction</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x4</span><span class="p">),</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y4</span><span class="p">)])</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y0</span><span class="p">])</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x4</span> <span class="o">-</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y4</span> <span class="o">-</span> <span class="n">y1</span><span class="p">])</span>
+            <span class="n">dmag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">smag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">dhat</span> <span class="o">=</span> <span class="n">d</span> <span class="o">/</span> <span class="n">dmag</span>
+            <span class="n">shat</span> <span class="o">=</span> <span class="n">s</span> <span class="o">/</span> <span class="n">smag</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">length</span> <span class="o">*</span> <span class="n">dhat</span>
+            <span class="n">S</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">shat</span>
+
+            <span class="n">p0</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">D</span> <span class="o">-</span> <span class="n">S</span>
+            <span class="n">p1</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">S</span>
+            <span class="n">p2</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">D</span> <span class="o">-</span> <span class="n">S</span>
+            <span class="n">p3</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">D</span> <span class="o">+</span> <span class="n">S</span>
+            <span class="n">p4</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">S</span>
+            <span class="n">p5</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">D</span> <span class="o">+</span> <span class="n">S</span>
+            <span class="n">boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">p5</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">boundary</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_spec_corners</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the boundaries of the region specified in the LocationSpectrum object, using the wavelength range</span>
+<span class="sd">        determined by the DetectorGrism object, self._grism_model, rather than the range built into the LocationTable.</span>
+<span class="sd">        :return: a tuple (left, bottom, right, top) specifying the four boundaries of the box with sub-pixel precision</span>
+<span class="sd">        (i.e., floating point values).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">x_coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">x_coords</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the bounding box of the spectrum, based on the contents of the LocationSpectrum object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        box: tuple</span>
+<span class="sd">            A tuple (left, bottom, width, height), specifying the coordinates of the lower-left corner, width, and</span>
+<span class="sd">            height of the spectrum&#39;s bounding box in the pixel coordinates of the detector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># determine the boundaries of the spectrum:</span>
+
+        <span class="n">loc_left</span><span class="p">,</span> <span class="n">loc_bottom</span><span class="p">,</span> <span class="n">loc_right</span><span class="p">,</span> <span class="n">loc_top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spec_corners</span><span class="p">()</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">loc_left</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">loc_right</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">loc_bottom</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">loc_top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+
+        <span class="c1"># clip the box so that it is contained within the boundaries of the detector:</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">left</span><span class="p">))</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">right</span><span class="p">))</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">bottom</span><span class="p">))</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_model</span><span class="o">.</span><span class="n">yres</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">top</span><span class="p">))</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="n">right</span> <span class="o">-</span> <span class="n">left</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">top</span> <span class="o">-</span> <span class="n">bottom</span>
+
+        <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

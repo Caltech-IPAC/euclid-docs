@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.SpectraDecontaminator &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.SpectraDecontaminator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.SpectraDecontaminator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File SpectraDecontaminator.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: Jan 08, 2016</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.DetectorModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.DetectorGrism</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorGrism</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.PhotometerInfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometerInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectrumModeller</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrumModeller</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.AstroObjectInfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">AstroObjectInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.DecontaminatedSpectraCollection</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecontaminatedSpectraCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SearchGrid</span><span class="w"> </span><span class="kn">import</span> <span class="n">SearchGrid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.NestedDict</span><span class="w"> </span><span class="kn">import</span> <span class="n">NestedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Flags</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flags</span>
+
+
+<div class="viewcode-block" id="SpectraDecontaminator"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectraDecontaminator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs the spectral decontamination algorithm.&quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_INI</span> <span class="o">=</span> <span class="s1">&#39;SIR_SpectraDecontamination.ini&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">mdb</span><span class="p">,</span>
+                 <span class="n">config</span><span class="p">,</span>
+                 <span class="n">survey_exposures</span><span class="p">,</span>
+                 <span class="n">location_tables</span><span class="p">,</span>
+                 <span class="n">relflux_flat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sensitivity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">cutouts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">limit_band</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span>
+                 <span class="n">limit_mag</span><span class="o">=</span><span class="s1">&#39;1000&#39;</span><span class="p">,</span>
+                 <span class="n">zeroth_order_mag</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">second_order_mag</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                 <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        mdb: DpdMdbDataBase</span>
+<span class="sd">            A SIR Utilities Mdb class instance containing data from the official mission database and the</span>
+<span class="sd">            additional information, specific to SIR, that is not (yet) part of the official Euclid MDB.</span>
+
+<span class="sd">        config: ConfigObj</span>
+<span class="sd">            Contains the parsed contents of the spectra decontamination .ini file.</span>
+
+<span class="sd">        survey_exposures: ExposureSet</span>
+<span class="sd">            Contains a set of NispSurveyExposure objects that have each been loaded with data from a FITS file.</span>
+
+<span class="sd">        location_tables: LocationTableSet</span>
+<span class="sd">            Contains a set of H5LocationTable objects, containing information loaded from location tables (HDF5 files)</span>
+<span class="sd">            produced by the SIR_SpectraLocation pipeline module.</span>
+
+<span class="sd">        relflux_flat: astropy.io.fits.hdu.hdulist.HDUList</span>
+<span class="sd">            The relative flux correction master flat cube, produced by the SIR RelativeFluxCalibration pipeline.</span>
+
+<span class="sd">        sensitivity: astropy.io.fits.hdu.hdulist.HDUList</span>
+<span class="sd">            The absolute flux sensitivity function (the grism sensitivity derived from SirAbsoluteFluxScaling).</span>
+
+<span class="sd">        cutouts: SIR_CreateCuts.CutoutCollection</span>
+<span class="sd">            Contains metadata and pixel arrays corresponding to stacked, mosaics of direct image stamps.</span>
+
+<span class="sd">        limit_band: str</span>
+<span class="sd">            The name of the band that will be used when performing a magnitude cut on the input data.</span>
+
+<span class="sd">        limit_mag: float</span>
+<span class="sd">            The magnitude limit; objects with `limit_band` magnitude greater than this value will be ignored</span>
+<span class="sd">            when performing the decontamination.</span>
+
+<span class="sd">        zeroth_order_mag: float</span>
+<span class="sd">            The magnitude limit for flagging the positions of zeroth-order spectra. Zeroth-order spectra</span>
+<span class="sd">            that are fainter than this limit in the Y, J, and H bands will be completely ignored.</span>
+
+<span class="sd">        second_order_mag: float</span>
+<span class="sd">            The magnitude limit for flagging the positions of second-order spectra. Second-order spectra</span>
+<span class="sd">            that are fainter than this limit in the Y, J, and H bands will be completely ignored.</span>
+
+<span class="sd">        padding: int</span>
+<span class="sd">            The number of pixels around the box specified in the `location_tables` to include in the spectral</span>
+<span class="sd">            cutouts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;SpectraDecontaminator&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Constructing the SpectraDecontaminator.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_location_tables</span> <span class="o">=</span> <span class="n">location_tables</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_missing_exposures</span><span class="p">(</span><span class="n">survey_exposures</span><span class="p">,</span> <span class="n">location_tables</span><span class="p">)</span>
+
+        <span class="c1"># Information about the photometric bands / filters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phot_info</span> <span class="o">=</span> <span class="n">PhotometerInfo</span><span class="p">(</span><span class="n">mdb</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span> <span class="o">=</span> <span class="n">survey_exposures</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="o">=</span> <span class="n">relflux_flat</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span> <span class="o">=</span> <span class="n">cutouts</span>
+
+        <span class="n">AstroObjectInfo</span><span class="o">.</span><span class="n">ZEROTH_ORDER_THRESHOLD</span> <span class="o">=</span> <span class="n">zeroth_order_mag</span>
+        <span class="n">AstroObjectInfo</span><span class="o">.</span><span class="n">SECOND_ORDER_THRESHOLD</span> <span class="o">=</span> <span class="n">second_order_mag</span>
+
+        <span class="n">sigcont_fraction</span><span class="p">,</span> <span class="n">invalid_contamination_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_significant_contamination_threshold</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sigcont_fraction = </span><span class="si">{</span><span class="n">sigcont_fraction</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid_contamination_fraction = </span><span class="si">{</span><span class="n">invalid_contamination_fraction</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="n">padding</span>
+
+        <span class="n">contam_band</span><span class="p">,</span> <span class="n">contamin_limit</span><span class="p">,</span> <span class="n">contam_dmag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_contaminant_mag_parameters</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contaminant_mag_band = </span><span class="si">{</span><span class="n">contam_band</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contaminant_mag_limit = </span><span class="si">{</span><span class="n">contamin_limit</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contaminant_dmag = </span><span class="si">{</span><span class="n">contam_dmag</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contaminant_band</span> <span class="o">=</span> <span class="n">contam_band</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contamin_mag_limit</span> <span class="o">=</span> <span class="n">contamin_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contaminant_dmag</span> <span class="o">=</span> <span class="n">contam_dmag</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shrink_exposureset</span><span class="p">()</span>
+
+        <span class="c1"># A dict in the format: {dither: DetectorGrism}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_det</span> <span class="o">=</span> <span class="p">{</span><span class="n">dither</span><span class="p">:</span> <span class="n">DetectorGrism</span><span class="p">(</span><span class="n">mdb</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">sensitivity</span><span class="p">)</span> <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">exposure</span> <span class="ow">in</span> <span class="n">survey_exposures</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;The DetectorGrism dict is empty. Perhaps the detectors contain no spectra? Exiting.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Organizing spectra by object id.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># A dict of the form: {object_id_as_int: AstroObjectInfo}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objects_by_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_object_info_table</span><span class="p">(</span><span class="n">location_tables</span><span class="p">,</span> <span class="n">limit_band</span><span class="p">,</span> <span class="n">limit_mag</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Organizing spectra by dither and detector&quot;</span><span class="p">)</span>
+
+        <span class="c1"># NestedDict in format {dither: {detector: [SpectrumInfo]}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_spectrum_lookup_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objects_by_id</span><span class="p">)</span>
+
+        <span class="c1"># NestedDict in format {dither: {detector: SearchGrid}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># The SpectrumModeller object responsible for modelling spectra:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dec_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dec_call_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="SpectraDecontaminator.run"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator.run">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detectors</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">decont_order</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">passthrough</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">skip_measuring</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DecontaminatedSpectraCollection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Carries out the steps needed to decontaminate the first-order spectra of each object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        detectors: str</span>
+<span class="sd">           The detector(s) which will be decontaminated. These are specified as a string of the form &#39;dither.detector&#39;,</span>
+<span class="sd">           where the dither is one of `(&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;)` and specifies the exposure in the dither sequence from</span>
+<span class="sd">           which to obtain 2-D spectra that will be decontaminated. The detector is one of (&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, ..., &#39;16&#39;)</span>
+<span class="sd">           and indicates the detector within the specified exposure to decontaminate. If the string &#39;*&#39; is provided,</span>
+<span class="sd">           then all detectors of all dithers will be decontaminated. If &#39;*.1&#39; is provided, then detector 1 of all four</span>
+<span class="sd">           exposures (dithers 1, 2, 3, 4) will be decontaminated. Finally, if `&#39;2.*&#39;` is specified, then all detectors</span>
+<span class="sd">           of dither 2 will be decontaminated.</span>
+
+<span class="sd">        decont_order: int</span>
+<span class="sd">           The spectral order to decontaminate (should be 1 or 2)</span>
+
+<span class="sd">        passthrough: bool</span>
+<span class="sd">           If True, the decontamination will not actually be performed. Cutouts of the spectra will be created and</span>
+<span class="sd">           saved to the DecontaminatedSpectraCollection without modification. If False, the decontamination will proceed</span>
+<span class="sd">           as usual.</span>
+
+<span class="sd">        skip_measuring: bool</span>
+<span class="sd">           If True, then the model contaminants will only be based on the broadband photometry; no effort will be made</span>
+<span class="sd">           to measure the spectra.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        DecontaminatedSpectraCollection instance containing the decontaminated spectra, flags, variance, and model</span>
+<span class="sd">        contaminants.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_search_grids</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="o">=</span> <span class="n">SpectrumModeller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phot_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">set_relflux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span><span class="p">)</span>
+            <span class="n">AstroObjectInfo</span><span class="o">.</span><span class="n">WAVELENGTHS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passthrough</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Beginning the decontamination procedure.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Simply cropping the spectra, since passthrough is set to True&quot;</span><span class="p">)</span>
+
+        <span class="c1"># This step crops each `decont_order` spectrum in each detector of each exposure.</span>
+        <span class="c1"># The output is a NestedDict in the format {dither: {detector: [SpectrumCutout]}}</span>
+        <span class="n">spectral_cutouts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_spectral_cutouts</span><span class="p">(</span><span class="n">decont_order</span><span class="p">)</span>
+
+        <span class="c1"># Parse the detector specification string:</span>
+
+        <span class="n">detector_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_detectors</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_tables</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="c1"># Remove any entries in the detector map that have no spectral data</span>
+
+        <span class="n">detector_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_detector_map</span><span class="p">(</span><span class="n">detector_map</span><span class="p">,</span> <span class="n">spectral_cutouts</span><span class="p">)</span>
+
+        <span class="c1"># Create container for storing the set of decontaminated spectral cutouts:</span>
+
+        <span class="n">decontaminated_spectra</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+
+        <span class="c1"># At this point, we have cutouts for all spectra. We can now decontaminate each spectrum:</span>
+
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">]:</span>
+                <span class="n">cutouts</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Working on dither </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">, detector </span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+                <span class="n">spec_cutouts</span> <span class="o">=</span> <span class="n">spectral_cutouts</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">spec_cutouts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spectral_cutouts</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_decontaminate_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+                        <span class="n">cutouts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">spec_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]:</span>
+                    <span class="n">spec_info</span><span class="o">.</span><span class="n">clear_convolution_kernel</span><span class="p">()</span>
+
+                <span class="n">decontaminated_spectra</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="o">=</span> <span class="n">cutouts</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passthrough</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished decontaminating the spectra. Now updating the variance layers.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished cropping the spectra. The spectra were not decontaminated because &quot;</span>
+                              <span class="s2">&quot;passthrough was set to True.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">decontaminated_spectra</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_spectra</span><span class="p">(</span><span class="n">decontaminated_spectra</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">],</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The variance for all spectra has been updated.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># delete the search grids</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">DecontaminatedSpectraCollection</span><span class="p">(</span><span class="n">decontaminated_spectra</span><span class="o">=</span><span class="n">decontaminated_spectra</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpectraDecontaminator.run_part"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator.run_part">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">run_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_spectra</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">decont_order</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">passthrough</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DecontaminatedSpectraCollection</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Carries out the steps needed to decontaminate the first-order spectra of each object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dither: int</span>
+<span class="sd">            The dither sequence number.</span>
+
+<span class="sd">        detector:</span>
+<span class="sd">            The detector number (1-16).</span>
+
+<span class="sd">        part: int</span>
+<span class="sd">            The section of the spectra list to decontaminate. The spectra will be in groups of `max_spectra`.</span>
+
+<span class="sd">        max_spectra: int</span>
+<span class="sd">           The maximum number of spectra that will be stored in a single DecontaminatedSpectraCollection object. The</span>
+<span class="sd">           default value (zero) indicates that an unlimited number of spectra can be stored in the object.</span>
+
+<span class="sd">        decont_order: int</span>
+<span class="sd">           The spectral order to decontaminate (should be 1 or 2)</span>
+
+<span class="sd">        passthrough: bool</span>
+<span class="sd">           If True, the decontamination will not actually be performed. Cutouts of the spectra will be created and</span>
+<span class="sd">           saved to the DecontaminatedSpectraCollection without modification. If False, the decontamination will proceed</span>
+<span class="sd">           as usual.</span>
+
+<span class="sd">        skip_measuring: bool</span>
+<span class="sd">           If True, then the model contaminants will only be based on the broadband photometry; no effort will be made</span>
+<span class="sd">           to measure the spectra.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        decontaminated_spectra: DecontaminatedSpectraCollection or None</span>
+
+<span class="sd">        A DecontaminatedSpectraCollection instance containing the decontaminated spectra, flags, variance, and model</span>
+<span class="sd">        contaminants. Returns None if the part does not exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_search_grids</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="o">=</span> <span class="n">SpectrumModeller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phot_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">set_relflux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span><span class="p">)</span>
+            <span class="n">AstroObjectInfo</span><span class="o">.</span><span class="n">WAVELENGTHS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passthrough</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Beginning the decontamination procedure.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Simply cropping the spectra, since passthrough is set to True&quot;</span><span class="p">)</span>
+
+        <span class="c1"># This step crops each `decont_order` spectrum in each detector of each exposure.</span>
+        <span class="c1"># The output is a NestedDict in the format {dither: {detector: [SpectrumCutout]}}</span>
+        <span class="n">spectral_cutouts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_spectral_cutouts</span><span class="p">(</span><span class="n">decont_order</span><span class="p">)</span>
+
+        <span class="c1"># At this point, we have cutouts for all spectra. We can now decontaminate each spectrum:</span>
+
+        <span class="n">cutouts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">spec_cutouts</span> <span class="o">=</span> <span class="n">spectral_cutouts</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">spec_cutouts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">n_parts</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spec_cutouts</span><span class="p">)</span> <span class="o">/</span> <span class="n">max_spectra</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">part</span> <span class="o">&gt;</span> <span class="n">n_parts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Working on dither </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">, detector </span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">, part </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_parts</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spec_cutouts</span><span class="p">[(</span><span class="n">part</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_spectra</span><span class="p">:]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_decontaminate_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+            <span class="n">cutouts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cutouts</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_spectra</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_spectra</span><span class="p">(</span><span class="n">cutouts</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+        <span class="n">decontaminated_spectra</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+        <span class="n">decontaminated_spectra</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="o">=</span> <span class="n">cutouts</span>
+
+        <span class="k">for</span> <span class="n">spec_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]:</span>
+            <span class="n">spec_info</span><span class="o">.</span><span class="n">clear_convolution_kernel</span><span class="p">()</span>
+
+        <span class="c1"># delete the search grids</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Preparing to save a section of a detector.&quot;</span><span class="p">)</span>
+
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">DecontaminatedSpectraCollection</span><span class="p">(</span><span class="n">decontaminated_spectra</span><span class="o">=</span><span class="n">decontaminated_spectra</span><span class="p">)</span>
+
+        <span class="n">collection</span><span class="o">.</span><span class="n">is_final_part</span> <span class="o">=</span> <span class="n">part</span> <span class="o">==</span> <span class="n">n_parts</span>
+
+        <span class="k">return</span> <span class="n">collection</span></div>
+
+<div class="viewcode-block" id="SpectraDecontaminator.make_models"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator.make_models">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">make_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detectors</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pixel_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NestedDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates model spectra for each object in the specified detectors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        detectors: str</span>
+<span class="sd">           The detector(s) for which model spectra will be created. These are specified as a string of the form</span>
+<span class="sd">           &#39;dither.detector&#39;, as described in the documentation for the run() method.</span>
+
+<span class="sd">        pixel_threshold: float</span>
+<span class="sd">           The minimum pixel threshold. Models whose maximum pixel value is lower than this threshold will be ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        A NestedDict instance containing the models of spectra falling on the specified detectors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="o">=</span> <span class="n">SpectrumModeller</span><span class="p">(</span><span class="n">photo_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_phot_info</span><span class="p">,</span>
+                                              <span class="n">detector_grisms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">,</span>
+                                              <span class="n">search_grids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">padding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">set_relflux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_relflux_flat</span><span class="p">)</span>
+            <span class="n">AstroObjectInfo</span><span class="o">.</span><span class="n">WAVELENGTHS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span>
+
+        <span class="n">detector_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_detectors</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_tables</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="n">models</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="s1">&#39;object_id&#39;</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detectors</span> <span class="ow">in</span> <span class="n">detector_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">spectrum</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]:</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">get_2d_model_spectrum</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">pixels</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">pixel_threshold</span><span class="p">:</span>
+                        <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">compute_wavelengths</span><span class="p">(</span><span class="n">spectrum</span><span class="o">.</span><span class="n">location_spectrum</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
+                        <span class="n">models</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">spectrum</span><span class="o">.</span><span class="n">object_id</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">models</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_dithers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lists the dithers contained in the location tables.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        list</span>
+<span class="sd">            A list of integers corresponding to the dithers present in the collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="o">.</span><span class="n">dithers</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lists the detectors within the specified dither that are present in the collection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dither: int</span>
+<span class="sd">            The dither sequence number (1, 2, 3, 4).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        list</span>
+<span class="sd">            A list of integers [1, 16] corresponding to the detectors of the specified dither that are</span>
+<span class="sd">            present in the collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="n">dither</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies the SpectrumInfo objects associated with the specified detector in the specified dither.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dither: int</span>
+<span class="sd">            The dither sequence number (1, 2, 3, 4)</span>
+
+<span class="sd">        detector: int</span>
+<span class="sd">            The detector number (1, 2, 3, ..., 16)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        list</span>
+<span class="sd">            A list of SpectrumInfo objects for objects that appear on the specified detector of the dither.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_search_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating search grids.&quot;</span><span class="p">)</span>
+        <span class="n">search_grids</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="n">SearchGrid</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_dithers</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_detectors</span><span class="p">(</span><span class="n">dither</span><span class="p">):</span>
+                <span class="n">spectra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+                <span class="n">tilt_angle</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectra</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">spectra</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">location_spectrum</span><span class="o">.</span><span class="n">getGWATilt</span><span class="p">()</span>
+                <span class="n">search_grids</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="o">=</span> <span class="n">SearchGrid</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">tilt_angle</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">search_grids</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_object_info_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location_tables</span><span class="p">,</span> <span class="n">limit_band</span><span class="p">,</span> <span class="n">limit_mag</span><span class="p">):</span>
+        <span class="c1"># A dict with the format {object_id: AstroObjectInfo}</span>
+        <span class="n">object_info</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">location_tables</span><span class="p">:</span>
+            <span class="n">dither</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">getDither</span><span class="p">())</span>
+
+            <span class="k">for</span> <span class="n">object_id</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">getLocationObject</span><span class="p">(</span><span class="n">object_id</span><span class="p">)</span>
+                <span class="n">astro_object</span> <span class="o">=</span> <span class="n">loc</span><span class="o">.</span><span class="n">getAstronomicalObject</span><span class="p">()</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">create_location_object</span><span class="p">(</span><span class="n">astro_object</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">object_id</span> <span class="ow">in</span> <span class="n">object_info</span><span class="p">:</span>
+                    <span class="c1"># the object is already here. Just update the spectra location info.</span>
+                    <span class="n">object_info</span><span class="p">[</span><span class="n">object_id</span><span class="p">]</span><span class="o">.</span><span class="n">load_spectra</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">[</span><span class="n">dither</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># the object has not been added to _objects_by_id yet; add it now:</span>
+                    <span class="n">object_data</span> <span class="o">=</span> <span class="n">AstroObjectInfo</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutouts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phot_info</span><span class="p">,</span> <span class="n">limit_band</span><span class="p">,</span> <span class="n">limit_mag</span><span class="p">)</span>
+
+                    <span class="c1"># If the object is bright enough, load its spectra and add it to object_info</span>
+                    <span class="k">if</span> <span class="n">object_data</span><span class="o">.</span><span class="n">is_usable</span><span class="p">:</span>
+                        <span class="n">object_data</span><span class="o">.</span><span class="n">load_spectra</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_det</span><span class="p">[</span><span class="n">dither</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">)</span>
+                        <span class="n">object_info</span><span class="p">[</span><span class="n">object_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_data</span>
+
+        <span class="k">return</span> <span class="n">object_info</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_spectral_cutouts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decont_order</span><span class="p">):</span>
+        <span class="n">spec_cutouts</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_dithers</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_detectors</span><span class="p">(</span><span class="n">dither</span><span class="p">):</span>
+                <span class="n">spec_cutouts</span><span class="o">.</span><span class="n">add_item</span><span class="p">([],</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+                <span class="n">spectra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spectra</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="n">decont_order</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">area</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">spec_cutouts</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">spec_cutouts</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_decontaminate_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">passthrough</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decontaminate a single spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spec: SpectrumCutout</span>
+<span class="sd">            The SpectrumCutout object associated with the spectrum that will be decontaminated.</span>
+
+<span class="sd">        passthrough: bool</span>
+<span class="sd">           If True, the decontamination will not actually be performed. Cutouts of the spectra will be created and</span>
+<span class="sd">           saved to the DecontaminatedSpectraCollection without modification. If False, the decontamination will proceed</span>
+<span class="sd">           as usual.</span>
+
+<span class="sd">        skip_measuring : bool</span>
+<span class="sd">           If set to True, the model spectra will be based solely on the lower and upper band magnitudes; the process of</span>
+<span class="sd">           attempting to measure the spectrum will be skipped.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">            `spec` is updated. More specifically, the `contaminants`, `science`, and `flags` properties are set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dec_call_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">science</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># the spectrum has already been decontaminated; return</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dec_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">spec_info</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">spec_info</span>
+        <span class="n">dither</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">dither</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">detector</span>
+        <span class="n">object_id</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">object_id</span>
+        <span class="n">spec_offset</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">get_offset</span><span class="p">()</span>
+        <span class="n">relevant_searchgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_grids</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">invalid_mag</span><span class="p">:</span>
+            <span class="n">relative_mag_limit</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contaminant_band</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contaminant_dmag</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relative_mag_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contamin_mag_limit</span>
+        <span class="n">contam_mag_limit</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_contamin_mag_limit</span><span class="p">,</span> <span class="n">relative_mag_limit</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">contaminants</span> <span class="o">=</span> <span class="n">relevant_searchgrid</span><span class="o">.</span><span class="n">find_contaminants</span><span class="p">(</span><span class="n">spec_info</span><span class="o">.</span><span class="n">searchgrid_bbox</span><span class="p">,</span>
+                                                                  <span class="n">ignore_idx</span><span class="o">=</span><span class="n">object_id</span><span class="p">,</span>
+                                                                  <span class="n">mag_limit</span><span class="o">=</span><span class="n">contam_mag_limit</span><span class="p">,</span>
+                                                                  <span class="n">mag_band</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_contaminant_band</span><span class="p">)</span>
+
+        <span class="c1"># At this point, spec contains the cutout *and* it knows about the contaminants.</span>
+
+        <span class="n">original_science</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">original_spectrum</span><span class="o">.</span><span class="n">get_science</span><span class="p">()</span>
+        <span class="n">original_flags</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">original_spectrum</span><span class="o">.</span><span class="n">get_mask</span><span class="p">()</span>
+
+        <span class="c1"># Create a blank canvas on which to accumulate the contaminating flux:</span>
+
+        <span class="n">total_contamination</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">original_science</span><span class="p">)</span>
+
+        <span class="c1"># Create an array to store the updated flags:</span>
+
+        <span class="n">new_flags</span> <span class="o">=</span> <span class="n">original_flags</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">has_contaminants</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">passthrough</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;decontaminating </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">contam</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">contaminants</span><span class="p">:</span>
+                <span class="c1"># note the side effect of get_2d_model_spectrum(); it adds the model to the spectrum info.</span>
+                <span class="n">model_of_contaminant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">get_2d_model_spectrum</span><span class="p">(</span><span class="n">contam</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+
+                <span class="c1"># Add the model spectrum to the total contamination for this object, unless the</span>
+                <span class="c1"># contaminant is a zeroth-order spectrum (None), in which case, we just flag it:</span>
+
+                <span class="n">contamination_canvas</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec_offset</span><span class="p">,</span> <span class="n">total_contamination</span><span class="p">)</span>
+
+                <span class="n">flag_canvas</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec_offset</span><span class="p">,</span> <span class="n">new_flags</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">model_of_contaminant</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                    <span class="n">model_overlay</span> <span class="o">=</span> <span class="p">(</span><span class="n">model_of_contaminant</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="n">model_of_contaminant</span><span class="o">.</span><span class="n">pixels</span><span class="p">)</span>
+
+                    <span class="n">Utils</span><span class="o">.</span><span class="n">apply_overlay</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">model_overlay</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="n">contamination_canvas</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+
+                    <span class="n">interpolation_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">model_of_contaminant</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="n">model_of_contaminant</span><span class="o">.</span><span class="n">interpolated_pixels</span><span class="p">)</span>
+
+                    <span class="n">Utils</span><span class="o">.</span><span class="n">set_flag</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">interpolation_mask</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="n">flag_canvas</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">Flags</span><span class="o">.</span><span class="n">MISSING</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">contam</span><span class="o">.</span><span class="n">order</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">contam</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">invalid_mag</span><span class="p">:</span>
+                    <span class="c1"># This contaminant is a zeroth-order, a bright second-order, or an object with unknown magnitude,</span>
+                    <span class="c1"># which means that it cannot be modelled. Flag it:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_flag_zeroth</span><span class="p">(</span><span class="n">contam</span><span class="o">.</span><span class="n">bbox</span><span class="p">,</span> <span class="n">spec_offset</span><span class="p">,</span> <span class="n">new_flags</span><span class="p">)</span>
+
+                <span class="n">contam</span><span class="o">.</span><span class="n">clear_convolution_kernel</span><span class="p">()</span>
+
+            <span class="c1"># Remove contamination:</span>
+
+            <span class="n">spec</span><span class="o">.</span><span class="n">science</span> <span class="o">=</span> <span class="n">original_science</span> <span class="o">-</span> <span class="n">total_contamination</span>
+
+            <span class="c1"># Update new_flags by flagging pixels that are significantly contaminated:</span>
+
+            <span class="n">threshold</span><span class="p">,</span> <span class="n">invalid_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_significant_contamination_threshold</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flag_significantly_contaminated</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">science</span><span class="p">,</span>
+                                                  <span class="n">total_contamination</span><span class="p">,</span>
+                                                  <span class="n">new_flags</span><span class="p">,</span>
+                                                  <span class="n">threshold</span><span class="p">,</span>
+                                                  <span class="n">invalid_threshold</span><span class="p">)</span>
+
+            <span class="n">spec</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">new_flags</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this spectrum had no significant contamination (or passthrough was set to True). We still have to set</span>
+            <span class="c1"># the science and flag layers:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">science</span> <span class="o">=</span> <span class="n">original_science</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">original_flags</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_variance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decon_spec</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the updated variance layer of the `SpectrumCutout`, `spec` and updates the variance layer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        decon_spec: SpectrumCutout.SpectrumCutout</span>
+<span class="sd">            A SpectrumCutout object whose science layer has already been decontaminated, but whose</span>
+<span class="sd">            variance has not been updated.</span>
+
+<span class="sd">        passthrough: bool</span>
+<span class="sd">            If True, then no decontamination was done, so the variance passes through, unaltered. If false, the variance</span>
+<span class="sd">            is updated.</span>
+
+<span class="sd">        skip_measuring: bool</span>
+<span class="sd">            If True, then the model spectra used in the decontamination are based on the broadband fluxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">object_id</span> <span class="o">=</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">object_id</span>
+        <span class="n">dither</span> <span class="o">=</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">dither</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">detector</span>
+
+        <span class="c1"># check to make sure that the science layer has been decontaminated:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing variance for </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">science</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The spectrum </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2"> has not been decontaminated.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">variance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The variance of </span><span class="si">{</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">detector</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2"> has already been set.&quot;</span><span class="p">)</span>
+
+        <span class="n">variance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">decon_spec</span><span class="o">.</span><span class="n">original_spectrum</span><span class="o">.</span><span class="n">get_variance</span><span class="p">())</span>
+
+        <span class="n">decon_spec</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="n">variance</span>
+
+        <span class="k">if</span> <span class="n">passthrough</span> <span class="ow">or</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">model_spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">variance_canvas</span> <span class="o">=</span> <span class="p">(</span><span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">get_offset</span><span class="p">(),</span> <span class="n">variance</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">contam</span> <span class="ow">in</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">contaminants</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">contam</span><span class="o">.</span><span class="n">order</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">contam</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">invalid_mag</span><span class="p">:</span>
+                <span class="c1"># The contaminant cannot be modelled because it is a zeroth-order, or a bright second-order, or it has</span>
+                <span class="c1"># unknown or invalid magnitudes. So we set infinite variance for the region covered by this spectrum.</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">contam</span><span class="o">.</span><span class="n">bbox</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
+                <span class="n">var</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">contam</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">science</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_decontaminate_spectrum</span><span class="p">(</span><span class="n">contam</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">contam</span><span class="o">.</span><span class="n">model_spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">get_2d_model_spectrum</span><span class="p">(</span><span class="n">contam</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="o">=</span><span class="n">skip_measuring</span><span class="p">)</span>
+
+                <span class="n">contam_residual</span> <span class="o">=</span> <span class="n">contam</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">science</span> <span class="o">-</span> <span class="n">contam</span><span class="o">.</span><span class="n">model_spec</span><span class="o">.</span><span class="n">pixels</span>
+
+                <span class="n">contam_residual_canvas</span> <span class="o">=</span> <span class="p">(</span><span class="n">contam</span><span class="o">.</span><span class="n">get_offset</span><span class="p">(),</span> <span class="n">contam_residual</span><span class="p">)</span>
+
+                <span class="c1"># contam_residual includes the result of subtracting away the model of decon_spec. We add the</span>
+                <span class="c1"># model of decon_spec back to contam_residual and subtract away the decontaminated spectrum, so that</span>
+                <span class="c1"># the residual here is not based at all upon the model of decon_spec.</span>
+
+                <span class="n">residual_correction</span> <span class="o">=</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">model_spec</span><span class="o">.</span><span class="n">pixels</span> <span class="o">-</span> <span class="n">decon_spec</span><span class="o">.</span><span class="n">science</span>
+                
+                <span class="n">residual_correction_overlay</span> <span class="o">=</span> <span class="p">(</span><span class="n">decon_spec</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">get_offset</span><span class="p">(),</span> <span class="n">residual_correction</span><span class="p">)</span>
+                
+                <span class="n">Utils</span><span class="o">.</span><span class="n">apply_overlay</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">residual_correction_overlay</span><span class="p">,</span>
+                                    <span class="n">canvas</span><span class="o">=</span><span class="n">contam_residual_canvas</span><span class="p">,</span>
+                                    <span class="n">operation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+
+                <span class="n">var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">contam_residual</span><span class="p">)</span>
+
+            <span class="n">contam_variance_overlay</span> <span class="o">=</span> <span class="p">(</span><span class="n">contam</span><span class="o">.</span><span class="n">get_offset</span><span class="p">(),</span> <span class="n">var</span><span class="p">)</span>
+
+            <span class="n">Utils</span><span class="o">.</span><span class="n">apply_overlay</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">contam_variance_overlay</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="n">variance_canvas</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">)</span>
+
+        <span class="n">decon_spec</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="n">variance</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_finalize_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectra</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;SpectrumCutout&#39;</span><span class="p">],</span> <span class="n">passthrough</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the variance of the list of spectra objects and frees unneeded data from memory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">spectra</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">variance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_variance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">,</span> <span class="n">skip_measuring</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">clear_original_spectrum</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_significant_contamination_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="s1">&#39;PARAMETERS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The configuration file, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> is expected to include a section&quot;</span>
+                           <span class="s2">&quot; called PARAMETERS.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;sigcont_fraction&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">]:</span>
+            <span class="n">sigcont_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">][</span><span class="s1">&#39;sigcont_fraction&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">sigcont_frac</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">sigcont_frac</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The sigcont_fraction is expected to be in the interval [0,1], not </span><span class="si">{</span><span class="n">sigcont_frac</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The PARAMETERS section of the configuration file, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> is expected&quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot; to include variable called &#39;sigcont_fraction&#39; with a value in the interval [0,1].&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;invalid_contamination_fraction&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">]:</span>
+            <span class="n">invalid_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">][</span><span class="s1">&#39;invalid_contamination_fraction&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">invalid_frac</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The invalid_contamination_fraction is expected to be &gt; 0.0, not </span><span class="si">{</span><span class="n">invalid_frac</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The PARAMETERS section of the configuration file, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> is expected&quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot; to include a variable called &#39;invalid_contamination_fraction&#39; with value &gt; 0.0.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sigcont_frac</span><span class="p">,</span> <span class="n">invalid_frac</span>
+
+<div class="viewcode-block" id="SpectraDecontaminator.get_contaminant_mag_parameters"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator.get_contaminant_mag_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_contaminant_mag_parameters</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">band</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">][</span><span class="s1">&#39;contaminant_mag_band&#39;</span><span class="p">]</span>
+            <span class="n">mag_limit</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">][</span><span class="s1">&#39;contaminant_mag_limit&#39;</span><span class="p">]</span>
+            <span class="n">dmag</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;PARAMETERS&#39;</span><span class="p">][</span><span class="s1">&#39;contaminant_dmag&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing parameter: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">band</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">band</span> <span class="o">=</span> <span class="n">band</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The parameter &#39;contaminant_mag_band&#39; is expected to be a string.&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dmag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dmag</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: contaminant_dmag must be a number.&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">mag_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mag_limit</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: contaminant_mag_limit must be a number.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dmag</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: contaminant_dmag must be a positive number.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">band</span><span class="p">,</span> <span class="n">mag_limit</span><span class="p">,</span> <span class="n">dmag</span></div>
+
+<div class="viewcode-block" id="SpectraDecontaminator.parse_detectors"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectraDecontaminator.SpectraDecontaminator.parse_detectors">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_detectors</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">detector_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tables</span><span class="p">:</span> <span class="s1">&#39;LocationTableSetInfo&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+
+        <span class="n">detector_string</span> <span class="o">=</span> <span class="n">detector_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;det_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">detector_string</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+            <span class="n">detector_string</span> <span class="o">=</span> <span class="s1">&#39;*.*&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_valid_pattern</span><span class="p">(</span><span class="n">detector_string</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected a string of the form &#39;dither.detector&#39; or &#39;dither0,dither1.detector0,detector1&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">dither_spec</span><span class="p">,</span> <span class="n">detector_spec</span> <span class="o">=</span> <span class="n">detector_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+
+        <span class="n">dithers</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_dithers</span><span class="p">()</span> <span class="k">if</span> <span class="n">dither_spec</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span> <span class="k">else</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_dither_specifier</span><span class="p">(</span><span class="n">dither_spec</span><span class="p">)</span>
+
+        <span class="n">detector_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">detector_spec</span> <span class="o">!=</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dith</span> <span class="ow">in</span> <span class="n">dithers</span><span class="p">:</span>
+                <span class="n">detector_map</span><span class="p">[</span><span class="n">dith</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_detector_specifier</span><span class="p">(</span><span class="n">detector_spec</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dith</span> <span class="ow">in</span> <span class="n">dithers</span><span class="p">:</span>
+                <span class="n">detector_map</span><span class="p">[</span><span class="n">dith</span><span class="p">]</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">(</span><span class="n">dith</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">detector_map</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_pattern</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;det_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">acceptable_1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^ap([1-4]</span><span class="si">{2}</span><span class="s1">c){0,15}[1-4]</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">)</span>
+        <span class="n">acceptable_2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(([0-9]){1,3}c){0,100}[0-9]{1,3}pa$&#39;</span><span class="p">)</span>
+        <span class="n">acceptable_3</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(([0-9]){1,3}c){0,100}[0-9]{1,3}p([1-4]</span><span class="si">{2}</span><span class="s1">c){0,15}[1-4]</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">)</span>
+
+        <span class="n">match_1</span> <span class="o">=</span> <span class="n">acceptable_1</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="n">match_2</span> <span class="o">=</span> <span class="n">acceptable_2</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="n">match_3</span> <span class="o">=</span> <span class="n">acceptable_3</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+        <span class="n">is_type_0</span> <span class="o">=</span> <span class="n">pattern</span> <span class="o">==</span> <span class="s1">&#39;apa&#39;</span>
+        <span class="n">is_type_1</span> <span class="o">=</span> <span class="n">match_1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">match_1</span><span class="o">.</span><span class="n">span</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+        <span class="n">is_type_2</span> <span class="o">=</span> <span class="n">match_2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">match_2</span><span class="o">.</span><span class="n">span</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+        <span class="n">is_type_3</span> <span class="o">=</span> <span class="n">match_3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">match_3</span><span class="o">.</span><span class="n">span</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">any</span><span class="p">((</span><span class="n">is_type_0</span><span class="p">,</span> <span class="n">is_type_1</span><span class="p">,</span> <span class="n">is_type_2</span><span class="p">,</span> <span class="n">is_type_3</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_detector_specifier</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+        <span class="n">id_to_number_map</span> <span class="o">=</span> <span class="n">DetectorModel</span><span class="o">.</span><span class="n">getIDs2Numbers</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">Utils</span><span class="o">.</span><span class="n">represents_int</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">id_to_number_map</span><span class="p">[</span><span class="n">spec</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="n">spec</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">id_to_number_map</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">)]</span> <span class="k">for</span> <span class="n">det_id</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spec</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_dither_specifier</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Utils</span><span class="o">.</span><span class="n">represents_int</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">spec</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">spec</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spec</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_for_missing_exposures</span><span class="p">(</span><span class="n">survey_exposures</span><span class="p">,</span> <span class="n">location_tables</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks for missing exposures. If an exposure is mentioned in the location tables, but not present in the list of</span>
+<span class="sd">        input exposures, then an error message is logged and the code exits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        survey_exposures: ExposureSet</span>
+<span class="sd">            Contains a set of NispSurveyExposure objects that have each been loaded with data from a FITS file.</span>
+
+<span class="sd">        location_tables: LocationTableSet</span>
+<span class="sd">            Contains a set of H5LocationTable objects, containing information loaded from location tables (HDF5 files)</span>
+<span class="sd">            produced by the SIR_SpectraLocation pipeline module.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        UserWarning:</span>
+<span class="sd">            Raised if the location tables refer to exposures (dithers) that are not present in survey_exposures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">missing_exposures</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">exposures_referenced</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">location_tables</span><span class="p">:</span>
+            <span class="n">dither</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">getDither</span><span class="p">()</span>
+            <span class="n">exposures_referenced</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dither</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dither</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">survey_exposures</span><span class="p">:</span>
+                <span class="n">missing_exposures</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dither</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing_exposures</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The location tables refer to exposures </span><span class="si">{</span><span class="n">exposures_referenced</span><span class="si">}</span><span class="s2">, but </span><span class="si">{</span><span class="n">missing_exposures</span><span class="si">}</span><span class="s2">&quot;</span>
+                              <span class="s2">&quot; could not be found in the set of exposures provided.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flag_zeroth</span><span class="p">(</span><span class="n">contam_box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">flag_offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">flag_layer</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flags the pixels in the mask (flag) layer, falling within the `box` as the position of a zeroth-order</span>
+<span class="sd">        spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        contam_box: tuple</span>
+<span class="sd">            A 4-tuple (left, bottom, width, height) specifying the bounding box of a zeroth-order spectrum.</span>
+
+<span class="sd">        flag_offset: tuple</span>
+<span class="sd">            The position of the lower-left pixel of the flag layer within the detector in the format (left, bottom)</span>
+
+<span class="sd">        flag_layer: 2-D NumPy array</span>
+<span class="sd">            A 2-D array where the offset is a tuple of (left, bottom) specifying the</span>
+<span class="sd">            position of the lower-left pixel of the array within the detector and the 2-D array contains the</span>
+<span class="sd">            mask / flag data for a spectrum.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies flag_layer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="n">flag_offset</span>
+
+        <span class="n">flag_height</span><span class="p">,</span> <span class="n">flag_width</span> <span class="o">=</span> <span class="n">flag_layer</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># the bounding box of the flag layer</span>
+        <span class="n">flag_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">flag_width</span><span class="p">,</span> <span class="n">flag_height</span><span class="p">)</span>
+
+        <span class="n">flag_boundaries</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">bounding_indices</span><span class="p">(</span><span class="n">flag_box</span><span class="p">,</span> <span class="n">contam_box</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">flag_boundaries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">flag_left</span><span class="p">,</span> <span class="n">flag_bottom</span><span class="p">,</span> <span class="n">flag_right</span><span class="p">,</span> <span class="n">flag_top</span> <span class="o">=</span> <span class="n">flag_boundaries</span>
+
+            <span class="n">flag_layer</span><span class="p">[</span><span class="n">flag_bottom</span><span class="p">:</span><span class="n">flag_top</span><span class="p">,</span> <span class="n">flag_left</span><span class="p">:</span><span class="n">flag_right</span><span class="p">]</span> <span class="o">|=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">ZERO</span>
+            <span class="n">flag_layer</span><span class="p">[</span><span class="n">flag_bottom</span><span class="p">:</span><span class="n">flag_top</span><span class="p">,</span> <span class="n">flag_left</span><span class="p">:</span><span class="n">flag_right</span><span class="p">]</span> <span class="o">|=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flag_significantly_contaminated</span><span class="p">(</span><span class="n">decontaminated_spec</span><span class="p">,</span> <span class="n">contamination</span><span class="p">,</span> <span class="n">flag_layer</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">invalid_threshold</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flags the pixels in which the contamination flux exceeds the decontaminated flux by more than 10%.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        decontaminated_spec: 2-D NumPy array</span>
+<span class="sd">            The decontaminated 2-D spectral cutout.</span>
+
+<span class="sd">        contamination: 2-D NumPy array</span>
+<span class="sd">            An image containing the total estimated contamination from all contaminants.</span>
+
+<span class="sd">        flag_layer: 2-D NumPy array</span>
+<span class="sd">            The mask or flag layer associated with the spectrum.</span>
+
+<span class="sd">        threshold: float</span>
+<span class="sd">            The threshold defining what fraction of flux contamination is considered &#39;significant&#39;</span>
+
+<span class="sd">        invalid_threshold: float</span>
+<span class="sd">            The threshold defining what fraction of flux contamination is flagged as &#39;invalid&#39;</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies the `flag_layer` array by setting the significant contamination flag. `SIGCONT`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sig_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">contamination</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">decontaminated_spec</span><span class="p">)</span>
+        <span class="n">invalid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">contamination</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">invalid_threshold</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">decontaminated_spec</span><span class="p">)</span>
+
+        <span class="n">flag_layer</span><span class="p">[</span><span class="n">sig_mask</span><span class="p">]</span> <span class="o">|=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">SIGCONT</span>
+        <span class="n">flag_layer</span><span class="p">[</span><span class="n">invalid_mask</span><span class="p">]</span> <span class="o">|=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_spectrum_lookup_table</span><span class="p">(</span><span class="n">objects_by_id</span><span class="p">):</span>
+        <span class="c1"># format {dither: {detector: [SpectrumInfo]}}</span>
+        <span class="n">spectra_by_detector</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="s1">&#39;dithers&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">object_info</span> <span class="ow">in</span> <span class="n">objects_by_id</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">spec_info</span> <span class="ow">in</span> <span class="n">object_info</span><span class="o">.</span><span class="n">spectra</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spectra_by_detector</span><span class="p">:</span>
+                    <span class="n">spectra_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">spec_info</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">spectra_by_detector</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec_info</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">spectra_by_detector</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prune_detector_map</span><span class="p">(</span><span class="n">detector_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">cutouts</span><span class="p">:</span> <span class="n">NestedDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes entries from the detector map which are not present in the cutouts NestedDict.</span>
+
+<span class="sd">        This function only has an effect if only a subset of the spectral locations are provided to the module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        detector_map: dict</span>
+<span class="sd">            A dictionary of lists of detectors, specifying which detectors will be decontaminated.</span>
+
+<span class="sd">        cutouts: NestedDict</span>
+<span class="sd">            A nested dict with keys (dither, detector) corresponding to the spectra that are actually available.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        pruned_detector_map: A modified dictionary in which only detectors present in the cutouts NestedDict</span>
+<span class="sd">        are preserved; all other entries are removed, since there are no spectral cutouts in those detectors.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies detector_map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">map_dithers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detector_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">dither</span> <span class="ow">in</span> <span class="n">map_dithers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dither</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cutouts</span><span class="o">.</span><span class="n">dithers</span><span class="p">():</span>
+                <span class="k">del</span> <span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">map_detectors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">])</span>
+
+                <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">map_detectors</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cutouts</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">detector_map</span><span class="p">[</span><span class="n">dither</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">detector_map</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_shrink_exposureset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">location_dithers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">table</span><span class="o">.</span><span class="n">getDither</span><span class="p">()</span> <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_tables</span><span class="p">])</span>
+
+        <span class="n">exposure_dithers</span> <span class="o">=</span> <span class="p">[</span><span class="n">dither</span> <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">exposure_dithers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">location_dithers</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">[</span><span class="n">d</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

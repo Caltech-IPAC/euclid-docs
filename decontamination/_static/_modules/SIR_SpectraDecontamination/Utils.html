@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.Utils &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.Utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.Utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File Utils.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: Feb 27, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">jit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">trapz</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">SmoothBivariateSpline</span>
+
+
+<span class="c1"># the speed of light in Angstroms per second</span>
+<span class="n">c_AA</span> <span class="o">=</span> <span class="mf">2.99792458e18</span>
+
+
+<div class="viewcode-block" id="div0"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.div0">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">div0</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Computes a / b, ignoring division by zero: div0( [-1, 0, 1], 0 ) -&gt; [0, 0, 0] &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">true_divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="c1"># -inf inf NaN</span>
+        <span class="n">c</span><span class="p">[</span><span class="o">~</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+
+
+<div class="viewcode-block" id="represents_int"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.represents_int">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">represents_int</span><span class="p">(</span><span class="n">variable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tests whether or not a value represents an integer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    variable: any</span>
+<span class="sd">        The variable that will be tested.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    result: Bool</span>
+
+<span class="sd">    Returns True if the argument can be converted to an integer in a straightforward way, using int(). Otherwise returns</span>
+<span class="sd">    False. For example, if `variable` is a string &#39;123&#39; or an integer 123, then the function will return True. If the</span>
+<span class="sd">    `variable` is &#39;124.6&#39;, 24.6, &#39;abc&#39; or [1, 2 ,3], then the function will return False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="verify_2d_numpy_array"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.verify_2d_numpy_array">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">verify_2d_numpy_array</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks whether the argument, `arg`, is a 2-dimensional NumPy array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    arg: any</span>
+<span class="sd">        The object whose type is being inspected</span>
+
+<span class="sd">    dtype: type or None</span>
+<span class="sd">        The expected data type of the array</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+
+<span class="sd">    TypeError: if `arg` is not a 2-dimensional NumPy array OR if the datatype of the array does not match the specified</span>
+<span class="sd">    dtype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">arg</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected a 2-dimensional NumPy array. Encountered type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># it IS a 2-D NumPy array; let&#39;s make sure that the data type is correct.</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">dtype</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected dtype to be </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, but encountered </span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mag_to_fnu"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.mag_to_fnu">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">mag_to_fnu</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">zero_point</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert from magnitude and zero-point to F_nu.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    mag: float or NumPy array of floats</span>
+<span class="sd">        An AB magnitude.</span>
+
+<span class="sd">    zero_point: float or NumPy array of floats</span>
+<span class="sd">        The zero point used for converting the magnitude to the desired flux unit.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    The flux, as F_nu, in the physical unit that corresponds with the zero-point value provided.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">zero_point</span> <span class="o">-</span> <span class="n">mag</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="abmag_to_ujy"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.abmag_to_ujy">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">abmag_to_ujy</span><span class="p">(</span><span class="n">abmag</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts from AB magnitude to microJanskys.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    abmag: float or NumPy array of floats</span>
+<span class="sd">        The AB magnitude(s) to convert.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    flux: float or NumPty array of floats</span>
+<span class="sd">        F_nu in units of microJanskys</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># the zero-point for converting AB magnitude to microJanskys.</span>
+    <span class="k">return</span> <span class="n">mag_to_fnu</span><span class="p">(</span><span class="n">abmag</span><span class="p">,</span> <span class="n">zero_point</span><span class="o">=</span><span class="mf">23.903</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="angstrom_to_ujy"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.angstrom_to_ujy">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">angstrom_to_ujy</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a flux value, from erg/s/cm^2/AA, at specified wavelength, to microJanskys</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    flux: float or NumPy array of floats</span>
+<span class="sd">        Flux(es) in units of erg/s/cm^2/AA.</span>
+
+<span class="sd">    wavelength: float or NumPy array of floats</span>
+<span class="sd">        The wavelength(s) in units of Angstroms.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    flux_in_jansky: flux in units of microJanskys.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w2</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">wavelength</span>  <span class="c1"># Angstrom^2</span>
+    <span class="k">return</span> <span class="n">w2</span> <span class="o">*</span> <span class="n">flux</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1e-29</span> <span class="o">*</span> <span class="n">c_AA</span><span class="p">)</span>  <span class="c1"># μJy</span></div>
+
+
+<div class="viewcode-block" id="ujy_to_angstrom"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.ujy_to_angstrom">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">ujy_to_angstrom</span><span class="p">(</span><span class="n">flux</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">wavelength</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a flux value from microJanskys, at specified wavelength, to erg/s/cm^2/AA</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    flux: float or NumPy array</span>
+<span class="sd">        a flux (or fluxes if a NumPy array is provided) in units of microJanskys.</span>
+
+<span class="sd">    wavelength: float or NumPy array</span>
+<span class="sd">        The wavelength value(s) in units of Angstroms.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    flux: float or NumPy array [The larger of type(flux), type(wavelength)]</span>
+
+<span class="sd">    The flux in units of erg/s/cm^2/AA.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w2</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">wavelength</span>  <span class="c1"># Angstrom^2</span>
+    <span class="k">return</span> <span class="mf">1e-29</span> <span class="o">*</span> <span class="n">flux</span> <span class="o">*</span> <span class="n">c_AA</span> <span class="o">/</span> <span class="n">w2</span>  <span class="c1"># erg/s/cm^2/A</span></div>
+
+
+<div class="viewcode-block" id="weighted_mean"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.weighted_mean">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">weighted_mean</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the weighted mean of a quantity that is a function of wavelength.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quantity: np.ndarray</span>
+<span class="sd">        1D NumPy array containing samples of the quantity that is being averaged.</span>
+
+<span class="sd">    weights: np.ndarray</span>
+<span class="sd">        1D NumPy array of weights corresponding to the samples.</span>
+
+<span class="sd">    wavelengths: np.ndarray</span>
+<span class="sd">        1D NumPy array of wavelengths corresponding to the samples.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    weighted_mean: float</span>
+
+<span class="sd">    The weighted mean of the quantity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">weights</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantity</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">quantity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">trapz</span><span class="p">(</span><span class="n">quantity</span> <span class="o">*</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span> <span class="o">/</span> <span class="n">trapz</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="weighted_std"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.weighted_std">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">weighted_std</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The weighted standard deviation of a quantity that is a function of wavelength.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quantity: np.ndarray</span>
+<span class="sd">        1D NumPy array containing samples of the quantity that is being averaged.</span>
+
+<span class="sd">    weights: np.ndarray</span>
+<span class="sd">        1D NumPy array of weights corresponding to the samples.</span>
+
+<span class="sd">    wavelengths: np.ndarray</span>
+<span class="sd">        1D NumPy array of wavelengths corresponding to the samples.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    weighted_std: float</span>
+
+<span class="sd">    The weighted standard deviation of the quantity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mean_square</span> <span class="o">=</span> <span class="n">weighted_mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">quantity</span><span class="p">),</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span>
+    <span class="n">squared_mean</span> <span class="o">=</span> <span class="n">weighted_mean</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">([</span><span class="n">mean_square</span><span class="p">,</span> <span class="n">squared_mean</span><span class="p">])):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">var</span> <span class="o">=</span> <span class="n">mean_square</span> <span class="o">-</span> <span class="n">squared_mean</span>
+
+    <span class="k">if</span> <span class="n">var</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="effective_wavelength"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.effective_wavelength">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">effective_wavelength</span><span class="p">(</span><span class="n">wavs</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the effective wavelength of a filter</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    weights: NumPy array</span>
+<span class="sd">        The weights of the wavelengths. For example, the transmission of a filter.</span>
+
+<span class="sd">    wavs: NumPy array</span>
+<span class="sd">        The wavelengths corresponding to the transmission values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    wavelength: float</span>
+
+<span class="sd">    The weighted average wavelength of the filter (the effective wavelength).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">weighted_mean</span><span class="p">(</span><span class="n">wavs</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="interp_multiply"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.interp_multiply">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">interp_multiply</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">data1</span><span class="p">,</span> <span class="n">w2</span><span class="p">,</span> <span class="n">data2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiplies two 1D functions, sampled at the specified locations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    w1: NumPy array</span>
+<span class="sd">        wavelength values of data1</span>
+
+<span class="sd">    data1: NumPy array</span>
+<span class="sd">        values of the first array</span>
+
+<span class="sd">    w2: NumPy array</span>
+<span class="sd">        wavelength values of data2</span>
+
+<span class="sd">    data2: NumPy array</span>
+<span class="sd">        values of the second array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    product: NumPy array</span>
+
+<span class="sd">    The vector data1 * data2 after interpolating data2 to the same wavelength</span>
+<span class="sd">    bins as data1. The relevant wavelengths of the output vector are the wavelengths</span>
+<span class="sd">    of the first vector (w1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># interpolate data series 2 to find the values at the points, w1:</span>
+    <span class="n">data2_interp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">,</span> <span class="n">data2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data2_interp</span> <span class="o">*</span> <span class="n">data1</span></div>
+
+
+<div class="viewcode-block" id="convolve_filter"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.convolve_filter">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">convolve_filter</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">,</span> <span class="n">filter_wavs</span><span class="p">,</span> <span class="n">filter_transmissions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Integrates a filter_transmission profile against a spectrum to obtain the flux of the bandpass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    wavelengths: 1D NumPy array</span>
+<span class="sd">        wavelenghts of the spectrum</span>
+
+<span class="sd">    fluxes: 1D NumPy array</span>
+<span class="sd">        the flux densities of the spectrum</span>
+
+<span class="sd">    filter_wavs: 1D NumPy array</span>
+<span class="sd">        The wavelengths of the filter profile values</span>
+
+<span class="sd">    filter_transmissions: 1D NumPy array</span>
+<span class="sd">        The transmission fractions corresponding to the filter_wavs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    The flux at the filter&#39;s effective wavelength.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">integrand</span> <span class="o">=</span> <span class="n">interp_multiply</span><span class="p">(</span><span class="n">filter_wavs</span><span class="p">,</span> <span class="n">filter_transmissions</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">trapz</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">filter_wavs</span><span class="p">)</span> <span class="o">/</span> <span class="n">trapz</span><span class="p">(</span><span class="n">filter_transmissions</span><span class="p">,</span> <span class="n">filter_wavs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="smooth_signal"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.smooth_signal">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">smooth_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">window_width</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Smoothes a signal by computing the moving average in a region of width equal to `window_width`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    signal: 1D NumPy array</span>
+<span class="sd">        The signal to be smoothed</span>
+
+<span class="sd">    window_width:</span>
+<span class="sd">        The window size in which the signal will be smoothed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    smoothed_signal: 1D NumPy array</span>
+
+<span class="sd">    The</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window_width</span><span class="p">)</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">window</span> <span class="o">/</span> <span class="n">window</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cdf"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.cdf">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Gaussian cumulative distribution function.</span>
+
+<span class="sd">    Computes the integral of the Gaussian distribution centered at mu and with sigma, from negative infinity to x</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x:</span>
+
+<span class="sd">    mu:</span>
+
+<span class="sd">    sigma:</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    The integral of the Gaussian distribution from negative infinity to x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="prob_in_range"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.prob_in_range">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">prob_in_range</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the probability between x = lower and x = upper of the Gaussian, centered at x = mu.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    lower: float</span>
+<span class="sd">        The lower limit of the integral.</span>
+
+<span class="sd">    upper: float</span>
+<span class="sd">        The upper limit of the integral</span>
+
+<span class="sd">    mu: float</span>
+<span class="sd">        The mean (central) position of the Gaussian distribution</span>
+
+<span class="sd">    sigma: float</span>
+<span class="sd">        The standard deviation of the Gaussian distribution</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    The integral of the Gaussian distribution between x = lower to x = upper.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="p">(</span><span class="n">upper</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">-</span> <span class="n">cdf</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gauss_kernel"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.gauss_kernel">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gauss_kernel</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a 2D Gaussian, centered at `center`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    canvas: NumPy.ndarray</span>
+<span class="sd">        A square 2D NumPy array in which the 2D Gaussian kernel will be painted.</span>
+
+<span class="sd">    center: tuple,</span>
+<span class="sd">        The pixel coordinates (x, y) of the center of the kernel.</span>
+
+<span class="sd">    sigma: tuple</span>
+<span class="sd">        The axes of the resulting elliptical Gaussian kernel, (major, minor).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    A 2D NumPy array containing the Gaussian Kernel centered at the specified position.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_res</span><span class="p">,</span> <span class="n">x_res</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">y_res</span> <span class="o">!=</span> <span class="n">x_res</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The image must be square.&quot;</span><span class="p">)</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">x_res</span>
+
+    <span class="n">center_x</span><span class="p">,</span> <span class="n">center_y</span> <span class="o">=</span> <span class="n">center</span>
+
+    <span class="n">center_x</span> <span class="o">+=</span> <span class="mf">0.5</span>
+    <span class="n">center_y</span> <span class="o">+=</span> <span class="mf">0.5</span>
+
+    <span class="n">major_sigma</span><span class="p">,</span> <span class="n">minor_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+
+    <span class="k">if</span> <span class="n">minor_sigma</span> <span class="o">&gt;</span> <span class="n">major_sigma</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The major axis must equal to or larger than the minor axis.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># compute the total mass in each row of the array</span>
+
+    <span class="n">row_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+        <span class="n">row_sum</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob_in_range</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">center_y</span><span class="p">,</span> <span class="n">minor_sigma</span><span class="p">)</span>
+
+    <span class="c1"># compute the 1D kernel that will be used for distributing the light along the major axis</span>
+
+    <span class="n">row_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+        <span class="n">row_kernel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob_in_range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">center_x</span><span class="p">,</span> <span class="n">major_sigma</span><span class="p">)</span>
+
+    <span class="c1"># compute the value of each pixel:</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">canvas</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_kernel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">row_sum</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">canvas</span></div>
+
+
+<div class="viewcode-block" id="rebin3"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.rebin3">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rebin3</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reduces the resolution of an image by a factor of 3.</span>
+
+<span class="sd">    Each pixel in the output image is the sum of 3 x 3 pixels</span>
+<span class="sd">    in the input image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: np.ndarray</span>
+<span class="sd">        The input image</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    rebinned: np.ndarray</span>
+<span class="sd">        An image in which each pixel is the sum of 3 x 3 pixels in</span>
+<span class="sd">        the input image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_dim</span><span class="p">,</span> <span class="n">x_dim</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">y_output</span> <span class="o">=</span> <span class="n">y_dim</span> <span class="o">//</span> <span class="mi">3</span>
+    <span class="n">x_output</span> <span class="o">=</span> <span class="n">x_dim</span> <span class="o">//</span> <span class="mi">3</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">y_output</span><span class="p">,</span> <span class="n">x_output</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_output</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_output</span><span class="p">):</span>
+            <span class="n">i_input</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">i</span>
+            <span class="n">j_input</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">j</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span><span class="p">,</span> <span class="n">i_input</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i_input</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i_input</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">+=</span> <span class="n">image</span><span class="p">[</span><span class="n">j_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i_input</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="bilinear_shift"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.bilinear_shift">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bilinear_shift</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">shift_vector</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shifts a 2D image by the specified shift vector using bilinear interpolation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: np.ndarray</span>
+<span class="sd">        A 2D NumPy array that will be shifted.</span>
+
+<span class="sd">    shift_vector: tuple</span>
+<span class="sd">        A tuple of (y_shift, x_shift) specifying how much the image will be shifted in</span>
+<span class="sd">        the y and x directions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    shifted: np.ndarray</span>
+<span class="sd">         A 2D NumPy array with the same dimensions as the input image, but with the</span>
+<span class="sd">         contents shifted by the specified amount.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shift_y</span><span class="p">,</span> <span class="n">shift_x</span> <span class="o">=</span> <span class="n">shift_vector</span>
+
+    <span class="n">shift_y</span> <span class="o">=</span> <span class="o">-</span><span class="n">shift_y</span>
+    <span class="n">shift_x</span> <span class="o">=</span> <span class="o">-</span><span class="n">shift_x</span>
+
+    <span class="n">dy_lower</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">shift_y</span><span class="p">)</span>
+    <span class="n">y_m</span> <span class="o">=</span> <span class="n">shift_y</span> <span class="o">-</span> <span class="n">dy_lower</span>
+    <span class="n">m_y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">y_m</span>
+
+    <span class="n">dx_left</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">shift_x</span><span class="p">)</span>
+    <span class="n">x_m</span> <span class="o">=</span> <span class="n">shift_x</span> <span class="o">-</span> <span class="n">dx_left</span>
+    <span class="n">m_x</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">x_m</span>
+
+    <span class="n">w11</span> <span class="o">=</span> <span class="n">m_x</span> <span class="o">*</span> <span class="n">m_y</span>
+    <span class="n">w21</span> <span class="o">=</span> <span class="n">m_x</span> <span class="o">*</span> <span class="n">y_m</span>
+    <span class="n">w12</span> <span class="o">=</span> <span class="n">x_m</span> <span class="o">*</span> <span class="n">m_y</span>
+    <span class="n">w22</span> <span class="o">=</span> <span class="n">x_m</span> <span class="o">*</span> <span class="n">y_m</span>
+
+    <span class="n">y_size</span><span class="p">,</span> <span class="n">x_size</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">canvas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_size</span><span class="p">):</span>
+        <span class="n">j1</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="n">dy_lower</span>
+        <span class="n">j2</span> <span class="o">=</span> <span class="n">j1</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">j1</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">j2</span> <span class="o">&gt;=</span> <span class="n">y_size</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_size</span><span class="p">):</span>
+            <span class="n">i1</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">dx_left</span>
+            <span class="n">i2</span> <span class="o">=</span> <span class="n">i1</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">i1</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">x_size</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">canvas</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">w11</span> <span class="o">*</span> <span class="n">image</span><span class="p">[</span><span class="n">j1</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="n">w21</span> <span class="o">*</span> <span class="n">image</span><span class="p">[</span><span class="n">j2</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">+</span> <span class="n">w12</span> <span class="o">*</span> <span class="n">image</span><span class="p">[</span><span class="n">j1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">+</span> <span class="n">w22</span> <span class="o">*</span> <span class="n">image</span><span class="p">[</span><span class="n">j2</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">canvas</span></div>
+
+
+<div class="viewcode-block" id="shift_horizontal"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.shift_horizontal">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">shift_horizontal</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">x_shift</span><span class="p">):</span>
+    <span class="n">y_size</span><span class="p">,</span> <span class="n">x_size</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">x_shift</span> <span class="o">=</span> <span class="o">-</span><span class="n">x_shift</span>
+
+    <span class="n">int_shift</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_shift</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x_shift</span> <span class="o">-</span> <span class="n">int_shift</span>
+
+    <span class="n">dxm1</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">dxm2</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="n">dxp1</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">wl0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dxm1</span>
+    <span class="n">wl1</span> <span class="o">=</span> <span class="o">-</span> <span class="n">dxp1</span> <span class="o">*</span> <span class="n">dxm1</span>
+    <span class="n">wl2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dxp1</span> <span class="o">*</span> <span class="n">dx</span>
+
+    <span class="n">wr0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dxm1</span> <span class="o">*</span> <span class="n">dxm2</span>
+    <span class="n">wr1</span> <span class="o">=</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dxm2</span>
+    <span class="n">wr2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dxm1</span>
+
+    <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">dxm1</span> <span class="o">*</span> <span class="n">dxm1</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">dxm1</span><span class="p">)</span>
+    <span class="n">left_weight</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">*</span> <span class="p">(</span><span class="n">dxm1</span> <span class="o">*</span> <span class="n">dxm1</span> <span class="o">-</span> <span class="n">dxm1</span><span class="p">)</span>
+    <span class="n">right_weight</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">*</span> <span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dx</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_size</span><span class="p">):</span>
+            <span class="n">i_0</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">int_shift</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">i_1</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">int_shift</span>
+            <span class="n">i_2</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">int_shift</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">i_3</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">int_shift</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">i_0</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i_3</span> <span class="o">&gt;=</span> <span class="n">x_size</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">f0</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i_0</span><span class="p">]</span>
+            <span class="n">f1</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i_1</span><span class="p">]</span>
+            <span class="n">f2</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i_2</span><span class="p">]</span>
+            <span class="n">f3</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i_3</span><span class="p">]</span>
+            <span class="n">f_left</span> <span class="o">=</span> <span class="n">wl0</span> <span class="o">*</span> <span class="n">f0</span> <span class="o">+</span> <span class="n">wl1</span> <span class="o">*</span> <span class="n">f1</span> <span class="o">+</span> <span class="n">wl2</span> <span class="o">*</span> <span class="n">f2</span>
+            <span class="n">f_right</span> <span class="o">=</span> <span class="n">wr0</span> <span class="o">*</span> <span class="n">f1</span> <span class="o">+</span> <span class="n">wr1</span> <span class="o">*</span> <span class="n">f2</span> <span class="o">+</span> <span class="n">wr2</span> <span class="o">*</span> <span class="n">f3</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_weight</span> <span class="o">*</span> <span class="n">f_right</span> <span class="o">+</span> <span class="n">left_weight</span> <span class="o">*</span> <span class="n">f_left</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="shift"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.shift">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">shift</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">shift_vector</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shifts a 2D image by the specified shift vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: np.ndarray</span>
+<span class="sd">        A 2D NumPy array that will be shifted.</span>
+
+<span class="sd">    shift_vector: tuple</span>
+<span class="sd">        A tuple of (y_shift, x_shift) specifying how much the image will be shifted in</span>
+<span class="sd">        the y and x directions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    shifted: np.ndarray</span>
+<span class="sd">         A 2D NumPy array with the same dimensions as the input image, but with the</span>
+<span class="sd">         contents shifted by the specified amount.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_shift</span><span class="p">,</span> <span class="n">x_shift</span> <span class="o">=</span> <span class="n">shift_vector</span>
+
+    <span class="n">shifted</span> <span class="o">=</span> <span class="n">shift_horizontal</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">x_shift</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">shift_horizontal</span><span class="p">(</span><span class="n">shifted</span><span class="p">,</span> <span class="n">y_shift</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="convolve2d"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.convolve2d">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convolve2d</span><span class="p">(</span><span class="n">stamp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convolves a stamp image with a convolution kernel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    stamp: np.ndarray</span>
+<span class="sd">        The (2D) image array to be convolved.</span>
+
+<span class="sd">    kernel: np.ndarray</span>
+<span class="sd">        The (2D) convolution kernel.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    convolved: np.ndarray</span>
+<span class="sd">        A NumPy array the same shape as the input stamp image, convolved with the kernel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_stamp</span><span class="p">,</span> <span class="n">x_stamp</span> <span class="o">=</span> <span class="n">stamp</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">y_kernel</span><span class="p">,</span> <span class="n">x_kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">x_kernel_shift</span> <span class="o">=</span> <span class="o">-</span> <span class="n">x_kernel</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">y_kernel_shift</span> <span class="o">=</span> <span class="o">-</span> <span class="n">y_kernel</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">y_stamp</span><span class="p">,</span> <span class="n">x_stamp</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_stamp</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_stamp</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">stamp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">jk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_kernel</span><span class="p">):</span>
+                <span class="n">jo</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="n">y_kernel_shift</span> <span class="o">+</span> <span class="n">jk</span>
+                <span class="k">if</span> <span class="n">jo</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">jo</span> <span class="o">&gt;=</span> <span class="n">y_stamp</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">ik</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_kernel</span><span class="p">):</span>
+                    <span class="n">io</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">x_kernel_shift</span> <span class="o">+</span> <span class="n">ik</span>
+                    <span class="k">if</span> <span class="n">io</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">io</span> <span class="o">&gt;=</span> <span class="n">x_stamp</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">jo</span><span class="p">,</span> <span class="n">io</span><span class="p">]</span> <span class="o">+=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">kernel</span><span class="p">[</span><span class="n">jk</span><span class="p">,</span> <span class="n">ik</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="max_peak"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.max_peak">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">max_peak</span><span class="p">(</span><span class="n">sigma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the maximum pixel value of a normalized 2-D Gaussian kernel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sigma: float</span>
+<span class="sd">        The standard deviation of a normalized 1-D Gaussian distribution, in units of pixels.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    maximum_pixel_value: float</span>
+
+<span class="sd">    The maximum pixel value of a normalized 2-D Gaussian patch with the specified sigma.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">24</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+    <span class="n">gauss_kernel</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">center</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">image</span> <span class="o">/</span> <span class="n">image</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="bounding_indices"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.bounding_indices">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bounding_indices</span><span class="p">(</span><span class="n">box1</span><span class="p">,</span> <span class="n">box2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the bounding indices of the region of overlap of two boxes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    box1:</span>
+<span class="sd">        A tuple of (left, bottom, width, height)</span>
+<span class="sd">    box2:</span>
+<span class="sd">        A tuple of (left, bottom, width, height)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    bounding_indices_1, bounding_indices_2: two tuples</span>
+<span class="sd">        (left1, bottom1, right1, top1), (left2, bottom2, right2, top2) which are the bounding indices</span>
+<span class="sd">        of the area of overlap in the coordinate system of box1 and the coordinate system of box2, respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">left1</span><span class="p">,</span> <span class="n">bottom1</span><span class="p">,</span> <span class="n">width1</span><span class="p">,</span> <span class="n">height1</span> <span class="o">=</span> <span class="n">box1</span>
+    <span class="n">left2</span><span class="p">,</span> <span class="n">bottom2</span><span class="p">,</span> <span class="n">width2</span><span class="p">,</span> <span class="n">height2</span> <span class="o">=</span> <span class="n">box2</span>
+
+    <span class="c1"># the offset between the corners of the two boxes is:</span>
+
+    <span class="n">x_offset</span> <span class="o">=</span> <span class="n">left1</span> <span class="o">-</span> <span class="n">left2</span>
+    <span class="n">y_offset</span> <span class="o">=</span> <span class="n">bottom1</span> <span class="o">-</span> <span class="n">bottom2</span>
+
+    <span class="c1"># the coordinates of box1&#39;s boundaries, in the coordinate system of box2 are:</span>
+
+    <span class="n">left</span> <span class="o">=</span> <span class="n">x_offset</span>  <span class="c1"># 0 + x_offset</span>
+    <span class="n">bottom</span> <span class="o">=</span> <span class="n">y_offset</span>  <span class="c1"># 0 + y_offset</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="n">width1</span> <span class="o">+</span> <span class="n">x_offset</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">height1</span> <span class="o">+</span> <span class="n">y_offset</span>
+
+    <span class="c1"># clip the boundaries so that we are limited to the region within box2:</span>
+
+    <span class="n">left2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+    <span class="n">bottom2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+    <span class="n">right2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">width2</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+    <span class="n">top2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">height2</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
+
+    <span class="c1"># the coordinates of the region of overlap, in the coordinate system of box1:</span>
+
+    <span class="n">left1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">left2</span> <span class="o">-</span> <span class="n">x_offset</span><span class="p">)</span>
+    <span class="n">right1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">width1</span><span class="p">,</span> <span class="n">right2</span> <span class="o">-</span> <span class="n">x_offset</span><span class="p">)</span>
+    <span class="n">bottom1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bottom2</span> <span class="o">-</span> <span class="n">y_offset</span><span class="p">)</span>
+    <span class="n">top1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">height1</span><span class="p">,</span> <span class="n">top2</span> <span class="o">-</span> <span class="n">y_offset</span><span class="p">)</span>
+
+    <span class="n">boxes_intersect</span> <span class="o">=</span> <span class="n">left1</span> <span class="o">&lt;</span> <span class="n">right1</span> <span class="ow">and</span> <span class="n">bottom1</span> <span class="o">&lt;</span> <span class="n">top1</span> <span class="ow">and</span> <span class="n">left2</span> <span class="o">&lt;</span> <span class="n">right2</span> <span class="ow">and</span> <span class="n">bottom2</span> <span class="o">&lt;</span> <span class="n">top2</span>
+
+    <span class="k">if</span> <span class="n">boxes_intersect</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">left1</span><span class="p">,</span> <span class="n">bottom1</span><span class="p">,</span> <span class="n">right1</span><span class="p">,</span> <span class="n">top1</span><span class="p">),</span> <span class="p">(</span><span class="n">left2</span><span class="p">,</span> <span class="n">bottom2</span><span class="p">,</span> <span class="n">right2</span><span class="p">,</span> <span class="n">top2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># the boxes do not intersect.</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="apply_overlay"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.apply_overlay">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">apply_overlay</span><span class="p">(</span><span class="n">overlay</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies the `overlay` values to a `canvas` by applying the specified `operation` in the region in which the overlay</span>
+<span class="sd">    intersects the canvas.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    overlay: tuple</span>
+<span class="sd">        (offset, 2D array), where the offset is a tuple of (left, bottom) specifying the position of the lower-left</span>
+<span class="sd">        pixel of the array within the detector and the 2D array contains the data which will be applied to the canvas,</span>
+<span class="sd">        using the specified operation.</span>
+
+<span class="sd">    canvas: tuple</span>
+<span class="sd">        (offset, 2D array), where the offset is a tuple of (left, bottom) specifying the position of the lower-left</span>
+<span class="sd">        pixel of the array within the detector and the 2D array contains the data which will be updated by this</span>
+<span class="sd">        procedure.</span>
+
+<span class="sd">    operation: function</span>
+<span class="sd">        A function accepting two NumPy ndarray objects of the same shape and returning a third ndarray of the same</span>
+<span class="sd">        shape as its input arguments. For example, numpy.add, numpy.fmax, numpy.fmin, numpy.subtract, numpy.multiply.</span>
+<span class="sd">        Note that using non-commutative operations could yield unexpected results. The function is called with the</span>
+<span class="sd">        `canvas` as its first argument and `overlay` as the second argument.</span>
+
+<span class="sd">    Side Effects</span>
+<span class="sd">    ------------</span>
+
+<span class="sd">    Modifies the `canvas` by replacing elements in the intersection area with the result of the specified `operation`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">overlay_left</span><span class="p">,</span> <span class="n">overlay_bottom</span><span class="p">),</span> <span class="n">overlay_img</span> <span class="o">=</span> <span class="n">overlay</span>
+    <span class="p">(</span><span class="n">canvas_left</span><span class="p">,</span> <span class="n">canvas_bottom</span><span class="p">),</span> <span class="n">canvas_img</span> <span class="o">=</span> <span class="n">canvas</span>
+
+    <span class="n">overlay_height</span><span class="p">,</span> <span class="n">overlay_width</span> <span class="o">=</span> <span class="n">overlay_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">canvas_height</span><span class="p">,</span> <span class="n">canvas_width</span> <span class="o">=</span> <span class="n">canvas_img</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">overlay_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">overlay_left</span><span class="p">,</span> <span class="n">overlay_bottom</span><span class="p">,</span> <span class="n">overlay_width</span><span class="p">,</span> <span class="n">overlay_height</span><span class="p">)</span>
+    <span class="n">canvas_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">canvas_left</span><span class="p">,</span> <span class="n">canvas_bottom</span><span class="p">,</span> <span class="n">canvas_width</span><span class="p">,</span> <span class="n">canvas_height</span><span class="p">)</span>
+
+    <span class="n">overlay_boundaries</span><span class="p">,</span> <span class="n">canvas_boundaries</span> <span class="o">=</span> <span class="n">bounding_indices</span><span class="p">(</span><span class="n">overlay_box</span><span class="p">,</span> <span class="n">canvas_box</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">overlay_boundaries</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">canvas_boundaries</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># the overlay does not intersect the canvas</span>
+        <span class="k">return</span>
+
+    <span class="n">ovr_left</span><span class="p">,</span> <span class="n">ovr_bottom</span><span class="p">,</span> <span class="n">ovr_right</span><span class="p">,</span> <span class="n">ovr_top</span> <span class="o">=</span> <span class="n">overlay_boundaries</span>
+    <span class="n">can_left</span><span class="p">,</span> <span class="n">can_bottom</span><span class="p">,</span> <span class="n">can_right</span><span class="p">,</span> <span class="n">can_top</span> <span class="o">=</span> <span class="n">canvas_boundaries</span>
+
+    <span class="n">canvas_region</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">can_bottom</span><span class="p">,</span> <span class="n">can_top</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">can_left</span><span class="p">,</span> <span class="n">can_right</span><span class="p">))</span>
+    <span class="n">overlay_region</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">ovr_bottom</span><span class="p">,</span> <span class="n">ovr_top</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">ovr_left</span><span class="p">,</span> <span class="n">ovr_right</span><span class="p">))</span>
+
+    <span class="n">canvas_img</span><span class="p">[</span><span class="n">canvas_region</span><span class="p">]</span> <span class="o">=</span> <span class="n">operation</span><span class="p">(</span><span class="n">canvas_img</span><span class="p">[</span><span class="n">canvas_region</span><span class="p">],</span> <span class="n">overlay_img</span><span class="p">[</span><span class="n">overlay_region</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="mask_in_bounding_box"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.mask_in_bounding_box">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mask_in_bounding_box</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Identifies which points with the specified x and y values lie within the bounding box</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+
+<span class="sd">    x: np.ndarray of floats</span>
+<span class="sd">        x-coordinates of points to be tested.</span>
+
+<span class="sd">    y: np.ndarray of floats</span>
+<span class="sd">        y-coordinates of points to be tested.</span>
+
+<span class="sd">    bbox: tuple of ints</span>
+<span class="sd">        The tuple, (left, bottom, width, height)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    inside_bbox: np.ndarray of Bools</span>
+
+<span class="sd">    True if the corresponding point is inside of the bbox, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">bbox</span>
+
+    <span class="n">right</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">width</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">bottom</span> <span class="o">+</span> <span class="n">height</span>
+
+    <span class="n">in_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">left</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">)</span>
+    <span class="n">in_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">bottom</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">top</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">in_x</span> <span class="o">&amp;</span> <span class="n">in_y</span></div>
+
+
+<div class="viewcode-block" id="grid_coords_in_bbox"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.grid_coords_in_bbox">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">grid_coords_in_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">):</span>
+    <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">bbox</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="n">left</span><span class="p">:</span> <span class="n">left</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">bottom</span><span class="p">:</span> <span class="n">bottom</span> <span class="o">+</span> <span class="n">height</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="set_flag"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.set_flag">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_flag</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sets the specified `flag` value in the `canvas`, in locations specified by the `mask`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    mask: tuple</span>
+<span class="sd">        A tuple (offset, 2D array of bools), where the offset is a tuple of (left, bottom) specifying the</span>
+<span class="sd">        position of the lower-left pixel of the mask array within a larger image (such as a detector image)</span>
+<span class="sd">        The values of the 2D array should be boolean, with True indicating locations in which the flag will</span>
+<span class="sd">        be set.</span>
+
+<span class="sd">    canvas: tuple</span>
+<span class="sd">        A tuple (offset, 2D array of unsigned ints), where the offset is a tuple of (left, bottom) specifying the</span>
+<span class="sd">        position of the lower-left pixel of the canvas array within a larger image (such as a detector image)</span>
+<span class="sd">        The values of the 2D array should be unsigned integers</span>
+
+<span class="sd">    flag: unsigned int</span>
+<span class="sd">        The flag value to set at the appropriate locations within the canvas</span>
+
+<span class="sd">    Side Effects</span>
+<span class="sd">    ------------</span>
+
+<span class="sd">    Modifies the 2-D array within the `canvas` by performing a bitwise OR operation `canvas |= flag` in locations for</span>
+<span class="sd">    which the shifted `mask` is True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">mask_left</span><span class="p">,</span> <span class="n">mask_bottom</span><span class="p">),</span> <span class="n">mask_img</span> <span class="o">=</span> <span class="n">mask</span>
+    <span class="p">(</span><span class="n">canvas_left</span><span class="p">,</span> <span class="n">canvas_bottom</span><span class="p">),</span> <span class="n">canvas_img</span> <span class="o">=</span> <span class="n">canvas</span>
+
+    <span class="n">mask_height</span><span class="p">,</span> <span class="n">mask_width</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">canvas_height</span><span class="p">,</span> <span class="n">canvas_width</span> <span class="o">=</span> <span class="n">canvas_img</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">mask_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask_left</span><span class="p">,</span> <span class="n">mask_bottom</span><span class="p">,</span> <span class="n">mask_width</span><span class="p">,</span> <span class="n">mask_height</span><span class="p">)</span>
+    <span class="n">canvas_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">canvas_left</span><span class="p">,</span> <span class="n">canvas_bottom</span><span class="p">,</span> <span class="n">canvas_width</span><span class="p">,</span> <span class="n">canvas_height</span><span class="p">)</span>
+
+    <span class="n">mask_boundaries</span><span class="p">,</span> <span class="n">canvas_boundaries</span> <span class="o">=</span> <span class="n">bounding_indices</span><span class="p">(</span><span class="n">mask_box</span><span class="p">,</span> <span class="n">canvas_box</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mask_boundaries</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">canvas_boundaries</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># the mask does not intersect the canvas</span>
+        <span class="k">return</span>
+
+    <span class="n">msk_left</span><span class="p">,</span> <span class="n">msk_bottom</span><span class="p">,</span> <span class="n">msk_right</span><span class="p">,</span> <span class="n">msk_top</span> <span class="o">=</span> <span class="n">mask_boundaries</span>
+    <span class="n">can_left</span><span class="p">,</span> <span class="n">can_bottom</span><span class="p">,</span> <span class="n">can_right</span><span class="p">,</span> <span class="n">can_top</span> <span class="o">=</span> <span class="n">canvas_boundaries</span>
+
+    <span class="n">mask_overlap</span> <span class="o">=</span> <span class="n">mask_img</span><span class="p">[</span><span class="n">msk_bottom</span><span class="p">:</span> <span class="n">msk_top</span><span class="p">,</span> <span class="n">msk_left</span><span class="p">:</span> <span class="n">msk_right</span><span class="p">]</span>
+
+    <span class="n">canvas_img</span><span class="p">[</span><span class="n">can_bottom</span><span class="p">:</span><span class="n">can_top</span><span class="p">,</span> <span class="n">can_left</span><span class="p">:</span><span class="n">can_right</span><span class="p">][</span><span class="n">mask_overlap</span><span class="p">]</span> <span class="o">|=</span> <span class="n">flag</span></div>
+
+
+<div class="viewcode-block" id="normalize_image"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.normalize_image">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clips and normalizes an image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: NumPy.ndarray</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    normalized_stamp: NumPy.ndarray or None</span>
+
+<span class="sd">    A normalized version of the input image with all negative values clipped to zero, None if the</span>
+<span class="sd">    pixels are all zero or nearly zero. The image is normalized such that the sum of all pixels is 1.0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="n">image_sum</span> <span class="o">=</span> <span class="n">clipped</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">image_sum</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">clipped</span> <span class="o">/</span> <span class="n">image_sum</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="normalize_image_fast"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.normalize_image_fast">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_image_fast</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalizes an image that has already been clipped.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: NumPy.ndarray</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    normalized_stamp: NumPy.ndarray or None</span>
+
+<span class="sd">    A normalized version of the input image, None if the pixels are all zero or negative. The image is</span>
+<span class="sd">    normalized such that the sum of all pixels is 1.0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">image_sum</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">image_sum</span> <span class="o">+=</span> <span class="n">image</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">image_sum</span> <span class="o">&lt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">isum</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">image_sum</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">isum</span>
+
+    <span class="k">return</span> <span class="n">image</span></div>
+
+
+<div class="viewcode-block" id="atan"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.atan">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">atan</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the direction angle specified by the x and y coordinates of a vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    y: float</span>
+<span class="sd">        The y-component of the vector</span>
+
+<span class="sd">    x: float</span>
+<span class="sd">        The x-component of the vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    angle: float</span>
+
+<span class="sd">    The positive direction angle of the vector, in degrees [0, 360).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="mf">360.0</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="gaussian_moments"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.gaussian_moments">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gaussian_moments</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the mean and standard deviation of a 1-D data array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    data: np.ndarray</span>
+<span class="sd">        A 1-D array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    moments: tuple</span>
+<span class="sd">        A tuple of (mean, sigma)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span></div>
+
+
+<div class="viewcode-block" id="gaussian_centroid"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.gaussian_centroid">[docs]</a><span class="nd">@jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gaussian_centroid</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the coordinates of the centroid of the image by fitting Gaussian profiles in x and y.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image: NumPy.ndarray</span>
+<span class="sd">        A 2-D array of pixels.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    centroid: tuple</span>
+
+<span class="sd">    A tuple of (x_center, y_center).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_center</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gaussian_moments</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">y_center</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gaussian_moments</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">x_center</span><span class="p">,</span> <span class="n">y_center</span></div>
+
+
+<div class="viewcode-block" id="interpolate_2d_grid"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.interpolate_2d_grid">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">interpolate_2d_grid</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">known_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    width: int</span>
+<span class="sd">        The width (horizontal extent) of the 2D output grid of interpolated values.</span>
+
+<span class="sd">    height: int</span>
+<span class="sd">        The height (vertical extent) of the 2D output grid of interpolated values.</span>
+
+<span class="sd">    known_values: N x 3 NumPy array</span>
+<span class="sd">        The array of known values in the format: [(x_0, y_0, value_0),</span>
+<span class="sd">                                                  (x_1, y_1, value_1),</span>
+<span class="sd">                                                           ⋮</span>
+<span class="sd">                                                  (x_N, y_N, value_N)]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    2D NumPy array</span>
+<span class="sd">         A height x width NumPy array of interpolated values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">known_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">interpolator</span> <span class="o">=</span> <span class="n">SmoothBivariateSpline</span><span class="p">(</span><span class="n">known_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+                                             <span class="n">known_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                                             <span class="n">known_values</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+                                             <span class="n">kx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                             <span class="n">ky</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># There are not enough points to perform interpolation, presumably the width or height are very small.</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">known_values</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="n">pixel_y</span><span class="p">,</span> <span class="n">pixel_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">height</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">width</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">ev</span><span class="p">(</span><span class="n">pixel_x</span><span class="p">,</span> <span class="n">pixel_y</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="spectral_axis"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.spectral_axis">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">spectral_axis</span><span class="p">(</span><span class="n">location</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the spectral axis---the axis along which the light is dispersed .</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    location: LocationSpectrum</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    spectral_axis: int</span>
+
+<span class="sd">    Returns 0 if the spectrum is dispersed along the x-axis; 1 if the spectrum is dispersed along the y axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">l_min</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getWavelengthStart</span><span class="p">()</span>
+
+    <span class="n">l_max</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getWavelengthEnd</span><span class="p">()</span>
+
+    <span class="n">max_position</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">l_max</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+    <span class="n">min_position</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">l_min</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span>
+
+    <span class="n">spectral_direction</span> <span class="o">=</span> <span class="n">max_position</span> <span class="o">-</span> <span class="n">min_position</span>
+
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">spectral_direction</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">spectral_direction</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="compute_wavelengths"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.compute_wavelengths">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">compute_wavelengths</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the central wavelength of each pixel.</span>
+
+<span class="sd">    Each pixel corresponds to a range of wavelength values, due to the spectral width of the pixel itself and</span>
+<span class="sd">    the spectral size of the dispersing object. This function computes the nominal central wavelength value of</span>
+<span class="sd">    a given pixel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    location: LocationSpectrum</span>
+<span class="sd">        The LocationSpectrum associated with the spectrum of interest</span>
+
+<span class="sd">    bbox: tuple</span>
+<span class="sd">        The bounding box of the spectrum; a tuple of (left, bottom, width, height)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    2D NumPy array</span>
+<span class="sd">        The central wavelength of each pixel in the decontaminated spectrum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Determine the (wavelength, row) pairs for which to compute pixel positions:</span>
+
+    <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">bbox</span>
+
+    <span class="n">l_min</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getWavelengthStart</span><span class="p">()</span>
+
+    <span class="n">l_max</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getWavelengthEnd</span><span class="p">()</span>
+
+    <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getApertureSize</span><span class="p">()</span>
+
+    <span class="n">spectral_extent</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="n">spectral_axis</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">dl</span> <span class="o">=</span> <span class="mi">30</span> <span class="k">if</span> <span class="n">spectral_extent</span> <span class="o">&gt;</span> <span class="mi">40</span> <span class="k">else</span> <span class="mi">6</span>
+
+    <span class="n">lambda_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">l_min</span><span class="p">,</span> <span class="n">l_max</span><span class="p">,</span> <span class="n">dl</span><span class="p">)</span>
+
+    <span class="n">spatial_points</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spatial_extent</span><span class="p">)</span>
+
+    <span class="c1"># Compute the pixel position corresponding to each wavelength and store as</span>
+    <span class="c1"># 3D coordinates: [(x_0, y_0, wavelength_0)</span>
+    <span class="c1">#                  (x_1, y_1, wavelength_1)</span>
+    <span class="c1">#                             ⋮</span>
+    <span class="c1">#                  (x_N, y_N, wavelength_N)]</span>
+
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">lambda_points</span><span class="p">)</span> <span class="o">*</span> <span class="n">spatial_extent</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">wav</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">spatial_points</span><span class="p">,</span> <span class="n">lambda_points</span><span class="p">)):</span>
+        <span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">computePosition</span><span class="p">(</span><span class="n">wav</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span><span class="o">.</span><span class="n">getPosition</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">))</span>
+        <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span><span class="p">,</span> <span class="n">wav</span>
+
+    <span class="k">return</span> <span class="n">interpolate_2d_grid</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="is_left"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.is_left">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_left</span><span class="p">(</span><span class="n">p0</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines whether point2 (p2) is to the left of the line defined by p0 and p1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    p0: tuple</span>
+<span class="sd">        (x0, y0) coordinates of point 0.</span>
+
+<span class="sd">    p1: tuple</span>
+<span class="sd">        (x1, y1) coordinates of point 1.</span>
+
+<span class="sd">    p2: tuple</span>
+<span class="sd">        (x1, y1) coordinates of point 2.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    left: float</span>
+<span class="sd">        left &gt; 0 if p2 is to the left of the line, p0 - p1.</span>
+<span class="sd">        left == 0 if the three points are co-linear</span>
+<span class="sd">        left &lt; 0 if p2 is to the right of the line, p0 - p1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">p2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">p0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">p0</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="contains"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.contains">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines whether a point is contained within a polygon.</span>
+
+<span class="sd">    Uses Dan Sunday&#39;s optimized winding number algorithm (https://en.wikipedia.org/wiki/Point_in_polygon)</span>
+<span class="sd">    to test if the point, p, is located inside of the polygon defined by the vertices listed in loop.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    loop: no.ndarray</span>
+<span class="sd">        An array of points defining the vertices of a polygon, in order [(x0, y0), (x1, y1), ...]</span>
+
+<span class="sd">    p: tuple</span>
+<span class="sd">        The coordinates of a point (x, y)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    contains: bool</span>
+<span class="sd">        True if the point, p, is within the loop (polygon); False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
+    <span class="n">winding_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">is_left</span><span class="p">((</span><span class="n">loop</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">winding_number</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">is_left</span><span class="p">((</span><span class="n">loop</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">loop</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">winding_number</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">winding_number</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="rasterize"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.Utils.rasterize">[docs]</a><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rasterize</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">loop</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a raster image of a polygon on a Boolean canvas.</span>
+
+<span class="sd">    Note that the center of the pixel must be contained within the polygon in order to be marked as True.</span>
+<span class="sd">    If pixels which partially overlap the polygon should be marked as True as well, then consider expanding</span>
+<span class="sd">    the polygon.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    canvas: np.ndarray</span>
+<span class="sd">        A 2D boolean NumPy array which will contain the rasterized polygon.</span>
+
+<span class="sd">    offset: tuple:</span>
+<span class="sd">        The (x, y) offset from the lower-left corner of the canvas to the origin of the coordinate system.</span>
+
+<span class="sd">    loop: no.ndarray</span>
+<span class="sd">        An array of points defining the vertices of a polygon, in order [(x0, y0), (x1, y1), ...]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    canvas: np.ndarray</span>
+<span class="sd">        The canvas with the rasterized polygon, with True inside of the polygon; False outside.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span> <span class="o">=</span> <span class="n">offset</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span><span class="p">):</span>
+        <span class="n">jp</span> <span class="o">=</span> <span class="n">yoff</span> <span class="o">+</span> <span class="n">j</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">xoff</span> <span class="o">+</span> <span class="n">i</span>
+            <span class="n">canvas</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">contains</span><span class="p">(</span><span class="n">loop</span><span class="p">,</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">jp</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">canvas</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

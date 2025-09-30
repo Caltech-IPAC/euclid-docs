@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation for SIR SpectraDecontamination &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SIR_SpectraDecontamination" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Documentation for SIR SpectraDecontamination</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="documentation-for-sir-spectradecontamination">
+<h1>Documentation for SIR SpectraDecontamination<a class="headerlink" href="#documentation-for-sir-spectradecontamination" title="Permalink to this heading"></a></h1>
+<p>In this document, you will find the documentation for Euclid’s SIR SpectraDecontamination module
+as well as documentation for the underlying Python classes. The decontamination module, which is
+also referred to as the “basic decontamination” module provides four primary functions:</p>
+<ol class="arabic">
+<li><p>It crops out each 2D spectrogram in a NISP survey exposure FITS file, based on information in the LocationTable input HDF5 files.</p></li>
+<li><p>It flags pixels:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>pixels which are invalid, due to various causes.</p></li>
+<li><p>pixels which are significantly contaminated.</p></li>
+<li><p>pixels which are contaminated by bright zeroth-order spectra.</p></li>
+<li><p>pixels in the cropped region which do not belong to the spectrogram of interest.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>It attempts to create a model of the contamination of each spectrum and then subtract the contamination away.</p></li>
+<li><p>It updates the variance layer of each cropped spectrogram, to account for uncertainty introduced by the decontamination procedure.</p></li>
+</ol>
+<p>The module is normally executed within the SIR pipeline. The documentation below focuses on running the module in stand-alone mode,
+which is the mode that is normally used during development.</p>
+</section>
+<section id="module-usage">
+<h1>Module Usage<a class="headerlink" href="#module-usage" title="Permalink to this heading"></a></h1>
+<p>The full details of the latest command-line usage documentation can always be found, using the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>E-Run<span class="w"> </span>SIR_Pipeline<span class="w"> </span>SIR_SpectraDecontamination<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>In summary, the most important command-line switches and arguments, when running the module in stand-alone mode, are:</p>
+<section id="inputs-and-outputs">
+<h2>Inputs and Outputs<a class="headerlink" href="#inputs-and-outputs" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--workdir</span> <span class="pre">WORKDIR</span></code></dt><dd><p>The root working directory where all of the files are located.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--config</span> <span class="pre">CONFIG</span></code></dt><dd><p>The name of the configuration file, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--sci_frames</span> <span class="pre">FRAMES</span></code></dt><dd><p>The name of a A JSON file containing the list of input science frames, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--loc_tables</span> <span class="pre">LOCTAB</span></code></dt><dd><p>A JSON file containing a list of XML files associated with each location table file.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--mdb</span> <span class="pre">MDB</span></code></dt><dd><p>The Mission Database XML file, containing all key instrument and mission parameters, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--relflux_flat</span> <span class="pre">FLUXCOR</span></code></dt><dd><p>The name of the relative flux correction master flat cube (XML filename or HDF5 filename), relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--sens</span> <span class="pre">FLUXSENS</span></code></dt><dd><p>The name of absolute flux sensitivity function (XML filename for SirAbsoluteFluxScaling data product),
+relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--cutouts</span> <span class="pre">CUTOUTS</span></code></dt><dd><p>A JSON file, containing a list of files containing cutouts from a stacked mosaic of direct images of the galaxies.
+REQUIRED unless –passthrough is specified. This is specified relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>. If no cutouts are available,
+then the special value, <code class="docutils literal notranslate"><span class="pre">'None'</span></code> can be used. This will cause the module to generate generic 2D Gaussians for all
+objects (which is mostly only useful for debugging / development purposes).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--dec_spectra</span> <span class="pre">OUTPUT</span></code></dt><dd><p>The name of the JSON file which will contain a list of DecontaminatedSpectraCollection filesone for each input detector.
+This is specified relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="command-line-parameters">
+<h2>Command-line Parameters<a class="headerlink" href="#command-line-parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--detectors</span> <span class="pre">DETECTORS</span></code></dt><dd><p>Instructs the program to run using only on the specified detector(s)(defaults to all detectors
+<code class="docutils literal notranslate"><span class="pre">'*'</span></code>, if none are specified). The syntax for specifying detectors is <code class="docutils literal notranslate"><span class="pre">'dither.detector'</span></code>, where the
+<code class="docutils literal notranslate"><span class="pre">dithers</span></code> and <code class="docutils literal notranslate"><span class="pre">detectors</span></code> can be a single value, a comma-delimited list of values, or a wildcard.
+For example, <code class="docutils literal notranslate"><span class="pre">1,2.*</span></code> indicates that all detectors of dithers 1 and 2 will be decontaminated and <code class="docutils literal notranslate"><span class="pre">*.11,12</span></code>
+indicates that detectors <code class="docutils literal notranslate"><span class="pre">DET_11</span></code> and <code class="docutils literal notranslate"><span class="pre">DET_12</span></code> in all dithers will be decontaminated.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--limit_mag</span> <span class="pre">MAG</span></code></dt><dd><p>The upper magnitude limit of objects in the band specified by –limit_band. Objects fainter than this
+limit will not be treated as contaminants.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--limit_band</span> <span class="pre">BAND</span></code></dt><dd><p>The filter/band name that will be used to limit the number of objects that are treated as contaminants.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--zeroth_order_limit</span> <span class="pre">ZEROTH_ORDER_LIMIT</span></code></dt><dd><p>The magnitude threshold below which zeroth order contaminants will be flagged.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--second_order_limit</span> <span class="pre">SECOND_ORDER_LIMIT</span></code></dt><dd><p>The magnitude threshold below which second order contaminants will be flagged.</p>
+</dd>
+</dl>
+</section>
+<section id="switches">
+<h2>Switches<a class="headerlink" href="#switches" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--overwrite</span></code></dt><dd><p>If this is set, then the output JSON file will be overwritten.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--gaussian_profile</span></code></dt><dd><p>Fit 2D Gaussian to cutouts, rather than using the cutouts as they are provided.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--no_measure</span></code></dt><dd><p>This switch causes the spectral measurement step to be skipped; broadband fluxes will be used to create
+all spectral models.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--passthrough</span></code></dt><dd><p>Skip the actual decontamination step; simply create cutouts, leaving the content unmodified.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="configuration-file-parameters">
+<h1>Configuration file Parameters<a class="headerlink" href="#configuration-file-parameters" title="Permalink to this heading"></a></h1>
+<p>The configuration file, <code class="docutils literal notranslate"><span class="pre">SIR_SpectraDecontamination.ini</span></code> contains the following options and parameters:</p>
+<section id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">use_relflux</span> <span class="pre">=</span> <span class="pre">True</span></code></dt><dd><p>Specifies whether or not to use the relative flux solution.</p>
+</dd>
+</dl>
+</section>
+<section id="parameters">
+<h2>PARAMETERS<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sigcont_fraction</span> <span class="pre">=</span> <span class="pre">0.1</span></code></dt><dd><p>Specifies the threshold for considering a pixel “significantly” contaminated. Pixels for which the
+<code class="docutils literal notranslate"><span class="pre">contaminating_flux</span> <span class="pre">/</span> <span class="pre">spectral_flux</span> <span class="pre">&gt;</span> <span class="pre">sigcont_fraction</span></code> will be marked as significantly contaminated.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">invalid_contamination_fraction</span> <span class="pre">=</span> <span class="pre">2.0</span></code></dt><dd><p>Similar to the <code class="docutils literal notranslate"><span class="pre">sigcont_fraction</span></code>, except that pixels above this threshhold will be flagged as invalid.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">contaminant_mag_band</span> <span class="pre">=</span> <span class="pre">H</span></code></dt><dd><p>Specifies which band to use when applying the <code class="docutils literal notranslate"><span class="pre">contaminant_dmag</span></code> and <code class="docutils literal notranslate"><span class="pre">contaminant_mag_limit</span></code>
+thresholds.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">contaminant_dmag</span> <span class="pre">=</span> <span class="pre">2.5</span></code></dt><dd><p>Contaminating sources that are fainter than the source of interest by this magnitude difference will not be
+counted as contaminants. For example, if the source of interest has a magnitude of 18 and this parameter is
+set to 2.5, then sources fainter than 18 + 2.5 = 20.5 will not be counted as contaminants.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">contaminant_mag_limit</span> <span class="pre">=</span> <span class="pre">22.5</span></code></dt><dd><p>Contaminating sources fainter than this limit will never be counted as contaminants.</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SIR_SpectraDecontamination</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SIR_SpectraDecontamination.html">SIR_SpectraDecontamination package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="uml-diagrams">
+<h1>UML Diagrams<a class="headerlink" href="#uml-diagrams" title="Permalink to this heading"></a></h1>
+<p>TODO: Put a summary of the UML diagrams here, and point to a page that contains full diagrams.</p>
+</section>
+<section id="index">
+<h1>Index<a class="headerlink" href="#index" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="SIR_SpectraDecontamination" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

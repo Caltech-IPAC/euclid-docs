@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.NestedDict &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.NestedDict</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.NestedDict</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File SpectrumCutout.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: April 26, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+
+
+<div class="viewcode-block" id="join"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.join">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combines arguments into a tuple and returns the tuple.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    tuple</span>
+<span class="sd">       A tuple containing all of the arguments provided to the function.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        list_a = [1, 2, 3]</span>
+
+<span class="sd">        tuple_a = (4, 5, 6)</span>
+
+<span class="sd">        integer = 7</span>
+
+<span class="sd">        join(*list_a, *tuple_a, integer)</span>
+
+<span class="sd">    returns: (1, 2, 3, 4, 5, 6, 7)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">args</span></div>
+
+
+<div class="viewcode-block" id="NestedDict"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NestedDict</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Convenience class for managing nested dictionaries.</span>
+
+<span class="sd">    The NestedDict provides a standardized way to handle nested dictionaries, which are tree-like data structures of</span>
+<span class="sd">    the form:</span>
+
+<span class="sd">        {field_0: {field_1: {field_2: {... {field_N: item}}}</span>
+
+<span class="sd">    The fields of the nested dictionary are named (i.e., they are strings), their order in the nesting is specified upon</span>
+<span class="sd">    construction. The type of object that will be stored at the leaves of the nested dict is expected to be uniform</span>
+<span class="sd">    throughout the nested dict and is also specified upon construction (instantiation).</span>
+
+<span class="sd">    Such nested dictionaries are useful for organizing hierarchical data for certain data access patterns, however they</span>
+<span class="sd">    become cumbersome to deal with when the depth of the nesting exceeds 2. For example, suppose we had a nested</span>
+<span class="sd">    dictionary storing information about automobiles. It is of the format:</span>
+
+<span class="sd">        {manufacturer: {model: {year: [VIN]}}}</span>
+
+<span class="sd">    where</span>
+<span class="sd">        * manufacturer: the name of the company that manufactured the automobile.</span>
+<span class="sd">        * model: the name of the model of the automobile</span>
+<span class="sd">        * year: the model year of the automobile</span>
+<span class="sd">        * [VIN]: a list of Vehicle Identification Numbers</span>
+
+<span class="sd">        For example, to obtain the list of VINs for 1998 Toyota Avalons, we would use the syntax:</span>
+
+<span class="sd">            vins = vin_numbers[&#39;Toyota&#39;][&#39;Avalon&#39;][1998]</span>
+
+<span class="sd">        This might not seem too bad, but what if you forget the order in which the nesting was performed? It could have</span>
+<span class="sd">        just as easily have been organized as[1998][&#39;Toyota&#39;][&#39;Avalon&#39;]. If you forget how the data is structured, then</span>
+<span class="sd">        you have to inspect the contents or refer to documentation.</span>
+
+<span class="sd">        Another problem occurs when you wish to add new data to the data structure or fetch all of the values in a</span>
+<span class="sd">        sub-portion of the data structure.</span>
+
+<span class="sd">        With the NestedDict class, we can define the structure of the vin_numbers nested dictionary like this:</span>
+
+<span class="sd">            vin_numbers = NestedDict(list, &#39;manufacturer&#39;, &#39;model&#39;, &#39;year&#39;)</span>
+
+<span class="sd">        To access the VIN numbers of the 1998 Toyota Avalons, we could do any of the following:</span>
+
+<span class="sd">            vin_numbers[&#39;Toyota&#39;, &#39;Avalon&#39;, 1998]</span>
+
+<span class="sd">            vin_numbers.get_item(&#39;Toyota&#39;, &#39;Avalon&#39;, 1998)</span>
+
+<span class="sd">            vin_number.get_item(year=1998, manufacturer=&#39;Toyota&#39;, model=&#39;Avalon&#39;)</span>
+
+<span class="sd">        Notice that the third option does not require knowledge of the order of the nesting.</span>
+
+<span class="sd">        In order to find out how the data is nested, we can use the `fields` property, as in:</span>
+
+<span class="sd">           vin_number.fields</span>
+
+<span class="sd">        If we need to add a list of VINs for a new type of automobile, we simply use:</span>
+
+<span class="sd">           vin_number[&#39;Tesla&#39;, &#39;Model 3&#39;, 2017] = vins</span>
+
+<span class="sd">        or</span>
+
+<span class="sd">           vin_number.add_item(vins, &#39;Tesla&#39;, &#39;Model 3&#39;, 2017)</span>
+
+<span class="sd">        or</span>
+
+<span class="sd">           vin_number.add_item(vins, manufacturer=&#39;Tesla&#39;, year=2017, model=&#39;Model 3&#39;)</span>
+
+<span class="sd">        All parent dictionaries are automatically created. If we try to add an object of the wrong type or we try to</span>
+<span class="sd">        increase the depth of the nested dictionary, we encounter an error (exception).</span>
+
+<span class="sd">        If we wanted to obtain the VINs for all model years of Hyundai Sonatas, we could do this:</span>
+
+<span class="sd">            vin_number.values(&#39;Hyundai&#39;, &#39;Sonata&#39;)</span>
+
+<span class="sd">        or</span>
+<span class="sd">            vin_number.values(model=&#39;Sonata&#39;, manufacturer=&#39;Hyundai&#39;)</span>
+
+<span class="sd">        If we wanted to obtain the nested dictionary containing all Honda Accord vehicles:</span>
+
+<span class="sd">           vin_number.get_subdict(&#39;Honda&#39;, &#39;Accord&#39;)</span>
+
+<span class="sd">        This returns a regular dict object. To return a NestedDict containing information for all Hondas, we would do</span>
+<span class="sd">        this:</span>
+
+<span class="sd">            honda = vin_number.get_nested_dict(&#39;Honda&#39;)</span>
+
+<span class="sd">        or</span>
+<span class="sd">            honda = vin_number.get_nested_dict(manufacturer=&#39;Honda&#39;)</span>
+
+<span class="sd">        Note that we cannot return a NestedDict containing all Honda Accords, because the resulting dictionary would</span>
+<span class="sd">        not be nested (it would be of the format {year: [VIN]}).</span>
+
+<span class="sd">        Since `honda` is a sub-dictionary of vin_number, it has fewer fields. In particular, honda.fields returns</span>
+<span class="sd">        (&#39;model&#39;, &#39;year&#39;).</span>
+
+<span class="sd">        We can also return all items, along with their paths using the `items` property. For example:</span>
+
+<span class="sd">            for vin in vin_number.items:</span>
+<span class="sd">                print(vin)</span>
+
+<span class="sd">        would print out something like this:</span>
+
+<span class="sd">            (&#39;Acura&#39;, &#39;ILX&#39;, 2018, [list of VINS])</span>
+<span class="sd">            (&#39;Acura&#39;, &#39;ILX&#39;, 2017, [list of VINS])</span>
+<span class="sd">            (&#39;Acura&#39;, &#39;ILX&#39;, 2016, [list of VINS])</span>
+<span class="sd">            .</span>
+<span class="sd">            .</span>
+<span class="sd">            .</span>
+<span class="sd">            (&#39;Volvo&#39;, &#39;PV51-7&#39;, 1936, [list of VINS])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: consider adding the ability to ingest a raw nested dict.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="o">*</span><span class="n">fields</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plural_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs an instance of the nested dictionary class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dtype: type</span>
+<span class="sd">            The type of object that is stored in the nested dict (there should be only one type). For example, if the</span>
+<span class="sd">            structure of the nested dict is `{country_code : {postal_code : [list_of_names]}}`, then the data type is</span>
+<span class="sd">            `list`, since calling `dict[country_code][postal_code]` returns a list of names.</span>
+
+<span class="sd">        fields: tuple</span>
+<span class="sd">            The function accepts a variable number of arguments which are automatically packed into the `fields` tuple.</span>
+<span class="sd">            The fields correspond to the names of the fields in the nested dict. For example, if the constructor is</span>
+<span class="sd">            provided with the parameters `(&#39;country_code&#39;, &#39;postal_code&#39;)`, then the structure of the nested dictionary</span>
+<span class="sd">            would be `{country_code : {postal_code : value}}`. Fields must be unique and they must be valid Python</span>
+<span class="sd">            identifiers (valid variable names).</span>
+
+<span class="sd">        plural_key: str (optional)</span>
+<span class="sd">            The plural name of the first field in the list of fields. If provided, this allows for more readable code by</span>
+<span class="sd">            allowing the use of a more meaningful name when iterating over the keys. Suppose the first field in the</span>
+<span class="sd">            `fields` is &#39;country&#39;. The normal way to iterate over the outermost loop would be:</span>
+<span class="sd">            `for country in nd.keys()`, but if `plural_key=&#39;countries&#39;` is provided upon construction, then</span>
+<span class="sd">            this can be written as `for country in nd.countries()`, which is more readable.</span>
+
+<span class="sd">        plural_value: str (optional)</span>
+<span class="sd">            The plural name of the final field in the list of fields (i.e., the quantity whose type is specified by</span>
+<span class="sd">            `dtype`). This creates an alias to the `.values()` method, similar to the way that plural_key causes the</span>
+<span class="sd">            creation of an alias for `.keys()`.</span>
+
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Raised if an insufficient number of parameters are provided or if the fields are not unique or if the names</span>
+<span class="sd">            of the fields are illegal.</span>
+
+<span class="sd">        TypeError:</span>
+<span class="sd">            Raised if the first argument does not specify a data type or if one of the field .</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The dtype must specify a data type.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The data type of the leaves cannot be dict&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The NestedDict requires at least two field names.&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;All field names must be strings.&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The fields must all be valid Python identifiers. &quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&quot; is not valid.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The fields must be unique; field names cannot be repeated.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span> <span class="o">=</span> <span class="n">fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+
+        <span class="k">if</span> <span class="n">plural_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">plural_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_iterator_alias</span><span class="p">(</span><span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="n">plural_key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plural_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">plural_value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_iterator_alias</span><span class="p">(</span><span class="s1">&#39;values&#39;</span><span class="p">,</span> <span class="n">plural_value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plural_val</span> <span class="o">=</span> <span class="n">plural_value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The names of the fields of the nested dictionary&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The highest-level (outer-most) dict in the nested dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The data type of the items stored in the dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provides a flattened view of the contents of the nested dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        iterable</span>
+<span class="sd">            A generator which returns tuples of the form (key0, key1, key2, ... keyN, value)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="NestedDict.index_of"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.index_of">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">index_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds the index of the specified field.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        name: str</span>
+<span class="sd">            The name of a field in the nested dict.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        index: int</span>
+<span class="sd">            The index of the field within the nested dictionary. For example, if the structure of the nested dict is</span>
+<span class="sd">            `{country code : {postal code: [list of names]}}`, then the dict is indexed as</span>
+<span class="sd">            `dict[country code][postal code]`. Thus `index_of(&#39;postal code&#39;)` returns 1 and `index_of(&#39;country code&#39;)`</span>
+<span class="sd">            returns 0. If the `name` is not a field name, then the function returns None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests for equality with another NestedDict</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        other: NestedDict</span>
+<span class="sd">            The NestedDict that will be checked for equality with the current NestedDict.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        Bool</span>
+<span class="sd">            True if `other` contains the same nested dictionary and has the same field names as this nested dictionary.</span>
+<span class="sd">            False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">fields</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">root</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        other: NestedDict</span>
+<span class="sd">            The NestedDict that will be checked for equality with the current NestedDict.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        Bool</span>
+<span class="sd">            False if `other` contains the same nested dictionary and has the same field names as this nested dictionary.</span>
+<span class="sd">            True otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks for the presence of the specified path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            Specifies the path to an item within the nested dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        Bool</span>
+
+<span class="sd">            True if the path exists in the nested dictionary. False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches the item at the specified path (location) within the nested dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The tuple of indices (keys), specifying the the location of an object within the nested dict.</span>
+<span class="sd">            For example, (1,2,3) will access item dict[1][2][3].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        item: self.dtype</span>
+<span class="sd">            The object stored in the nested dict at the specified location. If the path does not exist, returns None.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">            If the format of the path is invalid (wrong number of dimensions).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assigns an item to the specified position within the nested dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            Specifies the path to an item within the nested dictionary.</span>
+
+<span class="sd">        value:</span>
+<span class="sd">            The item that will be assigned to the position.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies the internal nested dictionary.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        TypeError</span>
+<span class="sd">            If the item does not match the expected type.</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">            If the path has the wrong number of dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_item</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;NestedDict(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, &#39;</span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">&#39;):</span><span class="se">\n</span><span class="s2">    </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">string</span>
+
+<div class="viewcode-block" id="NestedDict.get_item"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.get_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the item located at the specified location within the full nested dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location in the nested dict of a sub-dict.</span>
+
+<span class="sd">        kwpath: dict:</span>
+<span class="sd">            The location in the requested item as a dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        item: self.dtype</span>
+<span class="sd">            The item located at the specified location</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">           Raised if the path and kwpath are both specified; only one is allowed.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;The path must either be specified as an ordered tuple or using field_name=key.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_path</span><span class="p">(</span><span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">current_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">current_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">current_dict</span> <span class="o">=</span> <span class="n">item</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="n">current_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">item</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="NestedDict.add_item"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.add_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an item to the nested dict at the location specified by `path`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        item: self.dtype</span>
+<span class="sd">            The item that will be added to the nested dictionary.</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location in the nested dict in which to place the item. If the location does not exist, it will be</span>
+<span class="sd">            created. If an item already exists in the specified location, it will be replaced by the new `item`.</span>
+
+<span class="sd">        kwpath: dict:</span>
+<span class="sd">            The location in the nested dict. The structure of the kwpath should be</span>
+<span class="sd">            `{field_name_0: key_0, field_name_1: key_1, ... field_name_N: key_N}`. This allows  the user to call the</span>
+<span class="sd">            function like `.keys(field_name_N=key_N, field_name_1=key_1, ...)` so that the user does not need to</span>
+<span class="sd">            remember the order in which the dictionaries corresponding to the fields are nested.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies the internal nested dictionary.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">            Raised if the dimensionality of the path is incorrect or if the path and kwpath are both specified; only</span>
+<span class="sd">            one is allowed.</span>
+
+<span class="sd">        TypeError</span>
+<span class="sd">            Raised if the data type of the `item` does not match the expected type specified by `self.dtype`.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># handle the special case in which an int is assigned to a float:</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">==</span> <span class="nb">float</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;The path must either be specified as an ordered tuple or using field_name=key.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_path</span><span class="p">(</span><span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">current_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_dict</span><span class="p">:</span>
+                <span class="n">current_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">current_dict</span> <span class="o">=</span> <span class="n">current_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">current_dict</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">item</span></div>
+
+<div class="viewcode-block" id="NestedDict.delete"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.delete">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes the sub-dictionary or item located at the specified path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location of the item or sub-dict that will be deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">return</span>
+
+        <span class="n">current_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">current_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">current_dict</span> <span class="o">=</span> <span class="n">item</span>
+            <span class="k">elif</span> <span class="n">item</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">current_dict</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">current_dict</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># clean up empty parent dictionaries.</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_subdict</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="NestedDict.values"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.values">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches all values under the specified location in the nested dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location in the nested dict in which to place the item.</span>
+
+<span class="sd">        kwpath: dict:</span>
+<span class="sd">            The location in the nested dict. The structure of the kwpath should be</span>
+<span class="sd">            `{field_name_0: key_0, field_name_1: key_1, ... field_name_N: key_N}`. This allows  the user to call the</span>
+<span class="sd">            function like `.keys(field_name_N=key_N, field_name_1=key_1, ...)` so that the user does not need to</span>
+<span class="sd">            remember the order in which the dictionaries corresponding to the fields are nested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        values: iterable</span>
+<span class="sd">            An iterable object which generates values located under the specified location in the nested dictionary.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">           Raised if the path and kwpath are both specified; only one is allowed.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sub_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_subdict</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values_of_dict</span><span class="p">(</span><span class="n">sub_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NestedDict.keys"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.keys">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an iterable container of keys.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location in the nested dict of a sub-dict for which the keys will be returned. It is assumed to be the</span>
+<span class="sd">            location of a dict. If no path is provided, the keys of the top-level dict will be returned.</span>
+
+<span class="sd">        kwpath: dict:</span>
+<span class="sd">            The location in the nested dict of a sub-dict for which the keys will be returned. The structure of the</span>
+<span class="sd">            kwpath should be `{field_name_0: key_0, field_name_1: key_1, ... field_name_N: key_N}`. This allows</span>
+<span class="sd">            the user to call the function like `.keys(field_name_N=key_N, field_name_1=key_1, ...)` so that the</span>
+<span class="sd">            the user does not need to remember the order in which the dictionaries corresponding to the fields are</span>
+<span class="sd">            nested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        keys: iterable</span>
+<span class="sd">            An iterable container of dict keys. If the `path` does not point to a dictionary, then `None` is returned.</span>
+<span class="sd">            If no path was specified, then the keys of the root dictionary are returned.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">           Raised if the path and kwpath are both specified; only one is allowed.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">subdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_subdict</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subdict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;There is no sub-dictionary at the specified path&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">subdict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NestedDict.get_subdict"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.get_subdict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_subdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the sub-dictionary located at the specified location within the full nested dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            The location in the nested dict of a sub-dict.</span>
+
+<span class="sd">        kwpath: dict:</span>
+<span class="sd">            The location in the nested dict of a sub-dict. The structure of the kwpath should be</span>
+<span class="sd">            `{field_name_0: key_0, field_name_1: key_1, ... field_name_N: key_N}`. This allows the user to call the</span>
+<span class="sd">            function like `.keys(field_name_N=key_N, field_name_1=key_1, ...)` so that the user does not need to</span>
+<span class="sd">            remember the order in which the dictionaries corresponding to the fields are nested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        subdict: dict or dtype</span>
+<span class="sd">            The dictionary located at the specified location. If no path is provided, then this is the same as the root</span>
+<span class="sd">            dictionary. Returns None if the format of the path is correct but it does not point to an existing location.</span>
+<span class="sd">            If the path points to a leaf, then the item at the leaf is returned.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">           Raised if the path and kwpath are both specified; only one is allowed or if the path specifies an item rather</span>
+<span class="sd">           than a sub-dictionary.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;The path must either be specified as an ordered tuple or using field_name=key.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_path</span><span class="p">(</span><span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">current_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">current_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">current_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">current_dict</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">current_dict</span> <span class="o">=</span> <span class="n">item</span>
+
+        <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="n">current_dict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_dict</span></div>
+
+<div class="viewcode-block" id="NestedDict.get_nested_dict"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.NestedDict.NestedDict.get_nested_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_nested_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_subdict</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">)</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nested_subdict</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">plural_key</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwpath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the location of an object, specified as field names and keys, to a properly ordered path (tuple of</span>
+<span class="sd">        keys).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        kwpath: dict</span>
+<span class="sd">            The path of a location within the nested dictionary. The structure of the kwpath should be</span>
+<span class="sd">            `{field_name_0: key_0, field_name_1: key_1, ... field_name_N: key_N}`. This allows</span>
+<span class="sd">            the user to call the function like `.keys(field_name_N=key_N, field_name_1=key_1, ...)` so that the</span>
+<span class="sd">            the user does not need to remember the order in which the dictionaries corresponding to the fields are</span>
+<span class="sd">            nested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        path: tuple</span>
+<span class="sd">            A tuple of the keys, ordered according to the structure of the nested dict (the order given by the `fields`</span>
+<span class="sd">            property).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if the entries in the kwpath dict do not describe a complete path within the nested dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwpath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Could not convert to a path; too many keywords were provided.&#39;</span><span class="p">)</span>
+
+        <span class="n">path_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">))]</span>
+
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwpath</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">path_list</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2"> is an invalid field name.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># At this point, we have a list of keys in the correct order, but there may be some None entries in the list.</span>
+        <span class="c1"># The None entries need to be removed if they are at the end of the list. If they are not at the end of the list</span>
+        <span class="c1"># then the path is invalid.</span>
+
+        <span class="c1"># clear trailing Nones:</span>
+
+        <span class="n">encountered_value</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path_list</span><span class="p">))):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">path_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">encountered_value</span><span class="p">:</span>
+
+                <span class="k">del</span> <span class="n">path_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">encountered_value</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path_list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The provided keys do not describe a complete path. The equivalent path is </span><span class="si">{</span><span class="n">path_list</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">path_list</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Expected a </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s1">, but encountered a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Expected the dimensionality of the key to match the number of dimensions of the nested &#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;dictionary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">)</span><span class="si">}</span><span class="s1"> in this case).&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;slices are currently not supported.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nested_subdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subdict</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">plural_key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the sub-dictionary located at the specified location within the full nested dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        subdict: dict</span>
+<span class="sd">            The sub-dict (regular python dict) that will be the root of the new NMestedDict.</span>
+
+<span class="sd">        depth: int</span>
+<span class="sd">            The depth of the subdict within the nested dict</span>
+
+<span class="sd">        plural_key: str</span>
+<span class="sd">            The plural name of the new root field.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        keys: dict</span>
+<span class="sd">            The dictionary located at the specified location.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError</span>
+<span class="sd">           Raised if the path and kwpath are both specified; only one is allowed.</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">           Raised if the kwpath does not represent a path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nested_sub</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">depth</span><span class="p">:],</span> <span class="n">plural_key</span><span class="o">=</span><span class="n">plural_key</span><span class="p">,</span> <span class="n">plural_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_plural_val</span><span class="p">)</span>
+        <span class="n">nested_sub</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">subdict</span>
+
+        <span class="k">return</span> <span class="n">nested_sub</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="p">()):</span>
+        <span class="n">subdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_subdict</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subdict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">subdict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">sub_path</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flat</span><span class="p">(</span><span class="n">sub_path</span><span class="p">):</span>
+                        <span class="k">yield</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># value is a leaf (value)</span>
+                    <span class="k">yield</span> <span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># subdict is a leaf (value)</span>
+            <span class="k">yield</span> <span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">subdict</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_iterator_alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterator_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">plural_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds member functions to the object, for accessing the keys and values by name.</span>
+
+<span class="sd">        Adds member functions that can be used essentially as aliases for .keys() or .values() to allow</span>
+<span class="sd">        the user&#39;s code to be more readable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        iterator_type: str</span>
+<span class="sd">            &#39;keys&#39; or &#39;values&#39;</span>
+
+<span class="sd">        plural_name: str</span>
+<span class="sd">            The name that will be used as the alias for the objects stored in the iterator. The name should be</span>
+<span class="sd">            plural, so if the field name is &#39;house&#39;, the plural_name should be &#39;houses&#39;.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError: if the specified name is already taken or if the iterator type is invalid.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Adds a new method, `plural_name()`, to the instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">iterator_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iterator_type must be either &quot;keys&quot; or &quot;values&quot;---not </span><span class="si">{</span><span class="n">iterator_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plural_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The name </span><span class="si">{</span><span class="n">plural_name</span><span class="si">}</span><span class="s1"> conflicts with the NestedDict API.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">plural_name</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The name </span><span class="si">{</span><span class="n">plural_name</span><span class="si">}</span><span class="s1"> is not a valid identifier.&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+        <span class="n">iterator_func</span> <span class="o">=</span> <span class="n">get_keys</span> <span class="k">if</span> <span class="n">iterator_type</span> <span class="o">==</span> <span class="s1">&#39;keys&#39;</span> <span class="k">else</span> <span class="n">get_values</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">plural_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">iterator_func</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_values_of_dict</span><span class="p">(</span><span class="n">dictionary</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively produces a list of all of the items stored within the dictionary, `dictionary`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dictionary: dict</span>
+<span class="sd">            The nested dictionary whose values are of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        total: generator</span>
+<span class="sd">            A generator that returns all of the objects stored in the specified dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">NestedDict</span><span class="o">.</span><span class="n">_values_of_dict</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">value</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

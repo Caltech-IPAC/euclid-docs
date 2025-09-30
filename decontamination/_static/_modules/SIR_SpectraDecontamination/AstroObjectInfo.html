@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.AstroObjectInfo &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.AstroObjectInfo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.AstroObjectInfo</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File AstroObjectInfo.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: March 12, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the AstroObjectInfo class, which is used for storing information about a specific physical object. Notably,</span>
+<span class="sd">the class contains references to the spectra that it produces.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectrumInfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrumInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.NestedDict</span><span class="w"> </span><span class="kn">import</span> <span class="n">NestedDict</span>
+
+
+<div class="viewcode-block" id="AstroObjectInfo"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">AstroObjectInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores astrophysical data about a specific galaxy or star.</span>
+
+<span class="sd">    This class expands upon the data available in the AstronomicalObject class</span>
+<span class="sd">    by adding the Y, J and H band fluxes (rather than the magnitudes), a model for the</span>
+<span class="sd">    1-dimensional spectrum of the object, and a lookup data structure for quickly</span>
+<span class="sd">    finding which dithers the object appears in, which detectors within each detector,</span>
+<span class="sd">    which spectral orders appear on each dither. The lookup structure also points to</span>
+<span class="sd">    the SpectrumInfo objects associated with this particular star or galaxy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">STAR</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that the object is a star&quot;&quot;&quot;</span>
+
+    <span class="n">GALAXY</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that the object is a galaxy&quot;&quot;&quot;</span>
+
+    <span class="n">ZEROTH_ORDER_THRESHOLD</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Zeroth orders fainter than this threshold, in all bands, will be ignored.&quot;&quot;&quot;</span>
+
+    <span class="n">SECOND_ORDER_THRESHOLD</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Second orders fainter than this threshold, in all bands, will be ignored.&quot;&quot;&quot;</span>
+
+    <span class="n">WAVELENGTHS</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The wavelengths used by all 1D model spectra&quot;&quot;&quot;</span>
+
+    <span class="n">EUC_TO_2MASS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;J&#39;</span><span class="p">:</span> <span class="s1">&#39;J2M&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="s1">&#39;H2M&#39;</span><span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The mapping from Euclid band name to 2MASS band name.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_invalid_mag&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_usable&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_id&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_mag&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_flux&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_dflux&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_cutout&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_spectra_info&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_1d_continuum&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_lines&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_interp_mask&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_type&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_measured&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_has_2mass_mags&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;__weakref__&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">cutouts</span><span class="p">,</span> <span class="n">phot_info</span><span class="p">,</span> <span class="n">limit_band</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="n">limit_mag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs the AstroObjectInfo instance.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        location: LocationObject</span>
+<span class="sd">            The object describing the astronomical object, the position of its spectrum, and the dispersion solution.</span>
+
+<span class="sd">        cutouts: CutoutCollection or None</span>
+<span class="sd">            Contains information for all cutouts.</span>
+
+<span class="sd">        phot_info: PhotometerInfo</span>
+<span class="sd">            Contains information about the photometric bands</span>
+
+<span class="sd">        limit_band: str</span>
+<span class="sd">            The string specifying the name of the filter / band that is being used to limit the objects, based on</span>
+<span class="sd">            brightness.</span>
+
+<span class="sd">        limit_mag: float</span>
+<span class="sd">            The threshold magnitude, above which the object will be considered too faint to be usable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">getAstronomicalObject</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_usable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flux</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dflux</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># {dither: {detector : {order: SpectrumInfo}}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span> <span class="o">=</span> <span class="n">NestedDict</span><span class="p">(</span><span class="n">SpectrumInfo</span><span class="p">,</span> <span class="s1">&#39;dither&#39;</span><span class="p">,</span> <span class="s1">&#39;detector&#39;</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_1d_continuum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lines</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measured</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interp_mask</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">has_magnitudes</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+        <span class="n">has_2mass_mags</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="s1">&#39;H2M&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="s1">&#39;J2M&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_2mass_mags</span> <span class="o">=</span> <span class="n">has_2mass_mags</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_magnitudes</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_2mass_mags</span><span class="p">:</span>
+            <span class="c1"># the magnitude data is unavailable or incomplete: we need to know the Y, J, and H mags or 2MASS mags.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># it is usable in the sense that its location will be masked out.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_usable</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">getId</span><span class="p">())</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">has_2mass_mags</span><span class="p">:</span>
+                <span class="n">mag_in_limit_band</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EUC_TO_2MASS</span><span class="p">[</span><span class="n">limit_band</span><span class="p">])</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">hasMagnitude</span><span class="p">(</span><span class="n">limit_band</span><span class="p">):</span>
+                    <span class="n">mag_in_limit_band</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="n">limit_band</span><span class="p">)</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mag_in_limit_band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="c1"># handle the possibility that mag_in_limit_band is None:</span>
+
+            <span class="n">bright_enough</span> <span class="o">=</span> <span class="n">mag_in_limit_band</span> <span class="o">&lt;</span> <span class="n">limit_mag</span> <span class="k">if</span> <span class="n">mag_in_limit_band</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bright_enough</span><span class="p">:</span>
+                <span class="c1"># the object is not usable because the magnitude is missing or it is too faint.</span>
+                <span class="k">if</span> <span class="n">mag_in_limit_band</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mag_in_limit_band</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add metadata specific to the astronomical object:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">phot_info</span><span class="p">)</span>
+
+                <span class="c1"># the object is usable.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_usable</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># fetch the specific cutout for this object, if it exists in the list of cutouts</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cutouts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span> <span class="o">=</span> <span class="n">cutouts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="ow">in</span> <span class="n">cutouts</span> <span class="k">else</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span><span class="o">.</span><span class="n">pixels</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span><span class="o">.</span><span class="n">pixels</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<div class="viewcode-block" id="AstroObjectInfo.load_spectra"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.load_spectra">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location_object</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads all spectra associated with the object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        location_object: LocationObject</span>
+<span class="sd">            Contains all known information about all spectra in a particular detector</span>
+
+<span class="sd">        grism_model: DetectorGrism</span>
+<span class="sd">            The DetectorGrism object associated with the detector and dither that corresponds to the LocationTable</span>
+<span class="sd">            object.</span>
+
+<span class="sd">        padding: int</span>
+<span class="sd">            The number of pixels that should be inserted between the bounding box of each spectral cutout</span>
+<span class="sd">            (specified in a `SpectrumInfo` object) and the rectangle defined by the `LocationSpectrum` object</span>
+<span class="sd">            in the LocationTable.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Modifies `self._spectra_info`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># location_object.getAllSpectra() does not return an iterable container, so we resort to finding its length</span>
+        <span class="c1"># and indexing into the object that is returned:</span>
+
+        <span class="n">n_spectra</span> <span class="o">=</span> <span class="n">location_object</span><span class="o">.</span><span class="n">getNumberOfSpectra</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">n_spectra</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">n_spectra</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">specs</span> <span class="o">=</span> <span class="n">location_object</span><span class="o">.</span><span class="n">getAllSpectra</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_spectra</span><span class="p">):</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">specs</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_spec_info</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">n_spectra</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">location_object</span><span class="o">.</span><span class="n">getAllSpectra</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_spec_info</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.get_dithers"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.get_dithers">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_dithers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies which dithers this object appears in.</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            A list of the dithers in which this object appears (e.g., [1, 2, 3, 4]).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.get_detectors"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.get_detectors">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies the detectors in which the object appears.</span>
+
+<span class="sd">        Args:</span>
+
+<span class="sd">            dither: the dither sequence number (1, 2, 3, 4)</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">            A list of the detectors, within the specified dither, that the object appears. If the object appears in</span>
+<span class="sd">            no detectors within this dither, an empty list `[]` is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="n">dither</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.get_orders"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.get_orders">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies which spectral orders appear in the specified detector of the specified dither.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">            dither: int</span>
+<span class="sd">                The dither sequence number, which is an integer in (1, 2, 3, 4)</span>
+
+<span class="sd">            detector: int</span>
+<span class="sd">                The detector number, which is an integer in (1, 2, 3, ..., 16)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        list</span>
+<span class="sd">             A list of spectral orders that appear in the specified detector. For instance, [0, 1, 2].</span>
+<span class="sd">             An empty list `[]` is returned if no spectral orders appear in the specified detector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.get_spec_info"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.get_spec_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpectrumInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches the SpectrumInfo object of the specified spectral order on the specified dither and detector.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dither: int</span>
+<span class="sd">            The dither sequence number (1, 2, 3, 4)</span>
+
+<span class="sd">        detector: int</span>
+<span class="sd">            The detector number (1, 2, 3, ..., 16)</span>
+
+<span class="sd">        order: int</span>
+<span class="sd">            The spectral order (one of 0, 1, or 2)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">            The `SpectrumInfo` object associated with the specified order on the specified detector and dither.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span><span class="p">[</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">order</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.get_1d_spectrum"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.get_1d_spectrum">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_1d_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes and returns the full 1D spectral model of the object (continuum + lines).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        one_dimensional_spectrum: np.ndarray or None</span>
+<span class="sd">            The 1D model spectrum of the object, if the spectrum has already been measured. Otherwise,</span>
+<span class="sd">            None is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuum</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line_models</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">line_models</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuum</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line_models</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line_model</span> <span class="ow">in</span> <span class="n">line_models</span><span class="p">:</span>
+                    <span class="n">lines</span> <span class="o">+=</span> <span class="n">line_model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">WAVELENGTHS</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuum</span> <span class="o">+</span> <span class="n">lines</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The type of object (i.e., STAR or GALAXY)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The ID number of the object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_usable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tells whether the object is populated with usable information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        usable: bool</span>
+<span class="sd">            True if the object has been provided with all required data about the physical object in question;</span>
+<span class="sd">             False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_usable</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">invalid_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specifies whether all three broadband magnitudes are valid.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        invalid: bool</span>
+<span class="sd">            False if Y, J and H magnitudes are finite floating point values. True otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;NestedDict&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;All of the spectra of this object, in a NestedDict, organized by [&#39;dither&#39;, &#39;detector&#39;, &#39;order&#39;]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The 1-dimensional continuum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_1d_continuum</span>
+
+    <span class="nd">@continuum</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continuum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continuum</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_1d_continuum</span> <span class="o">=</span> <span class="n">continuum</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;LineModeller&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lines</span>
+
+    <span class="nd">@lines</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="s1">&#39;LineModeller&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lines</span> <span class="o">=</span> <span class="n">lines</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interp_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specifies which elements of the wavelength array were interpolated, or simply True or False if the entire</span>
+<span class="sd">        wavelength range was interpolated or was not interpolated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interp_mask</span>
+
+    <span class="nd">@interp_mask</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interp_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+        <span class="n">is_linear_bool_array</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mask</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_linear_bool_array</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interp_mask</span> <span class="o">=</span> <span class="n">mask</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The interp_mask must be either a 1-D NumPy array of bools or a single bool.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The Cutout (stamp image) of the object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_been_measured</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Have we attempted to measure the spectrum, rather than simply using the broad-band fluxes? If so True.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measured</span>
+
+    <span class="nd">@has_been_measured</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_been_measured</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measured</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">measured</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Expected a bool.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measured</span> <span class="o">=</span> <span class="n">measured</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_2mass_mags</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Are 2MASS magnitudes being used? If so, True.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_2mass_mags</span>
+
+<div class="viewcode-block" id="AstroObjectInfo.flux"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.flux">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the flux of the specified band.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        band: str</span>
+<span class="sd">            Specified the band (filter) name (one of &#39;y&#39;, &#39;Y&#39;, &#39;j&#39;, &#39;J&#39;, &#39;h&#39;, &#39;H&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        flux: float</span>
+<span class="sd">            The flux of the object in the specified band in erg / s / cm^2 / Angstrom.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="n">band</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.dflux"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.dflux">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">dflux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the flux uncertainty of the specified band.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        band: str</span>
+<span class="sd">            Specified the band (filter) name (one of &#39;y&#39;, &#39;Y&#39;, &#39;j&#39;, &#39;J&#39;, &#39;h&#39;, &#39;H&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        flux: float</span>
+<span class="sd">            The uncertainty in the flux reported by the flux() method, for the specified band,.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dflux</span><span class="p">[</span><span class="n">band</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.mag"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.mag">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the AB magnitude of the specified band.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        band: str</span>
+<span class="sd">            Specified the band (filter) name (one of &#39;y&#39;, &#39;Y&#39;, &#39;j&#39;, &#39;J&#39;, &#39;h&#39;, &#39;H&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        magnitude: float</span>
+<span class="sd">            The AB magnitude of the object in the specified band.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="n">band</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="AstroObjectInfo.delete_stamp"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.AstroObjectInfo.AstroObjectInfo.delete_stamp">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_stamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the stamp image.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cutout</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_spec_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_location</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">spectrum_location</span><span class="o">.</span><span class="n">getOrder</span><span class="p">()</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">spectrum_location</span><span class="o">.</span><span class="n">getDetectorNumber</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span><span class="p">:</span>
+            <span class="n">min_mag</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">min_mag</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">ZEROTH_ORDER_THRESHOLD</span><span class="p">:</span>
+                <span class="c1"># This zeroth order is too faint to be included</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">min_mag</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">SECOND_ORDER_THRESHOLD</span><span class="p">:</span>
+                <span class="c1"># This second order is too faint to be included</span>
+                <span class="k">return</span>
+
+        <span class="n">spec_info</span> <span class="o">=</span> <span class="n">SpectrumInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_location</span><span class="p">,</span> <span class="n">grism_model</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">zeroth_mag</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+            <span class="n">spec_info</span><span class="o">.</span><span class="n">zeroth_order_size</span> <span class="o">=</span> <span class="n">grism_model</span><span class="o">.</span><span class="n">get_zeroth_order_boxsize</span><span class="p">(</span><span class="n">zeroth_mag</span><span class="p">)</span>
+
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">spec_info</span><span class="o">.</span><span class="n">bbox</span>
+
+        <span class="n">is_on_detector</span> <span class="o">=</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">grism_model</span><span class="o">.</span><span class="n">xres</span> <span class="ow">and</span> <span class="n">bottom</span> <span class="o">&lt;</span> <span class="n">grism_model</span><span class="o">.</span><span class="n">yres</span>
+
+        <span class="n">dimensions_are_positive</span> <span class="o">=</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">is_on_detector</span> <span class="ow">and</span> <span class="n">dimensions_are_positive</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_spectra_info</span><span class="p">[</span><span class="n">grism_model</span><span class="o">.</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">order</span><span class="p">]</span> <span class="o">=</span> <span class="n">spec_info</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">phot_info</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">getId</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_2mass_mags</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hmag</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jmag</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymag</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="n">hmag_error</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+            <span class="n">jmag_error</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+            <span class="n">ymag_error</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hmag</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EUC_TO_2MASS</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jmag</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EUC_TO_2MASS</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="c1"># Y mag will not be used during model-making because self.has_2mass_mags is True; just set to 1000.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mag</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymag</span> <span class="o">=</span> <span class="mf">1000.0</span>
+            <span class="n">ymag_error</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">hmag_error</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EUC_TO_2MASS</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+            <span class="n">jmag_error</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getMagnitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EUC_TO_2MASS</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="p">(</span><span class="n">hmag</span><span class="p">,</span> <span class="n">jmag</span><span class="p">,</span> <span class="n">ymag</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hmag</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">jmag</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ymag</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_invalid_mag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">hmag_error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">hmag_error</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">jmag_error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">jmag_error</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">ymag_error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">ymag_error</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># compute fluxes in microJy</span>
+
+        <span class="n">h_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">hmag</span><span class="p">)</span>
+        <span class="n">j_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">jmag</span><span class="p">)</span>
+        <span class="n">y_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">ymag</span><span class="p">)</span>
+
+        <span class="n">h_plus_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">hmag</span> <span class="o">+</span> <span class="n">hmag_error</span><span class="p">)</span>
+        <span class="n">j_plus_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">jmag</span> <span class="o">+</span> <span class="n">jmag_error</span><span class="p">)</span>
+        <span class="n">y_plus_microjansky</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">abmag_to_ujy</span><span class="p">(</span><span class="n">ymag</span> <span class="o">+</span> <span class="n">ymag_error</span><span class="p">)</span>
+
+        <span class="c1"># convert from microJy to erg/s/cm^2/Angstrom</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">h_microjansky</span><span class="p">,</span> <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">j_microjansky</span><span class="p">,</span> <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">y_microjansky</span><span class="p">,</span> <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dflux</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">h_plus_microjansky</span><span class="p">,</span>
+                                                                             <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dflux</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;J&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">j_plus_microjansky</span><span class="p">,</span>
+                                                                             <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dflux</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_flux</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">Utils</span><span class="o">.</span><span class="n">ujy_to_angstrom</span><span class="p">(</span><span class="n">y_plus_microjansky</span><span class="p">,</span>
+                                                                             <span class="n">phot_info</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STAR</span> <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">Star</span> <span class="o">==</span> <span class="n">metadata</span><span class="o">.</span><span class="n">getType</span><span class="p">()</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">GALAXY</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

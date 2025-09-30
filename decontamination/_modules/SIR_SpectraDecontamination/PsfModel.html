@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.PsfModel &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.PsfModel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.PsfModel</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File DetectorGrism.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: April 5, 2021</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<div class="viewcode-block" id="PsfModel"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.PsfModel.PsfModel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PsfModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts the parameters for the two-component Gaussian fit to the wavelength-dependent PSF.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pixel_scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_scale</span> <span class="o">=</span> <span class="n">pixel_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_psf_tables</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PsfModel.get_parameters"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.PsfModel.PsfModel.get_parameters">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">grism</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                       <span class="n">detector_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                       <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the parameters of the model PSF, given as a mixture of 2D Gaussians</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        grism: str</span>
+<span class="sd">            The name of the grism.</span>
+
+<span class="sd">        detector_id: str</span>
+<span class="sd">            The detector ID number, as a string (example: &#39;11&#39;, &#39;23&#39;, &#39;44&#39;)</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength, in units of Angstroms.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        psf_parameters: Tuple[Tuple[float, float], Tuple[float, float]]</span>
+
+<span class="sd">        A tuple of ((psf1_amplitude, sigma1), (psf2_amplitude, sigma2)).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_tables</span><span class="p">[</span><span class="n">detector_id</span><span class="p">][</span><span class="n">grism</span><span class="p">]</span>
+
+        <span class="n">wavs</span><span class="p">,</span> <span class="n">amp</span><span class="p">,</span> <span class="n">sig1</span><span class="p">,</span> <span class="n">sig2</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">amp_interp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">wavs</span><span class="p">,</span> <span class="n">amp</span><span class="p">))</span>
+        <span class="n">sig1_interp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">wavs</span><span class="p">,</span> <span class="n">sig1</span><span class="p">))</span>
+        <span class="n">sig2_interp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">wavs</span><span class="p">,</span> <span class="n">sig2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">amp_interp</span><span class="p">,</span> <span class="n">sig1_interp</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">amp_interp</span><span class="p">,</span> <span class="n">sig2_interp</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_single_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="n">psf_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">head</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">header</span>
+                <span class="k">if</span> <span class="s1">&#39;ORDER&#39;</span> <span class="ow">in</span> <span class="n">head</span> <span class="ow">and</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;ORDER&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">grism_id</span> <span class="o">=</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;GRISM_ID&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">grism_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psf_parameters</span><span class="p">:</span>
+                        <span class="n">psf_parameters</span><span class="p">[</span><span class="n">grism_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="n">wavelength_in_angstroms</span> <span class="o">=</span> <span class="mf">1e4</span> <span class="o">*</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;WLTH_WFM&#39;</span><span class="p">]</span>
+                    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;G2PSFA&#39;</span><span class="p">]</span>
+                    <span class="n">sigma_1</span> <span class="o">=</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;G2PSFS1&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_scale</span>
+                    <span class="n">sigma_2</span> <span class="o">=</span> <span class="n">head</span><span class="p">[</span><span class="s1">&#39;G2PSFS2&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_scale</span>
+                    <span class="n">psf_parameters</span><span class="p">[</span><span class="n">grism_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">wavelength_in_angstroms</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="n">sigma_1</span><span class="p">,</span> <span class="n">sigma_2</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">grism</span> <span class="ow">in</span> <span class="n">psf_parameters</span><span class="p">:</span>
+            <span class="n">psf_parameters</span><span class="p">[</span><span class="n">grism</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">psf_parameters</span><span class="p">[</span><span class="n">grism</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">psf_parameters</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_psf_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+        <span class="n">psf_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">detector_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_detector_id</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">psf_table</span><span class="p">[</span><span class="n">detector_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_single_table</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">psf_table</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detector_id</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*_RGSASBUILD_PSFs_..\.fits$&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The PSF filename does not match the expected pattern.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

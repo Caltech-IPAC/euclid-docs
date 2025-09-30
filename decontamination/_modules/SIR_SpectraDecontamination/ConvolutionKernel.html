@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.ConvolutionKernel &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.ConvolutionKernel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.ConvolutionKernel</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># File ConvolutionKernelKernel.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: April 1, 2019</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">ndimage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">fitting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.utils.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">AstropyUserWarning</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+
+
+<div class="viewcode-block" id="ConvolutionKernel"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ConvolutionKernel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates the 2-dimensional kernel patches which are used when creating a 2D spectrum&quot;&quot;&quot;</span>
+
+    <span class="n">SCALE_RATIO</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of cutout pixels per spectroscopic pixel: spectroscopic_pixel_scale / cutout_pixel_scale</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">OBJECT_SIGMA_IN_PIXELS</span> <span class="o">=</span> <span class="mf">0.46</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The typical object PSF size (sigma) in units of cutout pixels. We use this hard-coded value to specify the </span>
+<span class="sd">    approximate size of a Gaussian kernel PSF corresponding to a point-source.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">MAX_PIXEL_VALUE</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">max_peak</span><span class="p">(</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="n">OBJECT_SIGMA_IN_PIXELS</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum pixel value of a 2-D Gaussian kernel with sigma = OBJECT_SIGMA_IN_PIXELS&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">,</span> <span class="n">exposure_direction</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a 2-dimensional kernel from a Cutout, if a suitable one exists. Otherwise, a Gaussian kernel is created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spectrum_info: SpectrumInfo</span>
+<span class="sd">            The SpectrumInfo object describing the spectrum that is being modelled.</span>
+
+<span class="sd">        exposure_direction: float</span>
+<span class="sd">            The direction angle, in degrees, of the +RA axis in the exposure containing the 2-D spectra.</span>
+<span class="sd">            The angle is expected to be measured counterclockwise from the +x axis of the image. If the image is</span>
+<span class="sd">            a NISP Exposure, one can use the `compute_nisp_exposure_direction()` method to compute this angle.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError: if the kernel_size or exposure_direction are out of range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">exposure_direction</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">exposure_direction</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;exposure_direction mush be within [0, 360] degrees; encountered </span><span class="si">{</span><span class="n">exposure_direction</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span> <span class="o">=</span> <span class="n">spectrum_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_direction</span> <span class="o">=</span> <span class="n">exposure_direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span> <span class="o">=</span> <span class="p">(</span><span class="n">spectrum_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span> <span class="o">+</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">MAX_WAV_INNER</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_wavelength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_model</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">PSF_MODEL</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">stamp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_use_gaussian_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">stamp</span><span class="o">.</span><span class="n">use_gaussian_fit</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_use_gaussian_fit</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_major</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_minor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_normed_stamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_normalized_stamp</span><span class="p">(</span><span class="n">spectrum_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_using_cutout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normed_stamp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_kernel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_region</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_region</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_center</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gaussian_centroid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_spectral_box</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_normed_stamp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_region</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_region</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The length of each edge of the kernel, in units of pixels.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel_size_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The size of the internally-stored kernel; this can be &gt;= kernel size in NISP-S pixel units.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The kernel positioned at the current position; pixels are the same size as detector pixels.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_position</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_major</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The standard deviation of the major axis of the best-fitting 2D Gaussian.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_major</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_minor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The standard deviation of the minor axis of the best-fitting 2D Gaussian.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_minor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The angle between the major axis and the +y-axis, measured counterclockwise, in units of degrees.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The region, within the spectral cutout, covered by the kernel image at the current location.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_position</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The (x, y) position of the centroid of current kernel and region, in detector coordinates.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_spectral_box</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Specifies whether a kernel centered at the current overlaps with the spectral cutout.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_position</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_spectral_box</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">const_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The fixed, immutable 2D kernel patch; potentially has smaller pixels than the detector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;An optional list of previously-computed results.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The wavelength of the current PSF.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span>
+
+<div class="viewcode-block" id="ConvolutionKernel.move_to"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel.move_to">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">move_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the new kernel position; moves the kernel centroid to the specified position.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: float</span>
+<span class="sd">            The x-coordinate of the new position, in the coordinate system of the detector.</span>
+
+<span class="sd">        y: float</span>
+<span class="sd">            The x-coordinate of the new position, in the coordinate system of the detector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ConvolutionKernel.set_wavelength"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel.set_wavelength">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the wavelength of the PSF.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_wavelength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span> <span class="o">=</span> <span class="n">psf_wavelength</span></div>
+
+<div class="viewcode-block" id="ConvolutionKernel.add_to_history"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel.add_to_history">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_to_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the current kernel and bounding box to the history.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        index: int</span>
+<span class="sd">            The integer index of the wavelength value associated with this state of</span>
+<span class="sd">            the kernel.</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength associated with this particular state of the kernel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">index</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ConvolutionKernel.clear_history"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel.clear_history">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clear_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clears the cached history, which frees some memory.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes the kernel and region consistent with the current position and wavelength&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;Set the position before requesting a kernel or region.&quot;</span><span class="p">)</span>
+
+        <span class="n">half_kernel_size</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span>
+
+        <span class="n">x_offset</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">bbox</span>
+
+        <span class="c1"># the new position of the kernel&#39;s centroid, in the coordinate system of the detector:</span>
+
+        <span class="n">detector_x_lambda</span><span class="p">,</span> <span class="n">detector_y_lambda</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
+
+        <span class="c1"># the new position in the coordinate system of the spectrum:</span>
+
+        <span class="n">spectrum_x_lambda</span> <span class="o">=</span> <span class="n">detector_x_lambda</span> <span class="o">-</span> <span class="n">x_offset</span>
+        <span class="n">spectrum_y_lambda</span> <span class="o">=</span> <span class="n">detector_y_lambda</span> <span class="o">-</span> <span class="n">y_offset</span>
+
+        <span class="c1"># the coordinates of the lower-left corner of the kernel, in the coordinate system of the spectrum:</span>
+
+        <span class="n">x_0</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">spectrum_x_lambda</span> <span class="o">-</span> <span class="n">half_kernel_size</span><span class="p">)</span>
+        <span class="n">y_0</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">spectrum_y_lambda</span> <span class="o">-</span> <span class="n">half_kernel_size</span><span class="p">)</span>
+
+        <span class="c1"># the coordinates of the new centroid, in the coordinate system of the kernel (at detector scale):</span>
+
+        <span class="n">kernel_x_lambda</span> <span class="o">=</span> <span class="n">spectrum_x_lambda</span> <span class="o">-</span> <span class="n">x_0</span>
+        <span class="n">kernel_y_lambda</span> <span class="o">=</span> <span class="n">spectrum_y_lambda</span> <span class="o">-</span> <span class="n">y_0</span>
+
+        <span class="c1"># the vector by which the kernel needs to be shifted in order to move the centroid to the specified position.</span>
+        <span class="c1"># This vector is in pixel units of the cutout</span>
+
+        <span class="n">shift_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="n">kernel_x_lambda</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">shift_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="n">kernel_y_lambda</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_wavelength_dependent_kernel</span><span class="p">()</span>
+
+        <span class="n">shifted_kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="p">(</span><span class="n">shift_y</span><span class="p">,</span> <span class="n">shift_x</span><span class="p">))</span>
+
+        <span class="c1"># re-scale the pixels of the shifted_kernel to be consistent with the pixels of the spectrum:</span>
+
+        <span class="n">shifted_kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">normalize_image_fast</span><span class="p">(</span><span class="n">Utils</span><span class="o">.</span><span class="n">rebin3</span><span class="p">(</span><span class="n">shifted_kernel</span><span class="p">))</span>
+
+        <span class="c1"># crop out the region of the cutout that falls within the spectral box</span>
+
+        <span class="n">left_s</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_0</span><span class="p">)</span>
+        <span class="n">bottom_s</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_0</span><span class="p">)</span>
+        <span class="n">right_s</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">x_0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">)</span>
+        <span class="n">top_s</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">)</span>
+
+        <span class="n">left_k</span> <span class="o">=</span> <span class="n">left_s</span> <span class="o">-</span> <span class="n">x_0</span>
+        <span class="n">right_k</span> <span class="o">=</span> <span class="n">right_s</span> <span class="o">-</span> <span class="n">x_0</span>
+        <span class="n">bottom_k</span> <span class="o">=</span> <span class="n">bottom_s</span> <span class="o">-</span> <span class="n">y_0</span>
+        <span class="n">top_k</span> <span class="o">=</span> <span class="n">top_s</span> <span class="o">-</span> <span class="n">y_0</span>
+        <span class="n">new_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">shifted_kernel</span><span class="p">[</span><span class="n">bottom_k</span><span class="p">:</span><span class="n">top_k</span><span class="p">,</span> <span class="n">left_k</span><span class="p">:</span><span class="n">right_k</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">new_kernel</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">new_kernel</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">top_s</span> <span class="o">-</span> <span class="n">bottom_s</span><span class="p">,</span> <span class="n">right_s</span> <span class="o">-</span> <span class="n">left_s</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_in_spectral_box</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">new_kernel</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_region</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">bottom_s</span><span class="p">,</span> <span class="n">top_s</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">left_s</span><span class="p">,</span> <span class="n">right_s</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_in_spectral_box</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make the kernel patch.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normed_stamp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Use a generic Gaussian kernel</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_gaussian_kernel</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># use the Cutout to make the kernel</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_kernel_from_cutout</span><span class="p">()</span>
+
+        <span class="n">normed_kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">normalize_image</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normed_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># the kernel couldn&#39;t be normalized; use the default</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_gaussian_kernel</span><span class="p">()</span>
+            <span class="n">normed_kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">normalize_image</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">normed_kernel</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_gaussian_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a Gaussian kernel in a square stamp.&quot;&quot;&quot;</span>
+        <span class="n">kernel_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">location_spectrum</span><span class="o">.</span><span class="n">getApertureSize</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+
+        <span class="n">center</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">amp</span><span class="p">,</span> <span class="n">sigma</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span><span class="p">):</span>
+            <span class="n">tmp_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="n">native_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="n">sigma</span>
+
+            <span class="n">tmp_kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gauss_kernel</span><span class="p">(</span><span class="n">tmp_kernel</span><span class="p">,</span>
+                                            <span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">center</span><span class="p">),</span>
+                                            <span class="p">(</span><span class="n">native_sigma</span><span class="p">,</span> <span class="n">native_sigma</span><span class="p">))</span>
+
+            <span class="n">kernel</span> <span class="o">+=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">tmp_kernel</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_kernel_to_center</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_kernel_from_cutout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make the kernel patch using a Cutout image.</span>
+
+<span class="sd">        Makes the kernel by rotating the cutout so that it is aligned with the exposure.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        2-D NumPy array containing the rotated stamp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cutout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">stamp</span>
+
+        <span class="n">cutout_direction</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">cutout</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">CD2_1</span><span class="p">,</span> <span class="n">cutout</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">CD2_2</span><span class="p">)</span>
+
+        <span class="n">rotation_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_direction</span> <span class="o">-</span> <span class="n">cutout_direction</span>
+
+        <span class="n">rotated_kernel</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normed_stamp</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">rotation_angle</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rotated_kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_gaussian_fit</span><span class="p">:</span>
+            <span class="n">smoothed_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_gaussian_from_image</span><span class="p">(</span><span class="n">rotated_kernel</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">smoothed_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">smoothed_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_gaussian_kernel</span><span class="p">()</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_kernel_to_center</span><span class="p">(</span><span class="n">smoothed_kernel</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_kernel_to_center</span><span class="p">(</span><span class="n">rotated_kernel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_wavelength_dependent_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the wavelength-dependent PSF-convolved kernel for the current wavelength.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_wavelength</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_wavelength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_using_cutout</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_stamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_const_kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelength</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_gaussian_kernel</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_convolved_kernel</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_shift_kernel_to_center</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_image</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Repositions the centroid of the kernel to the actual center of the image.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        kernel_image: NumPy.ndarray</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        shifted_kernel: 2-D NumPy array</span>
+
+<span class="sd">        A square array of pixels with sides of length self._kernel_size. The array contains a kernel centered at</span>
+<span class="sd">        the nominal center of the image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">actual_center</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gaussian_centroid</span><span class="p">(</span><span class="n">kernel_image</span><span class="p">)</span>
+
+        <span class="n">nominal_x</span><span class="p">,</span> <span class="n">nominal_y</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">actual_x</span><span class="p">,</span> <span class="n">actual_y</span> <span class="o">=</span> <span class="n">actual_center</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">nominal_y</span> <span class="o">-</span> <span class="n">actual_y</span><span class="p">,</span> <span class="n">nominal_x</span> <span class="o">-</span> <span class="n">actual_x</span><span class="p">)</span>
+
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">kernel_image</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span> <span class="ow">and</span> <span class="n">width</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span><span class="p">:</span>
+            <span class="c1"># shift to the lower-left corner of kernel_image and copy region into kernel</span>
+            <span class="n">shifted_image</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">kernel_image</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+            <span class="n">kernel</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">shifted_image</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span><span class="p">,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_size</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># At least one dimension of the kernel_image is smaller than the kernel.</span>
+            <span class="c1"># Copy the rotated image into kernel then shift</span>
+            <span class="n">rotated_height</span><span class="p">,</span> <span class="n">rotated_width</span> <span class="o">=</span> <span class="n">kernel_image</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">kernel</span><span class="p">[:</span><span class="n">rotated_height</span><span class="p">,</span> <span class="p">:</span><span class="n">rotated_width</span><span class="p">]</span> <span class="o">=</span> <span class="n">kernel_image</span><span class="p">[:,</span> <span class="p">:]</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kernel</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_psf_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the parameters of the model PSF, given as a mixture of 2D Gaussians</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength, in units of Angstroms.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        psf_parameters: Tuple[Tuple[float, float], Tuple[float, float]]</span>
+
+<span class="sd">        A tuple of ((psf1_amplitude, sigma1), (psf2_amplitude, sigma2)).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_model</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">grism_name</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">detector_id</span><span class="p">,</span>
+                                              <span class="n">wavelength</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_correct_stamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stamp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modifies the direct image stamp by convolving it with a 2D Gaussian PSF kernel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        stamp: np.ndarray</span>
+<span class="sd">            The raw stamp image.</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength to which you wish to adjust stamp.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        corrected_stamp: np.ndarray</span>
+<span class="sd">            The original image after being convolved with a correction Gaussian, which</span>
+<span class="sd">            brings the stamp into agreement with the PSF at the specified wavelength.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">correction_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectrum_info</span><span class="o">.</span><span class="n">grism_model</span><span class="o">.</span><span class="n">psf_correction_size</span><span class="p">(</span><span class="n">wavelength</span><span class="p">))</span>
+        <span class="n">canvas_size</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SCALE_RATIO</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">canvas_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">canvas_size</span><span class="p">,</span> <span class="n">canvas_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">psf_correction</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gauss_kernel</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">center</span><span class="p">),</span> <span class="p">(</span><span class="n">correction_sigma</span><span class="p">,</span> <span class="n">correction_sigma</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">Utils</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">stamp</span><span class="p">,</span> <span class="n">psf_correction</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_gaussian_from_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a 2D Gaussian kernel from an input image.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        image: np.ndarray</span>
+<span class="sd">            The 2D Gaussian approximation to the content of the center of the input image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">width</span> <span class="o">//</span> <span class="mi">4</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">width</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">4</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">bottom</span> <span class="o">+</span> <span class="n">height</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">center_region</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">bottom</span><span class="p">:</span> <span class="n">top</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="n">right</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">center_region</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-2</span><span class="p">:</span>
+            <span class="c1"># the central region of the cutout is empty</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">best_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_gaussian2d</span><span class="p">(</span><span class="n">center_region</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">best_fit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">amp</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">x_mean</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">x_mean</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">left</span>
+        <span class="n">y_mean</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">y_mean</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">bottom</span>
+        <span class="n">x_std</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">x_stddev</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">y_std</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">y_stddev</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="n">height</span><span class="p">,</span> <span class="p">:</span><span class="n">width</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_major</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_std</span><span class="p">,</span> <span class="n">y_std</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_minor</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_std</span><span class="p">,</span> <span class="n">y_std</span><span class="p">)</span>
+        <span class="n">theta_deg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x_std</span> <span class="o">&gt;</span> <span class="n">y_std</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">+</span> <span class="n">theta_deg</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">theta_deg</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="mi">180</span> <span class="o">+</span> <span class="n">theta_deg</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="n">theta_deg</span>
+
+        <span class="k">return</span> <span class="n">best_fit</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">amp</span><span class="p">,</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">x_std</span><span class="p">,</span> <span class="n">y_std</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_normalized_stamp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">:</span> <span class="s1">&#39;SpectrumInfo&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Processes the stamp by normalizing it and checking to see if it is usable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spectrum_info: SpectrumInfo</span>
+<span class="sd">            The SpectrumInfo object for the spectrum whose associated normalized direct image stamp is being requested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        normalized_stamp: NumPy.ndarray or None</span>
+
+<span class="sd">        A clipped, normalized version of the stamp stored in the SpectrumInfo object or None if the stamp is None or if</span>
+<span class="sd">        the pixels of the stamp do not appear to contain a usable image. The image is expected to contain a distribution</span>
+<span class="sd">        of pixels that are more spread-out than a simple point-source Gaussian with sigma=OBJECT_SIGMA_IN_PIXELS (if the</span>
+<span class="sd">        distribution is more peaked than a point-source, something is wrong with the cutout image).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stamp</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">stamp</span>
+        <span class="n">y_mag</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+        <span class="n">j_mag</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+        <span class="n">h_mag</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stamp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_mag</span><span class="p">,</span> <span class="n">j_mag</span><span class="p">,</span> <span class="n">h_mag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">16.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">finite_stamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">stamp</span><span class="o">.</span><span class="n">pixels</span><span class="p">)</span>
+
+        <span class="n">finite_stamp</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">finite_stamp</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="n">normed_stamp</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">normalize_image</span><span class="p">(</span><span class="n">finite_stamp</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normed_stamp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_too_compact</span><span class="p">(</span><span class="n">normed_stamp</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_on_edge</span><span class="p">(</span><span class="n">normed_stamp</span><span class="p">):</span>
+            <span class="c1"># the normalized kernel stamp either does not exist or it has issues</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">normed_stamp</span>
+
+<div class="viewcode-block" id="ConvolutionKernel.compute_nisp_exposure_direction"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ConvolutionKernel.ConvolutionKernel.compute_nisp_exposure_direction">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_nisp_exposure_direction</span><span class="p">(</span><span class="n">nisp_exposure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the direction of the +RA axis in a NISP exposure, in degrees, counterclockwise from +x.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        nisp_exposure: NispSurveyExposure</span>
+<span class="sd">            The NISP exposure with which the spectrum is associated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        angle: float</span>
+
+<span class="sd">        The direction angle of the +DEC axis with respect to the +y axis. The angle is always</span>
+<span class="sd">        positive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CD2_1&#39;</span><span class="p">)</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CD2_2&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Utils</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_on_edge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">normed_stamp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether the kernel appears to be on the edge of the square stamp.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        normed_stamp: np.ndarray</span>
+<span class="sd">            A normalized 2D array of floats.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        True if the kernel appears to be on the edge of the stamp. False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">peak_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">normed_stamp</span><span class="o">.</span><span class="n">argmax</span><span class="p">(),</span> <span class="n">normed_stamp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">sigma_x</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gaussian_moments</span><span class="p">(</span><span class="n">normed_stamp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">sigma_y</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gaussian_moments</span><span class="p">(</span><span class="n">normed_stamp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">x_threshold</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">sigma_x</span><span class="p">)</span>
+
+        <span class="n">y_threshold</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">sigma_y</span><span class="p">)</span>
+
+        <span class="n">in_x</span> <span class="o">=</span> <span class="n">x_threshold</span> <span class="o">&lt;</span> <span class="n">peak_position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">normed_stamp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_threshold</span>
+
+        <span class="n">in_y</span> <span class="o">=</span> <span class="n">y_threshold</span> <span class="o">&lt;</span> <span class="n">peak_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">normed_stamp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_threshold</span>
+
+        <span class="n">peak_near_edge</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_x</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">in_y</span>
+
+        <span class="k">if</span> <span class="n">peak_near_edge</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">left_sum</span> <span class="o">=</span> <span class="n">normed_stamp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">edge_max</span> <span class="o">=</span> <span class="n">normed_stamp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">right_sum</span> <span class="o">=</span> <span class="n">normed_stamp</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">edge_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">edge_max</span><span class="p">,</span> <span class="n">normed_stamp</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="n">top_sum</span> <span class="o">=</span> <span class="n">normed_stamp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">edge_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">edge_max</span><span class="p">,</span> <span class="n">normed_stamp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="n">bottom_sum</span> <span class="o">=</span> <span class="n">normed_stamp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">edge_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">edge_max</span><span class="p">,</span> <span class="n">normed_stamp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="n">edge_max_too_large</span> <span class="o">=</span> <span class="n">edge_max</span> <span class="o">&gt;</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">normed_stamp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">edge_sum</span> <span class="o">=</span> <span class="n">left_sum</span> <span class="o">+</span> <span class="n">right_sum</span> <span class="o">+</span> <span class="n">top_sum</span> <span class="o">+</span> <span class="n">bottom_sum</span>
+
+        <span class="n">edge_sum_too_large</span> <span class="o">=</span> <span class="n">edge_sum</span> <span class="o">&gt;</span> <span class="mf">0.07</span>
+
+        <span class="k">return</span> <span class="n">edge_sum_too_large</span> <span class="ow">or</span> <span class="n">edge_max_too_large</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_too_compact</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">normed_stamp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether the kernel is too peaked (too compact) relative to a Gaussian comparable with the PSF size.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        normed_stamp: np.ndarray</span>
+<span class="sd">            A normalized 2D array of floats.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        True if the kernel appears to be more compact than the most compact point source. False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># in the presence of noise, the kernel could potentially be more peaked than the PSF. This factor allows for</span>
+        <span class="c1"># this possibility</span>
+
+        <span class="n">noise_allowance</span> <span class="o">=</span> <span class="mf">1.05</span>
+
+        <span class="k">return</span> <span class="n">normed_stamp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">noise_allowance</span> <span class="o">*</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MAX_PIXEL_VALUE</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_gaussian2d</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sigma_major</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sigma_minor</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Gaussian2D</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fits a 2D Gaussian profile to the pixels in the center of the provided image</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        image: np.ndarray</span>
+<span class="sd">            A 2D NumPy array of floats, representing pixels in an image of an astronomical object.</span>
+
+<span class="sd">        sigma_major: float</span>
+<span class="sd">            An initial guess for the size of the major axis of the elliptical 2D Gaussian.</span>
+
+<span class="sd">        sigma_minor: float</span>
+<span class="sd">            An initial guess for the size of the minor axis of the elliptical 2D Gaussian.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        parameters: models.Gaussian2D or None</span>
+<span class="sd">            The Gaussian2D model that best fits the image. If the fit was not successful, returns None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fit_g</span> <span class="o">=</span> <span class="n">fitting</span><span class="o">.</span><span class="n">LevMarLSQFitter</span><span class="p">()</span>
+        <span class="n">y_dim</span><span class="p">,</span> <span class="n">x_dim</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">x_center</span><span class="p">,</span> <span class="n">y_center</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">gaussian_centroid</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">g_init</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Gaussian2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                                   <span class="n">x_mean</span><span class="o">=</span><span class="n">x_center</span><span class="p">,</span>
+                                   <span class="n">y_mean</span><span class="o">=</span><span class="n">y_center</span><span class="p">,</span>
+                                   <span class="n">x_stddev</span><span class="o">=</span><span class="n">sigma_minor</span><span class="p">,</span>
+                                   <span class="n">y_stddev</span><span class="o">=</span><span class="n">sigma_major</span><span class="p">)</span>
+        <span class="n">g_init</span><span class="o">.</span><span class="n">x_mean</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">g_init</span><span class="o">.</span><span class="n">y_mean</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="n">y_dim</span><span class="p">,</span> <span class="p">:</span><span class="n">x_dim</span><span class="p">]</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">AstropyUserWarning</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parameters</span> <span class="o">=</span> <span class="n">fit_g</span><span class="p">(</span><span class="n">g_init</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">filter_non_finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">fitting</span><span class="o">.</span><span class="n">NonFiniteValueError</span><span class="p">:</span>
+                <span class="c1"># Even when the input data is finite, the fitting routine can apparently encounter a div/0 error</span>
+                <span class="c1"># internally, which apparently cannot be prevented by the user. Essentially, the fit fails. So we treat</span>
+                <span class="c1"># this the same way as other failed fits.</span>
+                <span class="n">parameters</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">max_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span><span class="p">)</span>
+        <span class="n">failed_fit</span> <span class="o">=</span> <span class="n">fit_g</span><span class="o">.</span><span class="n">fit_info</span><span class="p">[</span><span class="s1">&#39;nfev&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">80</span> <span class="ow">or</span> <span class="n">fit_g</span><span class="o">.</span><span class="n">fit_info</span><span class="p">[</span><span class="s1">&#39;ierr&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">too_big</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">x_stddev</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">max_size</span> <span class="ow">or</span> <span class="n">parameters</span><span class="o">.</span><span class="n">y_stddev</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">max_size</span>
+        <span class="n">too_small</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">x_stddev</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">parameters</span><span class="o">.</span><span class="n">y_stddev</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span>
+        <span class="n">bad_amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mf">1e-20</span> <span class="ow">or</span> <span class="n">parameters</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mf">1.0</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="n">failed_fit</span> <span class="ow">or</span> <span class="n">too_big</span> <span class="ow">or</span> <span class="n">bad_amplitude</span> <span class="ow">or</span> <span class="n">too_small</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">failed</span> <span class="k">else</span> <span class="n">parameters</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

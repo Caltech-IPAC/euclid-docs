@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.LineModeller &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.LineModeller</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.LineModeller</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># File LineModeller.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: July 20, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the LineModeller class, which is used for finding and modelling emission lines in an observed spectrum.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">medfilt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.DetectorGrism</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorGrism</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.LineModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineModel</span>
+
+
+<div class="viewcode-block" id="LineModeller"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.LineModeller.LineModeller">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LineModeller</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The LineModeller class creates models of spectral emission lines.</span>
+
+<span class="sd">    The class takes segments of 1-D spectra from multiple dithers, searches for the presence of lines, and</span>
+<span class="sd">    creates models of any lines that are detected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measured_spectra</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stores the flux arrays and corresponding wavelengths of the spectra that may potentially</span>
+<span class="sd">        contain emission lines, as well as the uncertainty of each flux value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        measured_spectra: List[Tuple[np.ndarray]]</span>
+<span class="sd">            A list of tuples containing three 1D NumPy arrays: (wavelengths, fluxes, flux_uncertainties).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_spectra</span> <span class="o">=</span> <span class="n">measured_spectra</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_models_created</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">line_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models_created</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_models</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span>
+
+<div class="viewcode-block" id="LineModeller.mask"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.LineModeller.LineModeller.mask">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Indicates whether or not the specified wavelengths correspond to emission line regions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelengths: 1-D NumPy array</span>
+<span class="sd">            The wavelengths that will be checked.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        mask: NumPy array of bools</span>
+<span class="sd">            For each entry in the `wavelengths` array, if the wavelength is within an emission line region, the entry</span>
+<span class="sd">            in the mask is False; otherwise the entry is True.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        TypeError: if the wavelengths parameter is not of the expected type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected wavelengths to be a NumPy array&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">wavelengths</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models_created</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_models</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span><span class="p">:</span>
+            <span class="n">min_wav</span><span class="p">,</span> <span class="n">max_wav</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">wavelength_range</span>
+            <span class="n">line_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">wavelengths</span> <span class="o">&gt;</span> <span class="n">min_wav</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">wavelengths</span> <span class="o">&lt;</span> <span class="n">max_wav</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">line_mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combines lines from different observations (if possible).</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        sets `self._models_created` and `self._line_models`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models_created</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">line_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">uncertainty</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_spectra</span><span class="p">:</span>
+            <span class="n">line_candidates</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_lines</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">)</span>
+
+        <span class="n">grouped_line_candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group_lines</span><span class="p">(</span><span class="n">line_candidates</span><span class="p">)</span>
+        <span class="n">grouped_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reject_spurious_lines</span><span class="p">(</span><span class="n">grouped_line_candidates</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">line_group</span> <span class="ow">in</span> <span class="n">grouped_lines</span><span class="p">:</span>
+            <span class="n">wavelengths</span> <span class="o">=</span> <span class="p">[</span><span class="n">observation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">observation</span> <span class="ow">in</span> <span class="n">line_group</span><span class="p">]</span>
+            <span class="n">fluxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">observation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">observation</span> <span class="ow">in</span> <span class="n">line_group</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_append_line_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_line_models</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_models_created</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_group_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes the set of all spectral regions that appear to contain lines and groups them so that</span>
+<span class="sd">        all segments corresponding to a unique line are grouped together into a list.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw_lines: List[Tuple[np.ndarray]]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        line_candidates: List[List[Tuple[np.ndarray]]]</span>
+<span class="sd">            A list containing lists of tuples of (wavelength, flux, uncertainty). The tuples in</span>
+<span class="sd">            the sub-lists contain spectral segments that all correspond to the same emission line.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_lines</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;raw_line&#39;</span><span class="p">:</span> <span class="n">line</span><span class="p">,</span> <span class="s1">&#39;has_been_sorted&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">raw_lines</span><span class="p">]</span>
+
+        <span class="n">line_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">all_lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;has_been_sorted&#39;</span><span class="p">]:</span>
+                <span class="n">line</span><span class="p">[</span><span class="s1">&#39;has_been_sorted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">this_line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;raw_line&#39;</span><span class="p">]</span>
+                <span class="n">this_group</span> <span class="o">=</span> <span class="p">[</span><span class="n">this_line</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">all_lines</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">other_line</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="s1">&#39;raw_line&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lines_match</span><span class="p">(</span><span class="n">this_line</span><span class="p">,</span> <span class="n">other_line</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="p">[</span><span class="s1">&#39;has_been_sorted&#39;</span><span class="p">]:</span>
+                            <span class="n">this_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other_line</span><span class="p">)</span>
+                <span class="n">line_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_group</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">line_candidates</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reject_spurious_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">line_candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rejects a line if it appears to not be real.</span>
+
+<span class="sd">        A line is only considered real if it is observed in more than one dither, except in the</span>
+<span class="sd">        case in which the peak flux is 10 x larger than the flux uncertainty. If a line is only</span>
+<span class="sd">        detected in a single dither, but it could have been detected in more than one dither,</span>
+<span class="sd">        then it is spurious, even if it has a 10-sigma singnificance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        line_candidates: List[List[Tuple[np.ndarray]]]</span>
+<span class="sd">            The output of the _group_lines() method.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        real_lines: List[List[Tuple[np.ndarray]]]</span>
+<span class="sd">            The same as the input, but lines that are determined to be spurious have been removed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">real_lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">line_candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">,</span> <span class="n">uncertainties</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">peak_index</span> <span class="o">=</span> <span class="n">fluxes</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+                <span class="n">peak_wav</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">peak_index</span><span class="p">]</span>
+                <span class="n">maximum_possible_detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_successful_measurements</span><span class="p">(</span><span class="n">peak_wav</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">maximum_possible_detections</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">peak_flux</span> <span class="o">=</span> <span class="n">fluxes</span><span class="p">[</span><span class="n">peak_index</span><span class="p">]</span>
+                    <span class="n">uncertainty_at_peak</span> <span class="o">=</span> <span class="n">uncertainties</span><span class="p">[</span><span class="n">peak_index</span><span class="p">]</span>
+                    <span class="n">significance</span> <span class="o">=</span> <span class="n">peak_flux</span> <span class="o">/</span> <span class="n">uncertainty_at_peak</span>
+                    <span class="k">if</span> <span class="n">significance</span> <span class="o">&gt;=</span> <span class="mf">10.0</span><span class="p">:</span>
+                        <span class="n">real_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">real_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">real_lines</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_count_successful_measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Counts the number of times that the specified wavelength was successfully measured.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelength: float</span>
+<span class="sd">            The wavelength of interest</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        number_of_measurements: int</span>
+<span class="sd">            The number of times that the specified wavelength occurs in a region of finite uncertainty</span>
+<span class="sd">            in self._input_spectra.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">wav</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">uncertainty</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_spectra</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wav</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">nearest_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">wav</span> <span class="o">-</span> <span class="n">wavelength</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">nearest_index</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">wav</span><span class="p">)</span> <span class="o">-</span> <span class="n">nearest_index</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">:</span>
+                    <span class="c1"># the line couldn&#39;t have been captured in this dither because it&#39;s on the edge or beyond the edge</span>
+                    <span class="c1"># of the available region.</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">[</span><span class="n">nearest_index</span> <span class="o">-</span> <span class="mi">4</span><span class="p">:</span> <span class="n">nearest_index</span> <span class="o">+</span> <span class="mi">5</span><span class="p">])):</span>
+                    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">count</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_lines_match</span><span class="p">(</span><span class="n">raw_line1</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">raw_line2</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines whether the two input line candidates are observations of the same emission line.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw_line1: Tuple[np.ndarray]</span>
+<span class="sd">            The first line, as a tuple of three NumPy arrays: (wavelengths, fluxes, uncertainties)</span>
+
+<span class="sd">        raw_line2: Tuple[np.ndarray]</span>
+<span class="sd">            The first line, as a tuple of three NumPy arrays: (wavelengths, fluxes, uncertainties)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        match: bool</span>
+<span class="sd">            True if raw_lines1 and raw_lines2 appear to be two observations of the same line.</span>
+<span class="sd">            Otherwise, false.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wavs1</span><span class="p">,</span> <span class="n">fluxes1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">raw_line1</span>
+        <span class="n">wavs2</span><span class="p">,</span> <span class="n">fluxes2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">raw_line2</span>
+
+        <span class="n">peak_wav1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wavs1</span><span class="p">[</span><span class="n">fluxes1</span><span class="o">.</span><span class="n">argmax</span><span class="p">()])</span>
+        <span class="n">peak_wav2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wavs2</span><span class="p">[</span><span class="n">fluxes2</span><span class="o">.</span><span class="n">argmax</span><span class="p">()])</span>
+        <span class="n">dwav</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">wavs1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">wavs1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">peak_wav1</span> <span class="o">-</span> <span class="n">peak_wav2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">dwav</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_append_line_model</span><span class="p">(</span><span class="n">model_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LineModel</span><span class="p">],</span>
+                           <span class="n">wavelengths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                           <span class="n">fluxes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attempts to create a `LineModel` from the input `wavelengths` and `fluxes`. If this succeeds, the `LineModel`</span>
+<span class="sd">        object is appended to the list of models, `model_list`; otherwise nothing happens.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        model_list: list</span>
+<span class="sd">            A (potentially empty) list of `LineModel` objects.</span>
+
+<span class="sd">        wavelengths: list</span>
+<span class="sd">           A list of wavelength vectors [wavelengths1, wavelengths2]. The list must contain at least one array of</span>
+<span class="sd">           wavelengths.</span>
+
+<span class="sd">        fluxes: list</span>
+<span class="sd">            A list of the flux vectors corresponding to the wavelength vectors listed in wavelengths. This is expected</span>
+<span class="sd">            be given in units of detector counts per Angstrom.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Appends a `LineModel` object to the `model_list` if a LineModel can be created from the input wavelengths and</span>
+<span class="sd">        fluxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">line_model</span> <span class="o">=</span> <span class="n">LineModel</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">line_model</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">line_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">model_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_model</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_lines</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">flux_density</span><span class="p">,</span> <span class="n">flux_uncertainty</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies regions of a collapsed 2D spectrum that contain emission lines and returns the wavelengths and</span>
+<span class="sd">        flux densities in the line regions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelengths: 1-D NumPy array</span>
+<span class="sd">            Wavelengths of the entries in `flux_density`, in Angstroms.</span>
+
+<span class="sd">        flux_density: 1-D NumPy array</span>
+<span class="sd">            The flux densities of the spectrum, measured in detector counts per Angstrom.</span>
+
+<span class="sd">        flux_uncertainty: 1-D NumPy array</span>
+<span class="sd">            The uncertainty of each entry in the `flux_density` array.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        lines: list</span>
+<span class="sd">            Returns a list of tuples of NumPy arrays, which looks like this:</span>
+
+<span class="sd">                [(wavelengths1, fluxes1, uncertainties1), (wavelengths2, fluxes2, uncertainties2), ...,</span>
+<span class="sd">                 (wavelengthsN, fluxesN, uncertaintiesN)]</span>
+
+<span class="sd">           where the wavelengths, fluxes, and flux uncertainties are NumPy arrays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_find_spikes</span><span class="p">(</span><span class="n">flux_density</span><span class="p">,</span> <span class="n">spike_width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">uncertainty</span><span class="o">=</span><span class="n">flux_uncertainty</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="c1"># if there are obviously no lines, return empty list</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># identify indices of the borders between separate lines:</span>
+
+        <span class="n">separators</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">separators</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">separators</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">line_indices</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">line_flux</span> <span class="o">=</span> <span class="n">flux_density</span><span class="p">[(</span><span class="n">line_indices</span><span class="p">,)]</span>
+                <span class="n">clipped_line_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">line_flux</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">flux_uncertainty</span><span class="p">[(</span><span class="n">line_indices</span><span class="p">,)]</span>
+                <span class="n">wavs</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[(</span><span class="n">line_indices</span><span class="p">,)]</span>
+                <span class="k">if</span> <span class="n">wavs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">DetectorGrism</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span> <span class="ow">and</span> <span class="n">wavs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">DetectorGrism</span><span class="o">.</span><span class="n">MAX_WAV_INNER</span><span class="p">:</span>
+                    <span class="c1"># avoid anomaly at the end-points</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">wavelengths</span><span class="p">[(</span><span class="n">line_indices</span><span class="p">,)],</span> <span class="n">clipped_line_flux</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_spikes</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">,</span> <span class="n">spike_width</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Locates regions of a signal that exceed the local mean by 5 times the local flux uncertainty.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        signal: np.ndarray</span>
+<span class="sd">            Contains the raw, noisy signal, which potentially contains a spike (a 5-sigma outlier).</span>
+
+<span class="sd">        uncertainty: np.ndarray</span>
+<span class="sd">            The expected standard deviation of the noise in the signal, in the absence of any spikes.</span>
+
+<span class="sd">        spike_width: int</span>
+<span class="sd">            The expected width of the spike in the signal.</span>
+
+<span class="sd">        padding: int</span>
+<span class="sd">            The number of samples to the left and right of the spike that should be included in the output.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        spike_indices: NumPy array of integers</span>
+<span class="sd">            A list of integer indices corresponding to the locations of spikes in the signal. This includes the</span>
+<span class="sd">            central position of the spike as well as +/- `padding` samples to the left and right of the spike.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">spike_width</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;spike_width must be &gt;= 1.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># perform median filtering to smooth the uncertainty.</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">spike_width</span>
+
+        <span class="c1"># the kernel size for the median filter has to be odd, so:</span>
+
+        <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">width</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">width</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">width</span>
+
+        <span class="n">smoothed_uncertainty</span> <span class="o">=</span> <span class="n">medfilt</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">)</span>
+
+        <span class="c1"># identify regions in which the signal exceeds the the uncertainty by 5 sigma</span>
+
+        <span class="n">spike</span> <span class="o">=</span> <span class="p">(</span><span class="n">signal</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">smoothed_uncertainty</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="n">conv_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">spike_width</span><span class="p">)</span> <span class="o">/</span> <span class="n">spike_width</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">spike_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="n">conv_kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">has_spike</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spike_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">has_spike</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_spike</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="n">imin</span> <span class="o">=</span> <span class="n">spike_width</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">-</span> <span class="n">spike_width</span>
+
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">spike_indices</span><span class="p">:</span>
+            <span class="n">ileft</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">imin</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="n">padding</span><span class="p">)</span>
+            <span class="n">iright</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">imax</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">padding</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">iright</span><span class="p">):</span>
+                <span class="n">indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="n">index_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="n">index_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index_list</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

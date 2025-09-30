@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.SpectrumMeasurer &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.SpectrumMeasurer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.SpectrumMeasurer</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File SpectrumMeasurer.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: July 23, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Flags</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flags</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.LineModeller</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineModeller</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.DetectorGrism</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorGrism</span>
+
+
+<div class="viewcode-block" id="SpectrumMeasurer"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumMeasurer.SpectrumMeasurer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectrumMeasurer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Measures 1-D spectra from 2-D spectra, potentially by combining data from multiple dithers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># the nominal width of a wavelength bin in units of Angstroms</span>
+    <span class="n">WAVELENGTH_BIN_SIZE</span> <span class="o">=</span> <span class="mi">1500</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_modeller</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs the SpectrumMeasurer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spectrum_modeller: SpectrumModeller</span>
+<span class="sd">            The object responsible for measuring spectra</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span> <span class="o">=</span> <span class="n">spectrum_modeller</span>
+
+<div class="viewcode-block" id="SpectrumMeasurer.measure_spectra"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.SpectrumMeasurer.SpectrumMeasurer.measure_spectra">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">measure_spectra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_info</span><span class="p">:</span> <span class="s1">&#39;AstroObjectInfo&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">LineModeller</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Measures all of the spectra associated with the object_info.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        object_info: AstroObjectInfo</span>
+<span class="sd">            The AstroObjectInfo containing all information about the star or galaxy of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        measurements: tuple or None</span>
+<span class="sd">            Returns None if no measurements could be made. Otherwise, returns a tuple of</span>
+<span class="sd">            (continuum_flux, emission_lines), where:</span>
+
+<span class="sd">            continuum_flux: np.ndarray</span>
+<span class="sd">                A 1-D array of the fluxes at the specified wavelengths, representing the smooth continuum of</span>
+<span class="sd">                the spectrum.</span>
+
+<span class="sd">            emission_lines: LineModeller or None</span>
+<span class="sd">                A LineModeller instance describing any lines that were detected in the spectrum. If no lines were</span>
+<span class="sd">                found, then None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">object_info</span><span class="o">.</span><span class="n">has_been_measured</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;This spectrum has been measured already!&#39;</span><span class="p">)</span>
+
+        <span class="n">spectra</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_measure_spectrum</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">object_info</span><span class="o">.</span><span class="n">spectra</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">measured_spectra</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">spectra</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measured_spectra</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">model_continuum</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_1d_spectrum</span><span class="p">(</span><span class="n">measured_spectra</span><span class="p">,</span> <span class="n">object_info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lines</span><span class="o">.</span><span class="n">line_models</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># mask out the line regions from the measured_spectra, then model the continuum and lines again because the</span>
+            <span class="c1"># lines skew the initial continuum measurement upward.</span>
+            <span class="n">masked_spectra</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">wavs</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">dflux</span> <span class="ow">in</span> <span class="n">measured_spectra</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">wavs</span><span class="p">)</span>
+                <span class="n">masked_spectra</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">wavs</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">flux</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">dflux</span><span class="p">[</span><span class="n">mask</span><span class="p">]))</span>
+
+            <span class="n">model_continuum</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_1d_spectrum</span><span class="p">(</span><span class="n">masked_spectra</span><span class="p">,</span> <span class="n">object_info</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model_continuum</span><span class="p">,</span> <span class="n">lines</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_model_1d_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measured_spectra</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                           <span class="n">object_info</span><span class="p">:</span> <span class="s1">&#39;AstroObjectInfo&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">LineModeller</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the 1-D continuum model and the LineModeller for the set of measured_spectra</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        measured_spectra: list</span>
+<span class="sd">            A list of tuples produced by _measure_spectrum(). The tuples are (wavelengths,</span>
+<span class="sd">            measured_fluxes, flux_uncertainties)</span>
+
+<span class="sd">        object_info: AstroObjectInfo</span>
+<span class="sd">            The AstroObjectInfo associated with the spectrum being measured. This will be used to</span>
+<span class="sd">            access the continuum if the continuum could not be modelled from available data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        spectrum_model: Tuple[np.ndarray, Union[LineModeller, None]]</span>
+
+<span class="sd">        A tuple containing the continuum (np.ndarray) and the line models (LineModeller).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># perform the smoothing / binning</span>
+
+        <span class="n">binned_fluxes</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_binned_fluxes</span><span class="p">(</span><span class="o">*</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">measured_spectra</span><span class="p">)</span>
+
+        <span class="n">binned_fluxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">bf</span> <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="n">binned_fluxes</span> <span class="k">if</span> <span class="n">bf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">binned_fluxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">object_info</span><span class="o">.</span><span class="n">interp_mask</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">object_info</span><span class="o">.</span><span class="n">continuum</span><span class="p">,</span> <span class="n">LineModeller</span><span class="p">(</span><span class="n">measured_spectra</span><span class="p">)</span>
+
+        <span class="n">bin_wavelengths</span><span class="p">,</span> <span class="n">bin_fluxes</span><span class="p">,</span> <span class="n">bin_uncertainties</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">binned_fluxes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># If there are fewer than 3 bins available, use the continuum from the photometry</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_wavelengths</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">bin_wavelengths</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">object_info</span><span class="o">.</span><span class="n">interp_mask</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">continuum</span> <span class="o">=</span> <span class="n">object_info</span><span class="o">.</span><span class="n">continuum</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># fit the binned fluxes to estimate the continuum</span>
+            <span class="n">continuum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">power_law_interp</span><span class="p">(</span><span class="n">bin_wavelengths</span><span class="p">,</span>
+                                                        <span class="n">bin_fluxes</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span><span class="p">,</span>
+                                                        <span class="n">bin_uncertainties</span><span class="p">)</span>
+            <span class="c1"># If the continuum couldn&#39;t be computed, it&#39;s now None, so fall-back on the</span>
+            <span class="c1"># broad-band model:</span>
+            <span class="k">if</span> <span class="n">continuum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">object_info</span><span class="o">.</span><span class="n">interp_mask</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">continuum</span> <span class="o">=</span> <span class="n">object_info</span><span class="o">.</span><span class="n">continuum</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># the continuum is based on the binned fluxes.</span>
+                <span class="n">object_info</span><span class="o">.</span><span class="n">interp_mask</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1">#plt.errorbar(bin_wavelengths, bin_fluxes, yerr=bin_uncertainties, capsize=3, linestyle=&quot;None&quot;, marker=&#39;o&#39;, markersize=1, fillstyle=&#39;none&#39;, label=&#39;measured&#39;)</span>
+        <span class="c1"># subtract continuum from each spectrum, so that the LineModeller can model the lines.</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">measured_spectra</span><span class="p">:</span>
+            <span class="n">wavs</span><span class="p">,</span> <span class="n">fluxes</span><span class="p">,</span> <span class="n">uncertainties</span> <span class="o">=</span> <span class="n">spec</span>
+            <span class="n">fluxes</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">wavs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span><span class="p">,</span> <span class="n">continuum</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">continuum</span><span class="p">,</span> <span class="n">LineModeller</span><span class="p">(</span><span class="n">measured_spectra</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_measure_spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="s1">&#39;SpectrumInfo&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Measures a single spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        spec: SpectrumInfo</span>
+<span class="sd">            The SpectrumInfo instance associated with the spectrum.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        measurement: tuple of 3 np.ndarray objects or None</span>
+<span class="sd">            A tuple of (wavelengths, fluxes, flux_uncertainties) which are 1-dimensional NumPy arrays of equal length.</span>
+<span class="sd">            Fluxes and uncertainties are reported in the physical units [erg/s/cm^2/A] and wavelengths are in Angstroms.</span>
+<span class="sd">            If no measurement was possible (e.g., because there are too few clean pixels), then None is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">search_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">search_grids</span><span class="p">[</span><span class="n">spec</span><span class="o">.</span><span class="n">dither</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">detector</span><span class="p">]</span>
+        <span class="n">contaminated_pixel_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identify_contaminated_pixels</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">search_grid</span><span class="p">)</span>
+
+        <span class="n">correction_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measure_correction</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">contaminated_pixel_mask</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">correction_output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">wavelengths</span><span class="p">,</span> <span class="n">correction</span><span class="p">,</span> <span class="n">variance</span> <span class="o">=</span> <span class="n">correction_output</span>
+
+        <span class="n">model_wavs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modeller</span><span class="o">.</span><span class="n">lambdas</span>
+        <span class="n">model_flux</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">continuum</span>
+
+        <span class="n">interpolated_model_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">model_wavs</span><span class="p">,</span> <span class="n">model_flux</span><span class="p">)</span>
+
+        <span class="n">measured_fluxes</span> <span class="o">=</span> <span class="n">correction</span> <span class="o">*</span> <span class="n">interpolated_model_flux</span>
+
+        <span class="n">flux_uncertainties</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span> <span class="o">*</span> <span class="n">interpolated_model_flux</span>
+
+        <span class="k">return</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">measured_fluxes</span><span class="p">,</span> <span class="n">flux_uncertainties</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_measure_correction</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="s1">&#39;SpectrumInfo&#39;</span><span class="p">,</span>
+                            <span class="n">contaminated_pixel_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Measures the correction factor by which the model flux needs to be multiplied in order</span>
+<span class="sd">        to obtain the observed spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        spec: SpectrumInfo</span>
+<span class="sd">            The SpectrumInfo object associated with the spectrum that is being measured.</span>
+
+<span class="sd">        contaminated_pixel_mask: np.ndarray</span>
+<span class="sd">            A 2-D NumPy array with True values indicating that the pixel is contaminated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        correction_info: np.ndarray or None</span>
+<span class="sd">            A 3xN NumPy array with the following rows:</span>
+
+<span class="sd">            row 0: wavelengths</span>
+<span class="sd">                wavelength values at which the correction was measured.</span>
+
+<span class="sd">            row 1: correction</span>
+<span class="sd">                flux correction values.</span>
+
+<span class="sd">            row 2: variance</span>
+<span class="sd">                the variance of each of the correction values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">model_spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">make_2d_model</span><span class="p">()</span>
+
+        <span class="n">model2d</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">model_spec</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">original_spectrum</span><span class="o">.</span><span class="n">get_science</span><span class="p">()</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">original_spectrum</span><span class="o">.</span><span class="n">get_mask</span><span class="p">()</span>
+        <span class="n">bad_pixel_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span><span class="p">)</span> <span class="o">==</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span>
+
+        <span class="n">usable_pixels</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">contaminated_pixel_mask</span> <span class="o">|</span> <span class="n">bad_pixel_mask</span><span class="p">)</span>
+
+        <span class="n">conv_kernel</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">convolution_kernel</span>
+
+        <span class="n">variance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">correction</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">wavelengths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># the threshold value is used to select the pixels in the kernel that significantly contribute</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.0002</span> <span class="o">*</span> <span class="n">conv_kernel</span><span class="o">.</span><span class="n">const_kernel</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">conv_kernel</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">wav</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">entry</span>
+            <span class="n">wavelengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wav</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">kernel</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">&amp;</span> <span class="n">usable_pixels</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
+            <span class="n">spec_region</span> <span class="o">=</span> <span class="n">observed</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
+            <span class="n">usable_spec_pixels</span> <span class="o">=</span> <span class="n">spec_region</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">model_region</span> <span class="o">=</span> <span class="n">model2d</span><span class="o">.</span><span class="n">pixels</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
+            <span class="n">usable_model_pixels</span> <span class="o">=</span> <span class="n">model_region</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">spec_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">usable_spec_pixels</span><span class="p">)</span>
+            <span class="n">model_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">usable_model_pixels</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">usable_spec_pixels</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">spec_sum</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">model_sum</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="n">spec_sum</span> <span class="o">/</span> <span class="n">model_sum</span>
+                <span class="n">correction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">))</span>
+                <span class="n">residual</span> <span class="o">=</span> <span class="n">usable_spec_pixels</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">usable_model_pixels</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">residual</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">model_sum</span> <span class="o">*</span> <span class="n">model_sum</span><span class="p">)</span>
+                <span class="n">variance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">correction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+                <span class="n">variance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">clear_convolution_kernel</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">variance</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">correction</span><span class="p">,</span> <span class="n">variance</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_binned_fluxes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                               <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                               <span class="n">fluxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                               <span class="n">uncertainties</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes binned fluxes from large regions of the input spectrum. By including more pixels,</span>
+<span class="sd">        the uncertainty of the binned fluxes is lower than the uncertainty in the high-resolution</span>
+<span class="sd">        spectrum that is provided as input.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wavelengths: np.ndarray</span>
+<span class="sd">            A 1-D array of wavelengths, in Angstroms. This is assumed to be given in order of increasing wavelength.</span>
+
+<span class="sd">        fluxes: np.ndarray</span>
+<span class="sd">            A 1-D array of the measured fluxes at the specified wavelengths</span>
+
+<span class="sd">        uncertainties: np.ndarray</span>
+<span class="sd">            A 1-D array of the uncertainties in the flux measurements.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        binned_measurements: tuple or None</span>
+<span class="sd">            A tuple of (wavelengths, flux_measurements, flux_uncertainties), where:</span>
+
+<span class="sd">            bin_wavelengths of the bins: np.ndarray</span>
+<span class="sd">                A 1-D array of wavelengths, in Angstroms</span>
+
+<span class="sd">            bin_fluxes: np.ndarray</span>
+<span class="sd">                A 1-D array of the binned measured fluxes corresponding to the output wavelengths.</span>
+
+<span class="sd">            bin_flux_uncertainties: np.ndarray</span>
+<span class="sd">                A 1-D array of the uncertainties in the flux measurements.</span>
+
+<span class="sd">            None: if fewer than 90% of the input flux values were positive.</span>
+
+<span class="sd">            Raises</span>
+<span class="sd">            ------</span>
+<span class="sd">            ValueError if the arrays are not sorted in order of increasing wavelength.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># empirically-determined minimum number of individual flux measurements that are useful to combine in a bin,</span>
+        <span class="c1"># plus 1 so that &lt; can be used instead of &lt;=.</span>
+        <span class="n">min_usable_length</span> <span class="o">=</span> <span class="mi">9</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_usable_length</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">wavelengths</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">wavelengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The Input arrays must already be sorted in order of increasing wavelength.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># clip off the ends. We are only interested in the more reliable, inner region of the spectrum</span>
+
+        <span class="n">inner</span> <span class="o">=</span> <span class="p">(</span><span class="n">wavelengths</span> <span class="o">&gt;</span> <span class="n">DetectorGrism</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">wavelengths</span> <span class="o">&lt;</span> <span class="n">DetectorGrism</span><span class="o">.</span><span class="n">MAX_WAV_INNER</span><span class="p">)</span>
+        <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">inner</span><span class="p">]</span>
+        <span class="n">fluxes</span> <span class="o">=</span> <span class="n">fluxes</span><span class="p">[</span><span class="n">inner</span><span class="p">]</span>
+        <span class="n">uncertainties</span> <span class="o">=</span> <span class="n">uncertainties</span><span class="p">[</span><span class="n">inner</span><span class="p">]</span>
+
+        <span class="n">positive</span> <span class="o">=</span> <span class="n">fluxes</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="n">finite_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">uncertainties</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">fluxes</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">min_usable_length</span> <span class="ow">or</span> <span class="nb">sum</span><span class="p">(</span><span class="n">positive</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fluxes</span><span class="p">)</span> <span class="ow">or</span> <span class="n">finite_weights</span> <span class="o">&lt;</span> <span class="n">min_usable_length</span><span class="p">:</span>
+            <span class="c1"># there are too few measurements to be useful OR more than 1 percent of the fluxes are negative,</span>
+            <span class="c1"># which likely indicates that this spectrum has very low signal / noise, and binning is not going to</span>
+            <span class="c1"># help very much; the broadband fluxes should be used.</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">min_wav</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_wav</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">wavelength_extent</span> <span class="o">=</span> <span class="n">max_wav</span> <span class="o">-</span> <span class="n">min_wav</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">uncertainties</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wavelength_extent</span> <span class="o">&lt;</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="bp">cls</span><span class="o">.</span><span class="n">WAVELENGTH_BIN_SIZE</span><span class="p">:</span>
+            <span class="c1"># just compute a single (wavelength, flux, dflux) triplet when the spectral segment is short</span>
+            <span class="n">bin_wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Utils</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">fluxes</span> <span class="o">*</span> <span class="n">weights</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">bin_fluxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Utils</span><span class="o">.</span><span class="n">weighted_mean</span><span class="p">(</span><span class="n">fluxes</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">weighted_sample_std</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">weighted_std</span><span class="p">(</span><span class="n">fluxes</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span>
+            <span class="n">bin_dflux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">weighted_sample_std</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_bins</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">wavelength_extent</span> <span class="o">/</span> <span class="bp">cls</span><span class="o">.</span><span class="n">WAVELENGTH_BIN_SIZE</span><span class="p">)</span>
+            <span class="n">counts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">)</span>
+            <span class="n">bin_wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_bins</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">bin_fluxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_bins</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">bin_dflux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_bins</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
+                <span class="n">fluxes_i</span> <span class="o">=</span> <span class="n">fluxes</span><span class="p">[</span><span class="n">lower_bound</span><span class="p">:</span> <span class="n">lower_bound</span> <span class="o">+</span> <span class="n">c</span><span class="p">]</span>
+                <span class="n">wavelengths_i</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">lower_bound</span><span class="p">:</span> <span class="n">lower_bound</span> <span class="o">+</span> <span class="n">c</span><span class="p">]</span>
+                <span class="n">weights_i</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">lower_bound</span><span class="p">:</span> <span class="n">lower_bound</span> <span class="o">+</span> <span class="n">c</span><span class="p">]</span>
+                <span class="n">bin_wavelengths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">effective_wavelength</span><span class="p">(</span><span class="n">wavelengths_i</span><span class="p">,</span> <span class="n">fluxes_i</span> <span class="o">*</span> <span class="n">weights_i</span><span class="p">)</span>
+                <span class="n">bin_fluxes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">weighted_mean</span><span class="p">(</span><span class="n">fluxes_i</span><span class="p">,</span> <span class="n">weights_i</span><span class="p">,</span> <span class="n">wavelengths_i</span><span class="p">)</span>
+                <span class="n">bin_dflux</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">weighted_std</span><span class="p">(</span><span class="n">fluxes_i</span><span class="p">,</span> <span class="n">weights_i</span><span class="p">,</span> <span class="n">wavelengths_i</span><span class="p">)</span>
+                <span class="n">lower_bound</span> <span class="o">+=</span> <span class="n">c</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_wavelengths</span> <span class="o">&lt;</span> <span class="n">max_wav</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bin_wavelengths</span> <span class="o">&gt;</span> <span class="n">min_wav</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">bin_fluxes</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">bin_dflux</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">bin_wavelengths</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">bin_fluxes</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">bin_dflux</span><span class="p">[</span><span class="n">mask</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_identify_contaminated_pixels</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="s1">&#39;SpectrumInfo&#39;</span><span class="p">,</span> <span class="n">search_grid</span><span class="p">:</span> <span class="s1">&#39;SearchGrid&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Masks the pixels in the specified spectrum that are contaminated by other spectra.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        spec: SpectrumInfo</span>
+<span class="sd">            The SpectrumInfo instance associated with the spectrum of interest.</span>
+
+<span class="sd">        search_grid: &#39;searchGrid&#39;</span>
+<span class="sd">            The SearchGrid for the relevant detector.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        contaminated_pixels: np.ndarray</span>
+<span class="sd">            A boolean 2D NumPy array, with True values corresponding to contaminated pixels and</span>
+<span class="sd">            False corresponding to clean, uncontaminated pixels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># the x and y coordinates of the pixels in the bounding box of the spectrum</span>
+        <span class="n">x_image</span><span class="p">,</span> <span class="n">y_image</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">grid_coords_in_bbox</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
+
+        <span class="c1"># search for only the real contaminants, excluding ones that fall within the bounding box</span>
+        <span class="c1"># but do not actually contaminate the spectrum (which can happen when the spectrum is tilted).</span>
+        <span class="n">contaminants</span> <span class="o">=</span> <span class="n">search_grid</span><span class="o">.</span><span class="n">find_contaminants</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">searchgrid_bbox</span><span class="p">,</span>
+                                                     <span class="n">ignore_idx</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">object_id</span><span class="p">,</span>
+                                                     <span class="n">mag_limit</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.5</span><span class="p">)</span>
+
+        <span class="n">contam_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">x_image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">contam</span> <span class="ow">in</span> <span class="n">contaminants</span><span class="p">:</span>
+            <span class="n">contam_mask</span> <span class="o">|=</span> <span class="n">search_grid</span><span class="o">.</span><span class="n">mask_grid_bbox</span><span class="p">(</span><span class="n">x_image</span><span class="p">,</span> <span class="n">y_image</span><span class="p">,</span> <span class="n">contam</span><span class="o">.</span><span class="n">searchgrid_bbox</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">bbox</span>
+
+        <span class="k">return</span> <span class="n">contam_mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

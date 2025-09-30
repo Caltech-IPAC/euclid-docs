@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.DecontaminatedSpectrum &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.DecontaminatedSpectrum</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.DecontaminatedSpectrum</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File DecontaminatedSpectrum.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: March 29, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the class,  `DecontaminatedSpectrum`, which stores the key output quantity of the SpectraDecontamination</span>
+<span class="sd">Module.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.DetectorModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraLocation.H5LocationTable</span><span class="w"> </span><span class="kn">import</span> <span class="n">H5LocationTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraLocation.LocationSpectrum</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocationSpectrum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraLocation.LambdaRange</span><span class="w"> </span><span class="kn">import</span> <span class="n">LambdaRange</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModelsBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChebLocalModel</span><span class="p">,</span> <span class="n">GrismModel</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectrumCutout</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrumCutout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.SpectrumContainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrumContainer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Flags</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flags</span>
+
+
+<div class="viewcode-block" id="DecontaminatedSpectrum"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DecontaminatedSpectrum.DecontaminatedSpectrum">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DecontaminatedSpectrum</span><span class="p">(</span><span class="n">SpectrumContainer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A struct-like class for storing the decontamination products for a single spectrum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_science&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_variance&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_mask&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_contamination&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_wavelengths&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_contaminants&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_collection&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_location&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_boundary&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_y_mag&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_j_mag&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_h_mag&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_y_flux&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_j_flux&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_h_flux&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_kernel&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_sigma_major&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_sigma_minor&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_gaussian_theta&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">collection</span><span class="p">:</span> <span class="s1">&#39;DecontaminatedSpectraCollection&#39;</span><span class="p">,</span>
+                 <span class="n">spectrum_cutout</span><span class="p">:</span> <span class="n">SpectrumCutout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">h5group</span><span class="p">:</span> <span class="s1">&#39;h5py.Group&#39;</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a DecontaminatedSpectrum object from a SpectrumCutout object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        spectrum_cutout: SpectrumCutout</span>
+<span class="sd">            A `SpectrumCutout object`, created by the SpectraDecontaminator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5group</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contamination</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">spectrum_cutout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">get_offset</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">contaminants</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="n">n_contaminants</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">contaminants</span><span class="p">)</span>
+
+                <span class="n">contaminants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_contaminants</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;order&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)])</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">contam</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">contaminants</span><span class="p">):</span>
+                    <span class="n">contaminants</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contam</span><span class="o">.</span><span class="n">object_id</span>
+                    <span class="n">contaminants</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contam</span><span class="o">.</span><span class="n">order</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">contaminants</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">object_id</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dither</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">dither</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detector</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">detector</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_offset</span> <span class="o">=</span> <span class="n">xoff</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_offset</span> <span class="o">=</span> <span class="n">yoff</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">science</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">science</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">variance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">flags</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">const_kernel</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_sigma_major</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">gaussian_sigma_major</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_sigma_minor</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">gaussian_sigma_minor</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gaussian_theta</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">gaussian_theta</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">contaminants</span> <span class="o">=</span> <span class="n">contaminants</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">location_spectrum</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">boundary</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_mag</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">j_mag</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h_mag</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_flux</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">j_flux</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h_flux</span> <span class="o">=</span> <span class="n">spectrum_cutout</span><span class="o">.</span><span class="n">spec_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">h5group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;An HDF5 Group must be provided because no SpectrumCutout was provided.&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contamination</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">science</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The decontaminated science layer [NumPy ndarray, float32].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;science&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span>
+
+    <span class="nd">@science</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">science</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sci</span><span class="p">):</span>
+        <span class="n">Utils</span><span class="o">.</span><span class="n">verify_2d_numpy_array</span><span class="p">(</span><span class="n">sci</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="o">=</span> <span class="n">sci</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Variance of the decontaminated science layer [NumPy ndarray, float32].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;variance&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span>
+
+    <span class="nd">@variance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+        <span class="n">Utils</span><span class="o">.</span><span class="n">verify_2d_numpy_array</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="o">=</span> <span class="n">var</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The mask layer, containing the decontamination flags as well as the flags that were present in the original</span>
+<span class="sd">        image [NumPy ndarray, uint32]. Pixels that are outside of the spectrogram are flagged as NULL (Flags.VOID) to</span>
+<span class="sd">        indicate that these pixels are not real; they are only fillers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">])</span>
+            <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">VOID</span>
+            <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">mask</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span>
+
+    <span class="nd">@mask</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">Utils</span><span class="o">.</span><span class="n">verify_2d_numpy_array</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">VOID</span>
+            <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="n">Flags</span><span class="o">.</span><span class="n">INVALID</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The variance of this spectrum must be set before the mask can be set.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">mask</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contamination</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The total contamination for this spectrum (the combined model spectra of all spectra that overlap with this</span>
+<span class="sd">        spectrum) [NumPy ndarray, float32].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contamination</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_contamination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_total_contamination</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contamination</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contaminants</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A table listing contaminants, with the columns (id, order) [NumPy ndarray, (int64, int8)].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;contaminants&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span>
+
+    <span class="nd">@contaminants</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contaminants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contams</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contaminants</span> <span class="o">=</span> <span class="n">contams</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LocationSpectrum</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The LocationSpectrum object for this spectrum, containing inverse dispersion solution and</span>
+<span class="sd">        other data that was present in the LocationTable [LocationSpectrum].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location_from_h5group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_location</span>
+
+    <span class="nd">@location</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">LocationSpectrum</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_location</span> <span class="o">=</span> <span class="n">loc</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An array of points [(x1, y1), (x2, y2), ...] around the border of the spectrum, in detector coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;boundary&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span>
+
+    <span class="nd">@boundary</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boundary</span><span class="p">):</span>
+        <span class="n">Utils</span><span class="o">.</span><span class="n">verify_2d_numpy_array</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span> <span class="o">=</span> <span class="n">boundary</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Polygon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A Shapely Polygon describing the boundary of the spectrum, in detector coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">y_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;y_mag&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span>
+
+    <span class="nd">@y_mag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">y_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">y_mag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="o">=</span> <span class="n">y_mag</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">99.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">j_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;j_mag&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span>
+
+    <span class="nd">@j_mag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">j_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">j_mag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="o">=</span> <span class="n">j_mag</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">99.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;h_mag&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span>
+
+    <span class="nd">@h_mag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">h_mag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="o">=</span> <span class="n">h_mag</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">99.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">y_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;y_flux&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span>
+
+    <span class="nd">@y_flux</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">y_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_flux</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">y_flux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="o">=</span> <span class="n">y_flux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_y_flux</span> <span class="o">=</span> <span class="o">-</span><span class="mf">9e9</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">j_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;j_flux&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span>
+
+    <span class="nd">@j_flux</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">j_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j_flux</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">j_flux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="o">=</span> <span class="n">j_flux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j_flux</span> <span class="o">=</span> <span class="o">-</span><span class="mf">9e9</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;h_flux&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span>
+
+    <span class="nd">@h_flux</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_flux</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">h_flux</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="o">=</span> <span class="n">h_flux</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h_flux</span> <span class="o">=</span> <span class="o">-</span><span class="mf">9e9</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span>
+
+    <span class="nd">@kernel</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kernel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Utils</span><span class="o">.</span><span class="n">verify_2d_numpy_array</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;science&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the height of the cutout region.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_science</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;science&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dither</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wavelengths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span>
+
+        <span class="n">bbox</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">compute_wavelengths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wavelengths</span>
+
+<div class="viewcode-block" id="DecontaminatedSpectrum.get_gaussian_sigma_unit"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DecontaminatedSpectrum.DecontaminatedSpectrum.get_gaussian_sigma_unit">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_gaussian_sigma_unit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">astropy</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the unit of the number returned by .gaussian_sigma_major and .gaussian_sigma_minor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">astropy</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">arcsec</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_major</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;gaussian_sigma_major&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span>
+
+    <span class="nd">@gaussian_sigma_major</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_major</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_major</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_major</span> <span class="o">=</span> <span class="n">sigma_major</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_minor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;gaussian_sigma_minor&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span>
+
+    <span class="nd">@gaussian_sigma_minor</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_sigma_minor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_minor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_sigma_minor</span> <span class="o">=</span> <span class="n">sigma_minor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5object</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;gaussian_theta&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span>
+
+    <span class="nd">@gaussian_theta</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_theta</span> <span class="o">=</span> <span class="n">theta</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;Uninitialized&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">width: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="si">}</span><span class="se">\n</span><span class="s2">height: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="si">}</span><span class="se">\n</span><span class="s2">J mag: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">j_mag</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">H mag: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">h_mag</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">string</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;Uninitialized&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dither</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Uninitialized </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> instance </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">:</span><span class="s2">#018x</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">string</span>
+
+<div class="viewcode-block" id="DecontaminatedSpectrum.rasterize_polygon"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DecontaminatedSpectrum.DecontaminatedSpectrum.rasterize_polygon">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">rasterize_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">:</span> <span class="n">Polygon</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a rasterized mask of a polygon: pixels within the polygon are True. False otherwise.</span>
+
+<span class="sd">        This is useful for displaying which pixels are contaminated by a spectrum: simply provide the polygon</span>
+<span class="sd">        of the contaminating spectrum to see which pixels are contaminated by that spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+
+<span class="sd">        polygon: Polygon</span>
+<span class="sd">            A Shapely Polygon object that will be masked. The vertex coordinates should be detector coordinates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        mask: np.ndarray</span>
+<span class="sd">            An array with the same dimensions as the pixel layers of the spectrum. Pixels are set to True inside</span>
+<span class="sd">            of the polygon, False elsewhere.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="c1"># The polygon is expanded by half of the maximum diameter of a pixel to account for pixels on the edge.</span>
+        <span class="c1"># 0.5 * sqrt(2) is approximately 0.7071</span>
+        <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="mf">0.7071</span><span class="p">,</span> <span class="n">join_style</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">coords</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Utils</span><span class="o">.</span><span class="n">rasterize</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_total_contamination</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the total contamination for the spectrum</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        2D NumPy array</span>
+<span class="sd">           The sum of all of the contaminants of the specified spectrum for each pixel of the spectrum.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        ValueError</span>
+<span class="sd">            If a model mentioned in the table of contaminants cannot be located.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">contamination</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">science</span><span class="p">)</span>
+        <span class="n">contamination_canvas</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_offset</span><span class="p">),</span> <span class="n">contamination</span>
+
+        <span class="k">for</span> <span class="n">contaminant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contaminants</span><span class="p">:</span>
+            <span class="n">model_id</span> <span class="o">=</span> <span class="n">contaminant</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">model_order</span> <span class="o">=</span> <span class="n">contaminant</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span>
+
+            <span class="c1"># we do not attempt to model the zeroth-order spectra:</span>
+            <span class="k">if</span> <span class="n">model_order</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">contam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dither</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">,</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">model_order</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">contam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">contaminant_overlay</span> <span class="o">=</span> <span class="p">(</span><span class="n">contam</span><span class="o">.</span><span class="n">x_offset</span><span class="p">,</span> <span class="n">contam</span><span class="o">.</span><span class="n">y_offset</span><span class="p">),</span> <span class="n">contam</span><span class="o">.</span><span class="n">pixels</span>
+                    <span class="n">Utils</span><span class="o">.</span><span class="n">apply_overlay</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">contaminant_overlay</span><span class="p">,</span> <span class="n">canvas</span><span class="o">=</span><span class="n">contamination_canvas</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">contamination</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_location_from_h5group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="s1">&#39;h5py.Group&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LocationSpectrum</span><span class="p">:</span>
+        <span class="n">location_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+        <span class="n">gwa_tilt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;gwa_tilt&#39;</span><span class="p">])</span>
+        <span class="n">extra_tilt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;extra_tilt&#39;</span><span class="p">])</span>
+        <span class="n">reference_position</span> <span class="o">=</span> <span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;ref_position&#39;</span><span class="p">]</span>
+        <span class="n">reference_wavelength</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reference_position</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;ref_wavelength&#39;</span><span class="p">])</span>
+
+        <span class="n">lrange</span> <span class="o">=</span> <span class="n">LambdaRange</span><span class="p">()</span>
+        <span class="n">l_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_start&#39;</span><span class="p">])</span>
+        <span class="n">l_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_end&#39;</span><span class="p">])</span>
+        <span class="n">lrange</span><span class="o">.</span><span class="n">setWavelengthStart</span><span class="p">(</span><span class="n">l_start</span><span class="p">)</span>
+        <span class="n">lrange</span><span class="o">.</span><span class="n">setWavelengthEnd</span><span class="p">(</span><span class="n">l_end</span><span class="p">)</span>
+
+        <span class="n">ids</span> <span class="o">=</span> <span class="n">ChebLocalModel</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;ids_coeffs&#39;</span><span class="p">]))</span>
+        <span class="n">ids_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;ids_coeffs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_start&#39;</span><span class="p">])</span>
+        <span class="n">ids_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;ids_coeffs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_end&#39;</span><span class="p">])</span>
+        <span class="n">ids</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="n">ids_start</span><span class="p">,</span> <span class="n">ids_end</span><span class="p">)</span>
+
+        <span class="n">crv</span> <span class="o">=</span> <span class="n">ChebLocalModel</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;crv_coeffs&#39;</span><span class="p">]))</span>
+        <span class="n">crv_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;crv_coeffs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_start&#39;</span><span class="p">])</span>
+        <span class="n">crv_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="p">[</span><span class="s1">&#39;crv_coeffs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;wavelength_end&#39;</span><span class="p">])</span>
+        <span class="n">crv</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="n">crv_start</span><span class="p">,</span> <span class="n">crv_end</span><span class="p">)</span>
+
+        <span class="n">detector_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">detector_models</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">dither</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">)]</span>
+
+        <span class="n">x_pivot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;x_pivot&#39;</span><span class="p">])</span>
+        <span class="n">y_pivot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">location_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;y_pivot&#39;</span><span class="p">])</span>
+
+        <span class="n">loc</span> <span class="o">=</span> <span class="n">LocationSpectrum</span><span class="p">()</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setObjectID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setDetector</span><span class="p">(</span><span class="n">DetectorModel</span><span class="o">.</span><span class="n">getDetectorName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setFieldID</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">H5LocationTable</span><span class="o">.</span><span class="n">FIELD_ID_LABEL</span><span class="p">]))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setObservationID</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">H5LocationTable</span><span class="o">.</span><span class="n">OBSERVATION_ID_LABEL</span><span class="p">]))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setPointingID</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">H5LocationTable</span><span class="o">.</span><span class="n">POINTING_ID_LABEL</span><span class="p">]))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setGWAPosition</span><span class="p">(</span><span class="n">GrismModel</span><span class="o">.</span><span class="n">getPositionNumber</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">H5LocationTable</span><span class="o">.</span><span class="n">GWA_POSITION_LABEL</span><span class="p">]))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setOrder</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setLambdaRange</span><span class="p">(</span><span class="n">lrange</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setIDSModel</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setCRVModel</span><span class="p">(</span><span class="n">crv</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setLambdaRefValue</span><span class="p">(</span><span class="n">reference_wavelength</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setLambdaRefPosition</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">reference_position</span><span class="p">))</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setGWATilt</span><span class="p">(</span><span class="n">gwa_tilt</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setExtraTilt</span><span class="p">(</span><span class="n">extra_tilt</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setDetectorModel</span><span class="p">(</span><span class="n">detector_model</span><span class="p">)</span>
+        <span class="n">loc</span><span class="o">.</span><span class="n">setPivot</span><span class="p">(</span><span class="n">x_pivot</span><span class="p">,</span> <span class="n">y_pivot</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loc</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

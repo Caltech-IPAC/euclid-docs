@@ -1,0 +1,167 @@
+.. SIR_SpectraDecontamination documentation master file, created by
+   sphinx-quickstart on Mon Aug 18 14:25:15 2025.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Documentation for SIR SpectraDecontamination
+============================================
+
+In this document, you will find the documentation for Euclid's SIR SpectraDecontamination module 
+as well as documentation for the underlying Python classes. The decontamination module, which is 
+also referred to as the "basic decontamination" module provides four primary functions:
+
+1. It crops out each 2D spectrogram in a NISP survey exposure FITS file, based on information in the LocationTable input HDF5 files.
+
+2. It flags pixels:
+
+    * pixels which are invalid, due to various causes.
+    * pixels which are significantly contaminated.
+    * pixels which are contaminated by bright zeroth-order spectra.
+    * pixels in the cropped region which do not belong to the spectrogram of interest.
+
+3. It attempts to create a model of the contamination of each spectrum and then subtract the contamination away.
+
+4. It updates the variance layer of each cropped spectrogram, to account for uncertainty introduced by the decontamination procedure.
+
+The module is normally executed within the SIR pipeline. The documentation below focuses on running the module in stand-alone mode, 
+which is the mode that is normally used during development.
+
+
+Module Usage
+============
+
+The full details of the latest command-line usage documentation can always be found, using the command:
+
+.. code-block:: bash
+
+    E-Run SIR_Pipeline SIR_SpectraDecontamination --help
+
+In summary, the most important command-line switches and arguments, when running the module in stand-alone mode, are:
+
+Inputs and Outputs
+----------------------
+
+``--workdir WORKDIR``
+     The root working directory where all of the files are located.
+
+``--config CONFIG``
+    The name of the configuration file, relative to the ``workdir``.
+
+``--sci_frames FRAMES``   
+    The name of a A JSON file containing the list of input science frames, relative to the ``workdir``.
+
+``--loc_tables LOCTAB``
+    A JSON file containing a list of XML files associated with each location table file.
+
+``--mdb MDB``
+    The Mission Database XML file, containing all key instrument and mission parameters, relative to the ``workdir``.
+
+``--relflux_flat FLUXCOR``
+    The name of the relative flux correction master flat cube (XML filename or HDF5 filename), relative to the ``workdir``.
+
+``--sens FLUXSENS``
+    The name of absolute flux sensitivity function (XML filename for SirAbsoluteFluxScaling data product), 
+    relative to the ``workdir``.
+
+``--cutouts CUTOUTS``
+    A JSON file, containing a list of files containing cutouts from a stacked mosaic of direct images of the galaxies. 
+    REQUIRED unless --passthrough is specified. This is specified relative to the ``workdir``. If no cutouts are available,
+    then the special value, ``'None'`` can be used. This will cause the module to generate generic 2D Gaussians for all
+    objects (which is mostly only useful for debugging / development purposes).
+
+``--dec_spectra OUTPUT``
+    The name of the JSON file which will contain a list of DecontaminatedSpectraCollection filesone for each input detector.
+    This is specified relative to the ``workdir``.
+
+
+Command-line Parameters
+-----------------------
+
+``--detectors DETECTORS``
+    Instructs the program to run using only on the specified detector(s)(defaults to all detectors 
+    ``'*'``, if none are specified). The syntax for specifying detectors is ``'dither.detector'``, where the
+    ``dithers`` and ``detectors`` can be a single value, a comma-delimited list of values, or a wildcard. 
+    For example, ``1,2.*`` indicates that all detectors of dithers 1 and 2 will be decontaminated and ``*.11,12``
+    indicates that detectors ``DET_11`` and ``DET_12`` in all dithers will be decontaminated. 
+
+``--limit_mag MAG``       
+    The upper magnitude limit of objects in the band specified by --limit_band. Objects fainter than this 
+    limit will not be treated as contaminants.
+  
+``--limit_band BAND``     
+     The filter/band name that will be used to limit the number of objects that are treated as contaminants.
+
+``--zeroth_order_limit ZEROTH_ORDER_LIMIT``
+    The magnitude threshold below which zeroth order contaminants will be flagged.
+
+``--second_order_limit SECOND_ORDER_LIMIT``
+    The magnitude threshold below which second order contaminants will be flagged.
+
+Switches
+--------
+
+``--overwrite``
+    If this is set, then the output JSON file will be overwritten.
+
+``--gaussian_profile``
+    Fit 2D Gaussian to cutouts, rather than using the cutouts as they are provided.
+
+``--no_measure``
+    This switch causes the spectral measurement step to be skipped; broadband fluxes will be used to create 
+    all spectral models.
+
+``--passthrough``         
+    Skip the actual decontamination step; simply create cutouts, leaving the content unmodified.
+
+Configuration file Parameters
+=============================
+
+The configuration file, ``SIR_SpectraDecontamination.ini`` contains the following options and parameters:
+
+OPTIONS
+-------
+
+``use_relflux = True``
+    Specifies whether or not to use the relative flux solution.
+
+PARAMETERS
+----------
+
+``sigcont_fraction = 0.1``
+    Specifies the threshold for considering a pixel "significantly" contaminated. Pixels for which the 
+    ``contaminating_flux / spectral_flux > sigcont_fraction`` will be marked as significantly contaminated.
+
+``invalid_contamination_fraction = 2.0``
+    Similar to the ``sigcont_fraction``, except that pixels above this threshhold will be flagged as invalid.
+
+``contaminant_mag_band = H``
+    Specifies which band to use when applying the ``contaminant_dmag`` and ``contaminant_mag_limit``
+    thresholds.
+
+``contaminant_dmag = 2.5``
+    Contaminating sources that are fainter than the source of interest by this magnitude difference will not be 
+    counted as contaminants. For example, if the source of interest has a magnitude of 18 and this parameter is
+    set to 2.5, then sources fainter than 18 + 2.5 = 20.5 will not be counted as contaminants.
+
+``contaminant_mag_limit = 22.5``
+    Contaminating sources fainter than this limit will never be counted as contaminants.
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code Documentation:
+
+   modules
+
+
+UML Diagrams
+============
+
+TODO: Put a summary of the UML diagrams here, and point to a page that contains full diagrams.
+
+
+Index
+==================
+
+* :ref:`modindex`

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.ExposureSet &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.ExposureSet</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.ExposureSet</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File SpectraDecontaminator.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: March 12, 2019</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">NispSurveyExposure</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_Products.DpdSirScienceFrame</span><span class="w"> </span><span class="kn">import</span> <span class="n">DpdSirScienceFrame</span>
+
+
+<div class="viewcode-block" id="ExposureSet"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.ExposureSet.ExposureSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ExposureSet</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads and manages a set of NispSurveyExposures.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lt_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Loads the NispSurveyExposure files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workdir (str): The path to the working directory (i.e., the directory that contains the data/ directory)</span>
+<span class="sd">            filename (str): The filename of the JSON file containing a list of objects that will be loaded.</span>
+<span class="sd">                            The list within the JSON file should contain the names of XML files associated with NispSurveyExposure</span>
+<span class="sd">                            files. Each NispSurveyExposure file is a FITS file, located in a subdirectory called `data/`.</span>
+<span class="sd">            lt_ids (List[str]): List of string IDs to match the correct exposure set to the loaded LT</span>
+<span class="sd">            logger (logging.Logger, optional): If provided, the class will print progress messages to the log. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if multiple exposures with the same dither ID (DITHOBS) are provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">work_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">workdir</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span> <span class="o">=</span> <span class="n">data_dir</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Loading the list of exposures,&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="c1"># read all JSON list of XML science frame products</span>
+            <span class="k">for</span> <span class="n">frame_xml</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">):</span>
+                <span class="c1"># open XML product</span>
+                <span class="n">frame_obj</span> <span class="o">=</span> <span class="n">DpdSirScienceFrame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work_dir</span><span class="p">,</span> <span class="n">frame_xml</span><span class="p">))</span>
+                <span class="c1"># get unique id for frame to match Location Table</span>
+                <span class="n">dither</span> <span class="o">=</span> <span class="n">frame_obj</span><span class="o">.</span><span class="n">get_dither</span><span class="p">()</span>
+                <span class="n">frame_id</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">frame_obj</span><span class="o">.</span><span class="n">get_gwa_pos</span><span class="p">()),</span>
+                                     <span class="nb">str</span><span class="p">(</span><span class="n">frame_obj</span><span class="o">.</span><span class="n">get_gwa_tilt</span><span class="p">()),</span>
+                                     <span class="nb">str</span><span class="p">(</span><span class="n">frame_obj</span><span class="o">.</span><span class="n">get_ptg_id</span><span class="p">()),</span>
+                                     <span class="nb">str</span><span class="p">(</span><span class="n">frame_obj</span><span class="o">.</span><span class="n">get_obs_id</span><span class="p">()),</span>
+                                     <span class="nb">str</span><span class="p">(</span><span class="n">dither</span><span class="p">)])</span>
+
+                <span class="k">if</span> <span class="n">frame_id</span> <span class="ow">in</span> <span class="n">lt_ids</span><span class="p">:</span>
+                    <span class="c1"># check for dither duplication </span>
+                    <span class="k">if</span> <span class="n">dither</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> contains multiple exposures with&quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;grism, tilt, PTGID, OBSID, DITHOBS </span><span class="si">{</span><span class="n">frame_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="n">frame_fits_file</span> <span class="o">=</span> <span class="n">frame_obj</span><span class="o">.</span><span class="n">get_frame_fits_file</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame_fits_file</span><span class="p">)</span>
+                    <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">frame_fits_file</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Loading&quot;</span><span class="p">,</span> <span class="n">full_path</span><span class="p">)</span>
+                    <span class="c1"># NOTE: still using dither ID, rather than frame_id, asked to hange this on JAN 2024</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">[</span><span class="n">dither</span><span class="p">]</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The directory dontaining the data files (FITS files, in this case).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exposure_filenames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The list of filenames of the NISP survey exposure files that are loaded.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_filenames</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NispSurveyExposure</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an item by dither ID</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        dither: int</span>
+<span class="sd">            The dither ID (DITHOBS) of the exposure.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        exposure: NispSurveyExposure</span>
+<span class="sd">            The exposure corresponding to the specified dither ID.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        KeyError: if the dither is not present</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">dither</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">dither</span><span class="p">,</span> <span class="n">exposure</span><span class="p">)</span> <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">exposure</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">dither</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;  Observation ID    Dither             Date&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;-----------------------------------------------------&quot;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">dither</span><span class="p">,</span> <span class="n">exposure</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+            <span class="n">obs_id</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OBS_ID&#39;</span><span class="p">)</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE-OBS&#39;</span><span class="p">)</span>
+            <span class="n">strings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obs_id</span><span class="si">:</span><span class="s2">^21</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dither</span><span class="si">:</span><span class="s2">&lt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">date</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">strings</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">message</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

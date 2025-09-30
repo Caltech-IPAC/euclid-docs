@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.DetectorGrism &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.DetectorGrism</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.DetectorGrism</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2015-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># File DetectorGrism.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: Feb 27, 2018</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">cumtrapz</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span><span class="p">,</span> <span class="n">interp2d</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.DetectorModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.SensitivityModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">SensitivityModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraExtractionBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPECTRUM_MASK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_InstrumentModels.GrismModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GrismModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.PsfModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">PsfModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">SIR_SpectraDecontamination.Utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">Utils</span>
+
+
+<div class="viewcode-block" id="DetectorGrism"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DetectorGrism</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles the manipulation and creation of 1-D and 2-D spectra and stores configuration data.</span>
+
+<span class="sd">    Provides a means to convert spectra from physical units to pixel values. This involves using both the</span>
+<span class="sd">    features of the DetectorModel and the GrismModel, as well as other data from the Euclid Mission Database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">MIN_WAV_INNER</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">MAX_WAV_INNER</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">PSF_MODEL</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mdb</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">nisp_exposure</span><span class="p">,</span> <span class="n">sens</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        mdb: DpdMdbDataBase</span>
+<span class="sd">            A SIR Utilities Mdb class instance containing data from the official Mission Database and the</span>
+<span class="sd">            additional information, specific to SIR, that is not part of the official Euclid MDB.</span>
+
+<span class="sd">        config: ConfigObj</span>
+<span class="sd">            Contains the parsed contents of the spectra decontamination .ini file.</span>
+
+<span class="sd">        nisp_exposure: NispSurveyExposure</span>
+<span class="sd">            The NispSurveyExposure corresponding to the dither that this DetectorGrism is in charge</span>
+<span class="sd">            of modelling.</span>
+
+<span class="sd">        sens: astropy.io.fits.hdu.hdulist.HDUList or None</span>
+<span class="sd">            The FITS file containing the sensitivity curve. If this is not specified, the sensitivity function from</span>
+<span class="sd">            the MDB will be used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span> <span class="o">=</span> <span class="n">mdb</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nisp_exposure</span> <span class="o">=</span> <span class="n">nisp_exposure</span>
+
+        <span class="c1"># The name of the Grism associated with this dither (exposure)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GWA_POS&#39;</span><span class="p">)</span>
+
+        <span class="c1"># the nominal tilt angle of the grism</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_tilt</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;GWA_TILT&#39;</span><span class="p">)</span>
+
+        <span class="c1"># The exposure time in seconds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_time</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;EXPTIME&#39;</span><span class="p">)</span>
+
+        <span class="c1"># The number of this dither in the dither pattern</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dither</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DITHOBS&#39;</span><span class="p">)</span>
+
+        <span class="c1"># The DetectorModel object, used for determining information about the detector.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detector_model</span> <span class="o">=</span> <span class="n">DetectorModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span><span class="p">,</span> <span class="n">mdb</span><span class="p">)</span>
+
+        <span class="c1"># The size of a pixel in millimeters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size_in_mm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_model</span><span class="o">.</span><span class="n">getPixelScale</span><span class="p">()</span>
+
+        <span class="c1"># The number of pixels along the x-direction of a detector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_model</span><span class="o">.</span><span class="n">getDetXPixels</span><span class="p">()</span>
+
+        <span class="c1"># The number of pixels along the y-direction of a detector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_yres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_model</span><span class="o">.</span><span class="n">getDetYPixels</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_psf_model</span><span class="p">(</span><span class="n">mdb</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">nisp_exposure</span><span class="p">)</span>
+
+        <span class="c1"># Create the interpolator object that will provide the aperture flux corrections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flux_corrector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_flux_correction_interpolator</span><span class="p">()</span>
+
+        <span class="c1"># Create the interpolator object that will provide the wavelength-dependent size correction to the PSF.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_psf_size_corrector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_psf_size_correction_interpolator</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">sens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sensitivity</span> <span class="o">=</span> <span class="n">SensitivityModel</span><span class="p">(</span><span class="n">mdb</span><span class="o">=</span><span class="n">mdb</span><span class="p">,</span> <span class="n">grism</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span><span class="p">)</span>
+            <span class="n">grism_wavs</span> <span class="o">=</span> <span class="n">sensitivity</span><span class="o">.</span><span class="n">getWaves</span><span class="p">(</span><span class="n">GrismModel</span><span class="o">.</span><span class="n">Order_1</span><span class="p">)</span>
+            <span class="n">grism_sensitivity</span> <span class="o">=</span> <span class="n">sensitivity</span><span class="o">.</span><span class="n">getSensitivity</span><span class="p">(</span><span class="n">GrismModel</span><span class="o">.</span><span class="n">Order_1</span><span class="p">)</span>
+            <span class="n">grism_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grism_wavs</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">,</span> <span class="n">grism_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sensitivity_from_dataproduct</span><span class="p">(</span><span class="n">sens</span><span class="p">)</span>
+
+        <span class="c1"># The sensitivity curve, used to transform from erg/s/cm^2/Angstrom to detector counts / s / Angstrom.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_sensitivity</span> <span class="o">=</span> <span class="n">grism_sensitivity</span>  <span class="c1"># needs to eventually account for 1st and 2nd order</span>
+
+        <span class="c1"># The wavelengths of the sensitivity curve, in units of Angstroms.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_wavs</span> <span class="o">=</span> <span class="n">grism_wavs</span>  <span class="c1"># needs to eventually account for 1st and 2nd order</span>
+
+        <span class="c1"># The inverse sensitivity of the grism + detector. This needs to eventually account for 1st and 2nd order.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grism_inverse_sensitivity</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">div0</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_full_wavelength_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_full_wavelength_range</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_determine_inner_wavelenth_range</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">,</span> <span class="n">grism_mask</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angstroms_per_pixel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_angstroms_per_pixel</span><span class="p">()</span>
+
+        <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_full_wavelength_range</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_order_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angstroms_per_pixel</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ZEROTH_ORDER&#39;</span><span class="p">][</span><span class="s1">&#39;bounds&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ZEROTH_ORDER&#39;</span><span class="p">][</span><span class="s1">&#39;padding&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ZEROTH_ORDER&#39;</span><span class="p">][</span><span class="s1">&#39;spectral_size&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ZEROTH_ORDER&#39;</span><span class="p">][</span><span class="s1">&#39;spatial_size&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The configuration object (ConfigObj).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nisp_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The NISP Survey exposure.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nisp_exposure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">full_wavelength_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The full wavelength range (min wavelength, max wavelength).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_full_wavelength_range</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inner_wavelength_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The wavelength range (min wavelength, max wavelength) of the inner region of the spectrum, where it is safe to</span>
+<span class="sd">        assume that the effects of the edges (the cut-on and cut-off regions of the filter) can be ignored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_WAV_INNER</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">angstroms_per_pixel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The spectral pixel scale.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angstroms_per_pixel</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">first_order_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The length of the first-order spectra, in units of pixel widths.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_order_length</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exposure_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The exposure time in seconds.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_time</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pixel_size_in_mm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The physical size of the pixels, in mm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size_in_mm</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">xres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The x-resolution of the detector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xres</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The y-resolution of the detector&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yres</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detector_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The DetectorModel.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector_model</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dither</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The dither sequence number&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dither</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">grism_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The name of the grism.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">grism_sensitivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;We cannot yet handle spectral orders other than 1&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_wavs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_sensitivity</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">psf_correction_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">interp1d</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf_size_corrector</span>
+
+<div class="viewcode-block" id="DetectorGrism.flambda_to_detector_counts"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism.flambda_to_detector_counts">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">flambda_to_detector_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">flux_densities</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts units of erg/s/cm^2/Angstrom to detector_counts/Angstrom.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelengths: 1-D NumPy array of floats</span>
+<span class="sd">            The wavelengths of the flux measurements, in units of Angstroms.</span>
+
+<span class="sd">        flux_densities: 1-D NumPy array of floats</span>
+<span class="sd">            The flux density measurements, in units of erg/s/cm^2/Angstrom.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        flux_density: 1-D NumPy array of floats</span>
+<span class="sd">            The flux density in units of detector counts per Angstrom.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transmitted_spectrum</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="n">interp_multiply</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span>
+                                                     <span class="n">flux_densities</span><span class="p">,</span>
+                                                     <span class="bp">self</span><span class="o">.</span><span class="n">_grism_wavs</span><span class="p">,</span>
+                                                     <span class="bp">self</span><span class="o">.</span><span class="n">_grism_sensitivity</span><span class="p">)</span>
+
+        <span class="c1"># transmitted_spectrum is now in units of detector_counts / second / Angstrom.</span>
+        <span class="c1"># We have to multiply by exposure time to get detector_counts / Angstrom:</span>
+
+        <span class="k">return</span> <span class="n">transmitted_spectrum</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_time</span></div>
+
+<div class="viewcode-block" id="DetectorGrism.is_red"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism.is_red">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_red</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if this is a red grism.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;RGS&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grism_name</span></div>
+
+<div class="viewcode-block" id="DetectorGrism.is_blue"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism.is_blue">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_blue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if this is a blue grism.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;BGS&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grism_name</span></div>
+
+<div class="viewcode-block" id="DetectorGrism.disperse"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism.disperse">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">disperse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disperses (convolves) a 1-D spectrum onto a 2-D canvas to create a 2-D model spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        wavelengths: 1-D NumPy array of floats</span>
+<span class="sd">            The wavelengths of the flux measurements, in units of Angstroms.</span>
+
+<span class="sd">        spectrum_info: SpectrumInfo</span>
+<span class="sd">            The `SpectrumInfo` object associated with the model spectrum that will be created by this function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        model_spectrum: 2-D NumPy array of floats</span>
+<span class="sd">            The 2-D model spectrum corresponding to the spectrum described by `spectrum_info`.</span>
+
+<span class="sd">        interpolation_mask: 2-D NumPy array of bools</span>
+<span class="sd">            A mask indicating whether the flux of each pixel of the model was computed using interpolation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">counts_per_segment</span><span class="p">,</span> <span class="n">segment_centers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_counts_per_segment</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">)</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">convolution_kernel</span><span class="o">.</span><span class="n">kernel_size</span>
+
+        <span class="n">correction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flux_corrector</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">segment_centers</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="n">counts_per_segment</span> <span class="o">=</span> <span class="n">counts_per_segment</span> <span class="o">*</span> <span class="n">correction</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectrum_info</span><span class="o">.</span><span class="n">convolution_kernel</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolve2d</span><span class="p">(</span><span class="n">spectrum_info</span><span class="p">,</span> <span class="n">counts_per_segment</span><span class="p">,</span> <span class="n">segment_centers</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convolve2d_from_history</span><span class="p">(</span><span class="n">spectrum_info</span><span class="p">,</span> <span class="n">counts_per_segment</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">astro_object_info</span><span class="o">.</span><span class="n">interp_mask</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">mask</span></div>
+
+<div class="viewcode-block" id="DetectorGrism.get_zeroth_order_boxsize"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.DetectorGrism.DetectorGrism.get_zeroth_order_boxsize">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_zeroth_order_boxsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the size of the zeroth-order in units of pixels.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        mag: int</span>
+<span class="sd">            the magnitude of the object</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        size: tuple</span>
+
+<span class="sd">        A tuple of (spectral_size, spatial_size)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_bounds</span> <span class="o">-</span> <span class="n">mag</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_length</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroth_order_thickness</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_counts_per_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the number of counts (electrons) that will be deposited in each spectral bin (one-pixel-wide bins).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">relflux_correction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">flux_densities</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">one_dim_spectrum</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flux_densities</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">one_dim_spectrum</span> <span class="o">/</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">relflux_correction</span>
+
+        <span class="n">detector_counts_per_angstrom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flambda_to_detector_counts</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">flux_densities</span><span class="p">)</span>
+
+        <span class="n">cumulative_counts</span> <span class="o">=</span> <span class="n">cumtrapz</span><span class="p">(</span><span class="n">detector_counts_per_angstrom</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">integrated_counts</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">cumulative_counts</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">assume_sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">segment_counts</span> <span class="o">=</span> <span class="n">integrated_counts</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-</span> <span class="n">integrated_counts</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">segment_centers</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">wavelengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">wavelengths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">segment_counts</span><span class="p">,</span> <span class="n">segment_centers</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_flux_correction_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">grism</span> <span class="o">=</span> <span class="s1">&#39;RGS&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_red</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;BGS&#39;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;FLUX_CORRECTIONS&#39;</span><span class="p">][</span><span class="n">grism</span><span class="p">]</span>
+        <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;wavelengths&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">size_labels</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;apertures&#39;</span><span class="p">]</span>
+        <span class="n">sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">size_labels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="n">correction_table</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">sl</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">sl</span> <span class="ow">in</span> <span class="n">size_labels</span><span class="p">]</span>
+
+        <span class="n">correction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">correction_table</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">interp2d</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">correction</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_psf_size_correction_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">grism</span> <span class="o">=</span> <span class="s1">&#39;RGS&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_red</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;BGS&#39;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s1">&#39;PSF_CORRECTIONS&#39;</span><span class="p">][</span><span class="n">grism</span><span class="p">]</span>
+        <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;wavelengths&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">correction_sigmas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;sigmas&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">correction_sigmas</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s1">&#39;extrapolate&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convolve2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrum_info</span><span class="p">,</span> <span class="n">counts_per_segment</span><span class="p">,</span> <span class="n">segment_centers</span><span class="p">):</span>
+        <span class="n">conv_kernel</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">convolution_kernel</span>
+
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">bbox</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">segment</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">counts_per_segment</span><span class="p">):</span>
+            <span class="n">wavelength</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">segment_centers</span><span class="p">[</span><span class="n">segment</span><span class="p">])</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">get_trace_position</span><span class="p">(</span><span class="n">wavelength</span><span class="p">)</span>
+            <span class="n">conv_kernel</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">conv_kernel</span><span class="o">.</span><span class="n">set_wavelength</span><span class="p">(</span><span class="n">wavelength</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">conv_kernel</span><span class="o">.</span><span class="n">in_spectral_box</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">[</span><span class="n">conv_kernel</span><span class="o">.</span><span class="n">region</span><span class="p">]</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">conv_kernel</span><span class="o">.</span><span class="n">kernel</span>
+                <span class="n">conv_kernel</span><span class="o">.</span><span class="n">add_to_history</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_angstroms_per_pixel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">angstroms_per_pixel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_blue</span><span class="p">():</span>
+            <span class="c1"># the average dlambda for the blue grism</span>
+            <span class="n">angstroms_per_pixel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span><span class="o">.</span><span class="n">get_nisp_blue_average_dlambda</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_red</span><span class="p">():</span>
+            <span class="c1"># the average dlambda for the red grism</span>
+            <span class="n">angstroms_per_pixel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdb</span><span class="o">.</span><span class="n">get_nisp_red_average_dlambda</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unexpected grism name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">angstroms_per_pixel</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sensitivity_from_dataproduct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sens</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches the sensitivity curve from the FITS file produced by the absolute calibration module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        sens: astropy.io.fits.hdu.hdulist.HDUList</span>
+<span class="sd">            The FITS file containing the sensitivity curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        wavelengths: np.ndarray</span>
+
+<span class="sd">        sensitivity: np.ndarray</span>
+
+<span class="sd">        mask: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_tilt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;m&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grism_tilt</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;p&#39;</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_tilt</span><span class="p">))</span>
+
+        <span class="n">hdu_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_grism_name</span><span class="si">}{</span><span class="n">sep</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">sens_hdu</span> <span class="o">=</span> <span class="n">sens</span><span class="p">[</span><span class="n">hdu_name</span><span class="p">]</span>
+        <span class="n">grism_sensitivity</span> <span class="o">=</span> <span class="n">sens_hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Sensitivity&#39;</span><span class="p">]</span>
+        <span class="n">grism_wavs</span> <span class="o">=</span> <span class="n">sens_hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Wavelength&#39;</span><span class="p">]</span>
+        <span class="n">grism_mask</span> <span class="o">=</span> <span class="n">sens_hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Mask&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="c1"># force endpoints to zero if they are not already zero</span>
+
+        <span class="n">grism_sensitivity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">grism_sensitivity</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">return</span> <span class="n">grism_wavs</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">,</span> <span class="n">grism_mask</span>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convolve2d_from_history</span><span class="p">(</span><span class="n">spectrum_info</span><span class="p">,</span> <span class="n">counts_per_segment</span><span class="p">):</span>
+        <span class="n">conv_kernel</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">convolution_kernel</span>
+
+        <span class="n">left</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">spectrum_info</span><span class="o">.</span><span class="n">bbox</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">conv_kernel</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">entry</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">counts_per_segment</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">model</span><span class="p">[</span><span class="n">region</span><span class="p">]</span> <span class="o">+=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">kernel</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_full_wavelength_range</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">grism_sensitivity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the full wavelength range of the grism sensitivity</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        grism_wavs: np.ndarray</span>
+<span class="sd">            The wavelengths of the grism sensitivity.</span>
+
+<span class="sd">        grism_sensitivity: np.ndarray</span>
+<span class="sd">            The sensitivity values of the grism.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        limits: Tuple</span>
+<span class="sd">            A tuple of the lower and upper wavelength limits of the grism transmission (lower, upper), as floats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">grism_sensitivity</span> <span class="o">&gt;</span> <span class="mf">0.009</span> <span class="o">*</span> <span class="n">grism_sensitivity</span><span class="o">.</span><span class="n">max</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">grism_wavs</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">grism_wavs</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">left</span> <span class="o">-</span> <span class="n">pad</span><span class="p">,</span> <span class="n">right</span> <span class="o">+</span> <span class="n">pad</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_psf_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mdb</span><span class="p">:</span> <span class="s1">&#39;DpdMdbDataBase&#39;</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;ConfigObj&#39;</span><span class="p">,</span> <span class="n">nisp_exposure</span><span class="p">:</span> <span class="s1">&#39;NispSurveyExposure&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PSF_MODEL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s1">&#39;data_dir&#39;</span><span class="p">):</span>
+                <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The config object is expected to have a &#39;data_dir&#39; attribute.&quot;</span><span class="p">)</span>
+            <span class="n">full_filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_nisps_psf_filenames</span><span class="p">()]</span>
+            <span class="c1"># determine arcsec_per_pixel from the exposures</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="n">nisp_exposure</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CD1_1&#39;</span><span class="p">)</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CD1_2&#39;</span><span class="p">)</span>
+            <span class="n">arcsec_per_pixel</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">PSF_MODEL</span> <span class="o">=</span> <span class="n">PsfModel</span><span class="p">(</span><span class="n">full_filenames</span><span class="p">,</span> <span class="n">arcsec_per_pixel</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_inner_wavelenth_range</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                                         <span class="n">grism_wavs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                         <span class="n">grism_sensitivity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                         <span class="n">grism_mask</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the inner wavelength range of the grism (the region safely far from the ends to avoid edge effects.)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        grism_wavs: np.ndarray</span>
+<span class="sd">            The wavelengths of the grism sensitivity.</span>
+
+<span class="sd">        grism_sensitivity: np.ndarray</span>
+<span class="sd">            The sensitivity values of the grism.</span>
+
+<span class="sd">        Side Effects</span>
+<span class="sd">        ------------</span>
+
+<span class="sd">        Sets the MIN_WAV_INNER and MAX_WAV_INNER class variables, if they are not yet set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># determine the inner wavelength range within a margin of the cut-on and cut-off wavelengths.</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">grism_sensitivity</span> <span class="o">&gt;</span> <span class="mf">0.009</span> <span class="o">*</span> <span class="n">grism_sensitivity</span><span class="o">.</span><span class="n">max</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">grism_sensitivity</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">grism_sensitivity</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="mf">0.09</span><span class="p">)</span>
+            <span class="n">margin_quantile</span> <span class="o">=</span> <span class="mf">0.05</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">margin_quantile</span><span class="p">))</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">margin_quantile</span><span class="p">))</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">shift</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">right</span> <span class="o">-</span> <span class="n">shift</span>
+
+            <span class="k">if</span> <span class="n">grism_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">end_flag</span> <span class="o">=</span> <span class="n">SPECTRUM_MASK</span><span class="p">[</span><span class="s1">&#39;SUSP_AFX&#39;</span><span class="p">]</span>
+                <span class="n">mid_wav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">)</span>
+                <span class="n">low_end_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">grism_wavs</span> <span class="o">&lt;</span> <span class="n">mid_wav</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">grism_mask</span> <span class="o">&amp;</span> <span class="n">end_flag</span><span class="p">)</span> <span class="o">==</span> <span class="n">end_flag</span><span class="p">))</span>
+                <span class="n">high_end_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">grism_wavs</span> <span class="o">&gt;</span> <span class="n">mid_wav</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">grism_mask</span> <span class="o">&amp;</span> <span class="n">end_flag</span><span class="p">)</span> <span class="o">==</span> <span class="n">end_flag</span><span class="p">))</span>
+                <span class="n">left_wav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">[</span><span class="n">low_end_idx</span><span class="p">])</span>
+                <span class="n">right_wav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">grism_wavs</span><span class="p">[</span><span class="n">high_end_idx</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">left_wav</span><span class="p">:</span>
+                    <span class="n">left</span> <span class="o">=</span> <span class="n">left_wav</span>
+                <span class="k">if</span> <span class="n">right</span> <span class="o">&gt;</span> <span class="n">right_wav</span><span class="p">:</span>
+                    <span class="n">right</span> <span class="o">=</span> <span class="n">right_wav</span>
+
+            <span class="bp">cls</span><span class="o">.</span><span class="n">MIN_WAV_INNER</span> <span class="o">=</span> <span class="n">left</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">MAX_WAV_INNER</span> <span class="o">=</span> <span class="n">right</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

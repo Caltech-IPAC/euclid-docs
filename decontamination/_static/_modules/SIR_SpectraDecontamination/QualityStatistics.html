@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_SpectraDecontamination.QualityStatistics &mdash; SIR_SpectraDecontamination August-2025 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SIR_SpectraDecontamination
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_SpectraDecontamination</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_SpectraDecontamination</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_SpectraDecontamination.QualityStatistics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_SpectraDecontamination.QualityStatistics</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2023 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General</span>
+<span class="c1"># Public License as published by the Free Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied</span>
+<span class="c1"># warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to</span>
+<span class="c1"># the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+<span class="c1"># File DecontaminatedSpectraCollection.py</span>
+<span class="c1">#</span>
+<span class="c1"># Created on: March 1, 2021</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<div class="viewcode-block" id="QualityStatistics"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.QualityStatistics.QualityStatistics">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">QualityStatistics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes Statistics on the DecontaminatedSpectraCollection objects for quality control.&quot;&quot;&quot;</span>
+
+    <span class="n">MIN_WAV</span> <span class="o">=</span> <span class="mf">12450.0</span>
+    <span class="n">MAX_WAV</span> <span class="o">=</span> <span class="mf">18550.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decon_spectra</span><span class="p">:</span> <span class="s1">&#39;DecontaminatedSpectraCollection&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">decon_spectra</span><span class="o">.</span><span class="n">mdb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The spectra collection needs to contain a reference to the Mdb.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span> <span class="o">=</span> <span class="n">decon_spectra</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="QualityStatistics.add_statistics"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.QualityStatistics.QualityStatistics.add_statistics">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the statistics to the decontaminated spectra collection data product</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dither (int): The dither number (1-4) of the data product</span>
+<span class="sd">            detector (int): The detector number (1-16) of the data product</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># number of spectra</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;n_spectra&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">))),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;Total number of decontaminated spectra in this file&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_mean_contaminants</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_interpolated_fraction</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_median_residual_statistics</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_residual_significance_statistics</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span></div>
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_mean_contaminants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the mean number of contaminants per spectrum and adds this to the data product.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dither (int): The dither number (1-4) of the data product</span>
+<span class="sd">            detector (int): The detector number (1-16) of the data product</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_contams</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n_specs</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+            <span class="n">n_contams</span> <span class="o">+=</span> <span class="n">spec</span><span class="o">.</span><span class="n">contaminants</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">n_specs</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n_specs</span> <span class="k">else</span> <span class="n">n_contams</span> <span class="o">/</span> <span class="n">n_specs</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mean_contaminants&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;Mean number of contaminants per decontaminated spectrum&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_interpolated_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the fraction of spectral models that were computed using only photometry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dither (int): The dither number (1-4) of the data product</span>
+<span class="sd">            detector (int): The detector number (1-16) of the data product</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_interpolated</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n_total</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">n_total</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">interpolated</span><span class="p">:</span>
+                    <span class="n">n_interpolated</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">interpolated_fraction</span> <span class="o">=</span> <span class="n">n_interpolated</span>
+        <span class="k">if</span> <span class="n">n_total</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+           <span class="n">interpolated_fraction</span> <span class="o">=</span> <span class="n">n_interpolated</span> <span class="o">/</span> <span class="n">n_total</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;interpolated_frac&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">interpolated_fraction</span><span class="p">,</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;Fraction of model spectra created using interpolating photometry&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;measured_frac&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">interpolated_fraction</span><span class="p">,</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;Fraction of model spectra created using spectral measurements&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_median_residual_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds statistics regarding the median pixel residual med(decontaminated - model) distribution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dither (int): The dither number (1-4) of the data product</span>
+<span class="sd">            detector (int): The detector number (1-16) of the data product</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">median_residuals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">residual</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">science</span> <span class="o">-</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span>
+                <span class="n">median_residuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">mask</span><span class="p">]))</span>
+
+        <span class="n">median_residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">)[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">median_residuals</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">9e9</span><span class="p">]</span>
+
+        <span class="n">dist_description</span> <span class="o">=</span> <span class="s1">&#39;the distribution of median(science - model).&#39;</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;q1_residual&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span><span class="sa">f</span><span class="s1">&#39;Lower quartile (25th percentile) of </span><span class="si">{</span><span class="n">dist_description</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;median_residual&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Median value of </span><span class="si">{</span><span class="n">dist_description</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;q3_residual&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span>  <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">median_residuals</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Upper quartile (75th percentile) of </span><span class="si">{</span><span class="n">dist_description</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_residual_significance_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dither</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the mean of the median residual significance: med(decontaminated - model) / sigma).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            dither (int): The dither number (1-4) of the data product</span>
+<span class="sd">            detector (int): The detector number (1-16) of the data product</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">median_residual</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">residual_significance</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">median_noise</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">get_spectra</span><span class="p">(</span><span class="n">dither</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">nan_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span>
+                <span class="n">variance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span>
+                <span class="n">variance</span><span class="p">[</span><span class="n">nan_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                <span class="n">variance</span><span class="p">[</span><span class="n">variance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                <span class="n">residual</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">science</span> <span class="o">-</span> <span class="n">spec</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels</span>
+                <span class="n">significance</span> <span class="o">=</span> <span class="n">residual</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span>
+                <span class="n">finite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">significance</span><span class="p">)</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">finite</span>
+                <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">med_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+                    <span class="n">res_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">significance</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+                    <span class="n">med_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">variance</span><span class="p">[</span><span class="n">mask</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">([</span><span class="n">med_res</span><span class="p">,</span> <span class="n">res_sig</span><span class="p">,</span> <span class="n">med_noise</span><span class="p">])):</span>
+                        <span class="n">median_residual</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">med_res</span><span class="p">)</span>
+                        <span class="n">residual_significance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res_sig</span><span class="p">)</span>
+                        <span class="n">median_noise</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">med_noise</span><span class="p">)</span>
+
+        <span class="n">residual_significance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">residual_significance</span><span class="p">)[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">residual_significance</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">residual_significance</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">residual_significance</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">9e9</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">median_noise</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">median_noise</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
+
+        <span class="n">median_residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">median_residual</span><span class="p">)</span>
+        <span class="n">median_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">median_noise</span><span class="p">)</span>
+
+        <span class="n">dist_description</span> <span class="o">=</span> <span class="s1">&#39;the distribution of median(science - model) / sigma.&#39;</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mean_residual_significance&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residual_significance</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Mean of </span><span class="si">{</span><span class="n">dist_description</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;median_residual_significance&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">residual_significance</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Median of </span><span class="si">{</span><span class="n">dist_description</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;median_sigma&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">median_noise</span><span class="p">),</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;Median of the sqrt(variance)&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="n">within_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">median_residual</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">median_noise</span>
+        <span class="k">if</span> <span class="n">within_sigma</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">one_sigma_fraction</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">within_sigma</span><span class="p">)</span> <span class="o">/</span> <span class="n">within_sigma</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">one_sigma_fraction</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;fraction_within_sigma&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">one_sigma_fraction</span><span class="p">,</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="s1">&#39;The fraction of median residuals within 1-sigma of zero&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+
+        <span class="n">status</span> <span class="o">=</span> <span class="n">within_sigma</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">one_sigma_fraction</span> <span class="o">&gt;</span> <span class="mf">0.9</span>
+
+        <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;PASS: No major issues were detected.&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+            <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;FAIL: A major issue was detected; &quot;</span>
+            <span class="k">if</span> <span class="n">within_sigma</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">status_message</span> <span class="o">+=</span> <span class="s2">&quot;no finite (non-NaN) spectra were found. &quot;</span>
+
+            <span class="k">if</span> <span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">one_sigma_fraction</span> <span class="o">&lt;=</span> <span class="mf">0.9</span><span class="p">:</span>
+                <span class="n">status_message</span> <span class="o">+=</span> <span class="s2">&quot;The residuals are not consistent with the uncertainty.&quot;</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;QUALITY_STATUS&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Key&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                      <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+                                      <span class="s1">&#39;Description&#39;</span><span class="p">:</span> <span class="n">status_message</span><span class="p">,</span>
+                                      <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="QualityStatistics.get_dict_dqc_parameters"><a class="viewcode-back" href="../../SIR_SpectraDecontamination.html#SIR_SpectraDecontamination.QualityStatistics.QualityStatistics.get_dict_dqc_parameters">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_dict_dqc_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quality_params</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nathaniel R. Stickley, Ranga-Ram Chary, Andreas Faisst.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

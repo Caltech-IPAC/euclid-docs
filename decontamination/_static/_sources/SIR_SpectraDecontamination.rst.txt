@@ -1,0 +1,237 @@
+SIR\_SpectraDecontamination package
+===================================
+
+Submodules
+----------
+
+AstroObjectInfo module
+--------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.AstroObjectInfo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ConvolutionKernel module
+----------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.ConvolutionKernel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+DecontaminatedSpectraCollection module
+------------------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.DecontaminatedSpectraCollection
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+DecontaminatedSpectrum module
+---------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.DecontaminatedSpectrum
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+DetectorGrism module
+------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.DetectorGrism
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+DetectorRegion module
+-------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.DetectorRegion
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Executor module
+-------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.Executor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ExposureSet module
+----------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.ExposureSet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Flags module
+----------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.Flags
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+LineModel module
+--------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.LineModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+LineModeller module
+-----------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.LineModeller
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+LocationTableSet module
+---------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.LocationTableSet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+LocationTableSetInfo module
+-------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.LocationTableSetInfo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ModelSpectrum module
+------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.ModelSpectrum
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NestedDict module
+---------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.NestedDict
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+PhotometerInfo module
+-------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.PhotometerInfo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+PsfModel module
+-------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.PsfModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+QualityStatistics module
+----------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.QualityStatistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SearchGrid module
+---------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SearchGrid
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectraCollectionIndex module
+---------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectraCollectionIndex
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectraDecontaminationMain module
+-------------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectraDecontaminationMain
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectraDecontaminator module
+--------------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectraDecontaminator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectrumContainer module
+----------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectrumContainer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectrumCutout module
+-------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectrumCutout
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectrumInfo module
+-----------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectrumInfo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectrumMeasurer module
+---------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectrumMeasurer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SpectrumModeller module
+---------------------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.SpectrumModeller
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Utils module
+----------------------------------------
+
+.. automodule:: SIR_SpectraDecontamination.Utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: SIR_SpectraDecontamination
+   :members:
+   :undoc-members:
+   :show-inheritance:
