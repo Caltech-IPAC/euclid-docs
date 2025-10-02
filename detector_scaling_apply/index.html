@@ -1,0 +1,41 @@
+SIR_DetectorScaling
+
+Code Documentation:
+	•	SIR_DetectorScalingCalibration
+SIR_DetectorScaling
+	•	
+	•	Documentation for SIR DetectorScaling
+	•	View page source
+
+Documentation for SIR DetectorScaling
+In this document, you will find the documentation for Euclid’s SIR DetectorScaling module as well as documentation for the underlying Python classes. The detector scaling module provides four primary functions:
+	1	It corrects the input spectroscopic image, for each detector, by dividing it with the corresponding 2D calibration map.
+	2	Sets all the pixels with inf values with NaNs, flags them as invalid and updates the mask layer.
+Module Usage
+The full details of the latest command-line usage documentation can always be found, using the command:
+E-Run SIR_Pipeline SIR_DetectorScaling --help
+In summary, the most important command-line switches and arguments, when running the module in stand-alone mode, are:
+Inputs and Outputs
+--workdir WORKDIR
+The root working directory where all of the files are located.
+--config CONFIG
+The name of the configuration file, relative to the workdir.
+--sci_frame_fits FRAME
+The name of a FITS file containing exposures from all 16 detectors, relative to the workdir.
+----zodiacal_light ZODI
+A FITS file with the zodiacal light model, relative to the workdir.
+--mdb MDB
+The Mission Database XML file, containing all key instrument and mission parameters, relative to the workdir.
+----output_frame_fits OUTPUT
+The name of the flat-fielded output FITS file which will contain corrected images for all 16 detectors, relative to the workdir.
+Code Documentation:
+	•	SIR_DetectorScalingCalibration
+	◦	SIR_DetectorScalingCalibration package
+UML Diagrams
+TODO: Put a summary of the UML diagrams.
+Index
+	•	Module Index
+Next
+
+© Copyright 2025, Indrajit Das, Phil Appleton, Nathaniel R. Stickley, Ranga-Ram Chary.
+Built with Sphinx using a theme provided by Read the Docs.
