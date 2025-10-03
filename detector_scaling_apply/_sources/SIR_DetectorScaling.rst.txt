@@ -1,0 +1,37 @@
+SIR\_DetectorScaling package
+============================
+
+Submodules
+----------
+
+SIR\_DetectorScaling.SIR\_ApplyDetectorScaling module
+-----------------------------------------------------
+
+.. automodule:: SIR_DetectorScaling.SIR_ApplyDetectorScaling
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR\_DetectorScaling.SmallScaleFlatCreator module
+-------------------------------------------------
+
+.. automodule:: SIR_DetectorScaling.SmallScaleFlatCreator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR\_DetectorScaling.notes module
+---------------------------------
+
+.. automodule:: SIR_DetectorScaling.notes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: SIR_DetectorScaling
+   :members:
+   :undoc-members:
+   :show-inheritance:
