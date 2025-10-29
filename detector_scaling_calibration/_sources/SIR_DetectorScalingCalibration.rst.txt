@@ -1,0 +1,29 @@
+SIR\_DetectorScalingCalibration package
+=======================================
+
+Submodules
+----------
+
+CreateDetectorScalingFile module
+----------------------------------------------------------------
+
+.. automodule:: SIR_DetectorScalingCalibration.CreateDetectorScalingFile
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+FlatMaker module
+------------------------------------------------
+
+.. automodule:: SIR_DetectorScalingCalibration.FlatMaker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: SIR_DetectorScalingCalibration
+   :members:
+   :undoc-members:
+   :show-inheritance:

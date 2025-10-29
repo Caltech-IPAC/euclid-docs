@@ -1,0 +1,61 @@
+.. SIR_DetectorScaling documentation master file, created by
+   sphinx-quickstart on Mon Aug 18 14:25:15 2025.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Documentation for SIR DetectorScalingCalibration
+============================================
+
+In this document, you will find the documentation for Euclid's SIR DetectorScalingCalibration module 
+as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication correction factor to the detector response to a uniform illumination and is tailored to each detector. This multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module under SIR Pipeline. 
+
+
+Module Usage
+============
+
+The full details of the latest command-line usage documentation can always be found, using the command:
+
+.. code-block:: bash
+
+    E-Run SIR_Calibration SIR_DetectorScalingCalibration --help
+
+In summary, the most important command-line switches and arguments, when running the module in stand-alone mode, are:
+
+Inputs and Outputs
+----------------------
+
+``--workdir WORKDIR``
+     The root working directory where all of the files are located.
+
+``--config CONFIG``
+    The name of the configuration file, relative to the ``workdir``.
+
+``--logdir LOGDIR``   
+    The name of the logging directory, relative to the ``workdir``.
+
+``--mdb MDB``
+    The Mission Database XML file, containing all key instrument and mission parameters, relative to the ``workdir``.
+
+``----outfile OUTPUT``
+    The name of the output FITS file, containing 2D weighted QE maps, for all 16 detectors, for both RGS and BGS grisms, relative to 
+    the ``workdir``.
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code Documentation:
+
+   modules
+
+
+UML Diagrams
+============
+
+TODO: Put a summary of the UML diagrams.
+
+
+Index
+==================
+
+* :ref:`modindex`
+
