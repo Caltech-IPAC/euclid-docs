@@ -86,6 +86,7 @@
 
 <span class="c1"># Created on: September 17, 2020</span>
 
+<span class="c1"># Author: Indrajit Das &lt;idas@ipac.caltech.edu&gt;</span>
 <span class="c1"># Author: Nathaniel R. Stickley &lt;nrstickley@ipac.caltech.edu&gt;</span>
 <span class="c1">#         Marco Fumana</span>
 <span class="c1">#         Davide Maino</span>
@@ -137,14 +138,11 @@
 
     <span class="c1"># Input data filenames:</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mdb&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The Mission Database XML file, containing all key instrument and mission parameters.&#39;</span><span class="p">)</span>
-
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sci_frame_fits&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;FRAME&#39;</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Input science frame FITS file for all detectors. May include directory w.r.t workdir&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--zodiacal_light&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;ZODI&#39;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The zodiacal light model.&#39;</span><span class="p">)</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The zodiacal light model. May include directory w.r.t workdir&#39;</span><span class="p">)</span>
 
     <span class="c1"># Options / Behavior-modifying parameters:</span>
 
@@ -218,7 +216,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Indrajit Das, Phil Appleton, Ranga-Ram Chary.</p>
+    <p>&#169; Copyright 2025, Indrajit Das, Phil Appleton, Nathaniel R. Stickley, Ranga-Ram Chary.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

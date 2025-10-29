@@ -8,7 +8,7 @@ Documentation for SIR DetectorScaling
 
 In this document, you will find the documentation for Euclid's SIR DetectorScaling module 
 as well as documentation for the underlying Python classes. The detector scaling module 
-provides four primary functions:
+provides two primary functions:
 
 1. It corrects the input spectroscopic image, for each detector, by dividing it with the corresponding 2D calibration map. 
 
