@@ -23,7 +23,7 @@ Use one of the newer versions.  As of 7/11/2025, use 6.0+.
 ## Inputs
 
 The inputs to the cal-module include the nonlinearity calibration data
-taken during the PV phase and during flight, the MDB XML file,
+taken during the PV phase and during the flight, the MDB XML file,
 the NISP detector slot CSV file, and the NISP LED fluence look up table, also a CSV file.
 
 The calibration datasets are the PV-018, F-008 and F-009,
@@ -31,8 +31,11 @@ taken from 11/2023 through current day.  These datasets have been downloaded fro
 ESA and are staged on the ENSCI server.
 
 The paths to these datasets are the following:
+
 	/euclid/observations/PV/CALBLOCK_PV-018_Nov2023/data
+
 	/euclid/observations/PV/CALBLOCK-F-008/data
+ 
 	/euclid/observations/PV/CALBLOCK-F-009/data
 
 Inside each of these calibration data directories, there are XML list files
@@ -44,13 +47,13 @@ One will need to assemble the right combinations of these list files before each
 Three products are generated for each run of the cal-module: the nonlinearity 
 coefficients, covariance matrix and failed mask.
 
-A XML file associated with the above 3 products is also generated.  It is located as combineData/outfile.xml.
+A XML file associated with these 3 products is also generated.  It is located as combineData/outfile.xml.
 
 The cal-module works on both MACC modes, Photo and Spectro.
 
 ## Environment
 
-To be able to run the Euclid IAL pipeline runner, one needs to have a bash 
+To be able to run the Euclid IAL pipeline runner, one needs to have a **bash** 
 login shell on the ENSCI clusters.  One can login to any of the euclidops nodes to run the cal-module.
 
 ## Directory structure
@@ -67,8 +70,8 @@ All the data file in FITS and CSV need to be under ‘data’ directory.
 Other XML files should be under ‘input’ directory.  Directory ‘runs’ is 
 optional but conveniently used to store files such as ‘run.dat’.
 
-Due to the large volume of calibration data, I would suggestion that
-symbolic links created inside the ‘data’ directory rather than copies.
+Due to the large volume of calibration data, it is recommended that
+symbolic links are created inside the ‘data’ directory rather than copying.
 A helper function to make the symbolic links is at the end of this document.
 
 ## Execution steps
@@ -147,6 +150,7 @@ edenVersion=eden-3.1-dev
 ```
 
 Note: 
+
 •	workdir is relative to $IAL_ROOT_DIR 
 •	xmllistfile is the list of data for this run, in JSON format
 •	use the latest MDB file
