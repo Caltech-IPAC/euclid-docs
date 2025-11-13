@@ -5,7 +5,7 @@ This document describes how to run the Euclid Nonlinearity apply module.
 
 ## Source code
 
-The nonlinearity apply module (apply-module) source code is in project NIR_NonLinearSaturation: 
+The nonlinearity apply module source code is in project NIR_NonLinearSaturation: 
 https://gitlab.euclid-sgs.uk/PF-NIR/NIR_NonLinearSaturation.
 The main source code file is Nonlinearity.py.
 
@@ -19,7 +19,7 @@ picked by the ERun.
 ```
 ERun NIR_NonLinearSaturation correctNonlinearity --help
 
-usage: Nonlinearity correction.  Usage syntax:
+usage: Nonlinearity correction
              ~> ERun NIR_NonLinearSaturation correctNonlinearity   \
                 --xmlfile=The_MDB_file                             \
                 --calxmlfile=ListOfCalProductsXmlFiles             \
@@ -56,17 +56,17 @@ Generic Options:
 ## Inputs
 
 Task correctNonlinearity accepts the following arguments:
- * --infile: input image frame FITS file
+ * --infile: input image frame in FITS
  * --xmlfile: the MDB XML file
  * --calxmlfile: JSON file listing the nonlinearity calibration products XML files
- * --outfile: nonlinearity corrected output FITS file
+ * --outfile: nonlinearity corrected image frame in FITS
  * --workdir: working directory path
  * --logdir: logging directory path
  * --config: the NIR configuration set, optional if using the nonlinearity model
 
-Actual data needed include the following.  They are specified in the MDB XML file.
- * NISP gain file (data/EUC_NISP_GAIN-Flight_00.01.fits)
- * nonlinearity calibration products:
+Actual data needed include the following:
+ * NISP gain file (data/EUC_NISP_GAIN-Flight_00.01.fits, specified in the MDB XML file)
+ * nonlinearity calibration products (specified in calxmlfile):
    * photo coefficients (data/EUC_NIR_NLPHOTO_COEF-IPAC_20241211T190325.078510Z.fits)
    * photo covariance matrix (data/EUC_NIR_NLPHOTO_COVMAT-IPAC_20241211T190339.214700Z.fits)
    * photo failed mask (data/EUC_NIR_NLPHOTO_FAILED-IPAC_20241211T190439.915903Z.fits)
@@ -88,35 +88,36 @@ See: /euclid/ops/data/xliu/F-001_240606_R2
 
 As mentioned in the README file, 4 run steps had been executed:
 runInitialize, badPixMasking, saturation, nonLinearity.
-This directory contains runs inputs and outputs from these 4 steps..
+This directory contains runs inputs and outputs from these 4 steps.
 
 * infile argument
- One can start from the saturation corrected results.  They are: 
- * /euclid/ops/data/xliu/F-001_240606_R2/outs/photo_sat.fits for Photo mode
- * /euclid/ops/data/xliu/F-001_240606_R2/outs/spectro_sat.fits for Spectro mode
+  For the purpuse just running the nonlinearity apply module, one can start from 
+  the saturation corrected results.  They are: 
+  * /euclid/ops/data/xliu/F-001_240606_R2/outs/photo_sat.fits for Photo mode
+  * /euclid/ops/data/xliu/F-001_240606_R2/outs/spectro_sat.fits for Spectro mode
 
 * xmlfile argument
- input/EUC_MDB_MISSIONCONFIGURATION_DEV_2024-03-04-2.xml
+  input/EUC_MDB_MISSIONCONFIGURATION_DEV_2024-03-04-2.xml
 
 * calxmlfile argument
- input/nonlinearcalibfile.json
+  input/nonlinearcalibfile.json
 
 * outfile argument
- your_dir/nl.fits
+  your_dir/nl.fits
 
 * workdir argument
- /euclid/ops/data/xliu/F-001_240606_R2
+  /euclid/ops/data/xliu/F-001_240606_R2
 
 * logdir argument
- /euclid/ops/data/xliu/F-001_240606_R2/
+  /euclid/ops/data/xliu/F-001_240606_R2/
 
 * config argument
- This argument is optional if the nolinearity model is used.  It means that the calmin & calmax are
- from the nonlinearity coeficients array (the first 2).
+  This argument is optional if the nolinearity model is used.  It means that the calmin & calmax are
+  from the nonlinearity coeficients array.
 
- Otherwise, it is:
- input/DpdNirConfigurationSet-NIR_PROCFIELD_CONFIG_GAIA_V5.0.1_20250214-0.xml
- Note that, this config file specify the JSON file which contains upper and/or lower limits.
- In this case, it's data/EUC_NIR_NONLINEARITY_LIMITS.json.
+  Otherwise, it is:
+  input/DpdNirConfigurationSet-NIR_PROCFIELD_CONFIG_GAIA_V5.0.1_20250214-0.xml
+  Note that, this config file specifies the JSON file which contains upper and/or lower limits.
+  In this case, it's data/EUC_NIR_NONLINEARITY_LIMITS.json.
 
 
