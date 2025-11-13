@@ -10,8 +10,8 @@ https://gitlab.euclid-sgs.uk/PF-NIR/NIR_NonLinearSaturation.
 The main source code file is Nonlinearity.py.
 
 In general, use the 'develop' branch.  This is the default under Euclid CVMFS.
-Nothing special is needed, unless there are modifications in your local copy of the code.
-In that case, you'll need to make & install first, and your modification should be
+When there are modifications in your local copy of the code,
+you'll need to make & install first, and your modification should be
 picked by the ERun.
 
 ## Command syntax
@@ -56,13 +56,13 @@ Generic Options:
 ## Inputs
 
 Task correctNonlinearity accepts the following arguments:
- * --infile: input image frame in FITS
- * --xmlfile: the MDB XML file
- * --calxmlfile: JSON file listing the nonlinearity calibration products XML files
- * --outfile: nonlinearity corrected image frame in FITS
- * --workdir: working directory path
- * --logdir: logging directory path
- * --config: the NIR configuration set, optional if using the nonlinearity model
+ * infile: input image frame in FITS
+ * xmlfile: the MDB XML file
+ * calxmlfile: JSON file listing the nonlinearity calibration products XML files
+ * outfile: nonlinearity corrected image frame in FITS
+ * workdir: working directory path
+ * logdir: logging directory path
+ * config: the NIR configuration set, optional if using the nonlinearity model
 
 Actual data needed include the following:
  * NISP gain file (data/EUC_NISP_GAIN-Flight_00.01.fits, specified in the MDB XML file)
@@ -71,6 +71,7 @@ Actual data needed include the following:
    * photo covariance matrix (data/EUC_NIR_NLPHOTO_COVMAT-IPAC_20241211T190339.214700Z.fits)
    * photo failed mask (data/EUC_NIR_NLPHOTO_FAILED-IPAC_20241211T190439.915903Z.fits)
 
+
    * spectro coefficients (data/EUC_NIR_NLSPECTRO_COEF-IPAC_20241203T004842.582055Z.fits)
    * spectro covariance matrix (data/EUC_NIR_NLSPECTRO_COVMAT-IPAC_20241203T004900.174221Z.fits)
    * spectro failed mask (data/EUC_NIR_NLSPECTRO_FAILED-IPAC_20241203T004956.643629Z.fits)
@@ -78,40 +79,48 @@ Actual data needed include the following:
 
 ## Outputs
 
-A nonlinearity corrected frame is the output, in FITS format.
+The output is a nonlinearity corrected image frame, in FITS format.
 
 ## Test data
 
 The following data can be used for test purposes.
 There are LE1 images, containing 2 dithers for both Photo and Spectro modes.
+
 See: /euclid/ops/data/xliu/F-001_240606_R2
 
-As mentioned in the README file, 4 run steps had been executed:
+Refer to the README file. Four run steps had been executed:
 runInitialize, badPixMasking, saturation, nonLinearity.
-This directory contains runs inputs and outputs from these 4 steps.
 
 * infile argument
+
   For the purpuse just running the nonlinearity apply module, one can start from 
   the saturation corrected results.  They are: 
-  * /euclid/ops/data/xliu/F-001_240606_R2/outs/photo_sat.fits for Photo mode
-  * /euclid/ops/data/xliu/F-001_240606_R2/outs/spectro_sat.fits for Spectro mode
+
+  * outs/photo_sat.fits for Photo mode
+  * outs/spectro_sat.fits for Spectro mode
 
 * xmlfile argument
+
   input/EUC_MDB_MISSIONCONFIGURATION_DEV_2024-03-04-2.xml
 
 * calxmlfile argument
+
   input/nonlinearcalibfile.json
 
 * outfile argument
+
   your_dir/nl.fits
 
 * workdir argument
+
   /euclid/ops/data/xliu/F-001_240606_R2
 
 * logdir argument
+
   /euclid/ops/data/xliu/F-001_240606_R2/
 
 * config argument
+
   This argument is optional if the nolinearity model is used.  It means that the calmin & calmax are
   from the nonlinearity coeficients array.
 
