@@ -138,7 +138,7 @@ pipelinerunner.pilots.maxConnectionRetries=40
 pipelinerunner.pilots.maxIdleTimeInSec=600
 ```
 
-### run.data
+### run.dat
 ```
 workdir= your_current_run_dir
 logdir=log
@@ -151,10 +151,10 @@ edenVersion=eden-3.1-dev
 
 Note: 
 
-•	workdir is relative to $IAL_ROOT_DIR 
-•	xmllistfile is the list of data for this run, in JSON format
-•	use the latest MDB file
-•	the version of the pipeline should match the one you plan to use
+*	workdir is relative to $IAL_ROOT_DIR 
+*	xmllistfile is the list of data for this run, in JSON format
+*	use the latest MDB file
+*	the version of the pipeline should match the one you plan to use
  
 ### Helper scripts (link_manyfiles.sh)
 ```
