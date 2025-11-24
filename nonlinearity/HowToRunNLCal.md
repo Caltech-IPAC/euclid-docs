@@ -41,6 +41,7 @@ The paths to these datasets are the following:
 Inside each of these calibration data directories, there are XML list files
 which correspond to the data inside/under that directory.
 One will need to assemble the right combinations of these list files before each cal-module run.
+This result is a JSON file that combined the necessary lists of XML files. 
 
 ## Outputs
 
@@ -88,7 +89,7 @@ export PR=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRun
 cd $PR/bin
 nohup ./python pipeline_runner.py server --config=$CONFIG &
 
-###source /cvmfs/euclid-dev.in2p3.fr/CentOS7/EDEN-3.1/bin/activate if not already done
+###source /cvmfs/euclid-dev.in2p3.fr/EDEN-3.1/bin/activate if not already done
 ###make & install your projects (need link the /euclide/staff/your_login_name/Work/Projects to /home/your_login_name/
 ###Work/Projects as pipeline_runner looks under /home/your_login_name!!)
 
@@ -97,7 +98,7 @@ export CWORKDIR=your_current_run_dir
 export RUN_DAT=$IAL_ROOT_DIR/$CWORKDIR/runs/run.dat
 
 ###run the pipeline script
-./python pipeline_runner.py submit --pipeline=$PIPELINE --data=$RUN_DAT
+./python pipeline_runner.py submit --pipeline=$PIPELINE --data=$RUN_DAT --serverurl=http://localhost:50000
 
 ```
 
