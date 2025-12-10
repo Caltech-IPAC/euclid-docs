@@ -1,0 +1,85 @@
+NIR\_NonLinearSaturation package
+================================
+
+Submodules
+----------
+
+NIR\_NonLinearSaturation.Combine2Dets module
+--------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.Combine2Dets
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.FitCoefs module
+----------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.FitCoefs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.FitCoefsProg module
+--------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.FitCoefsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.Nonlinearity module
+--------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.Nonlinearity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.NonlinearityProg module
+------------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.NonlinearityProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.Saturation module
+------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.Saturation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.SaturationProg module
+----------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.SaturationProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.SplitDataProg module
+---------------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.SplitDataProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_NonLinearSaturation.Utils module
+-------------------------------------
+
+.. automodule:: NIR_NonLinearSaturation.Utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: NIR_NonLinearSaturation
+   :members:
+   :undoc-members:
+   :show-inheritance:

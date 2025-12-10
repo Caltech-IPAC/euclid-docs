@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_NonLinearSaturation.Saturation &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_NonLinearSaturation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLApply.html">How to Run the Nonlinearity Apply Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLCal.html">How to Run the Nonlinearity Calibration Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_NonLinearSaturation.Saturation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_NonLinearSaturation.Saturation</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file Saturation.py</span>
+<span class="sd">@date April. 27, 2016</span>
+<span class="sd">@author Cate Peter Capak &lt;capak@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">ElementsKernel.Logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">from</span> <span class="nn">EL_ImageBinding</span> <span class="kn">import</span> <span class="n">NispSurveyExposure</span>
+<span class="kn">from</span> <span class="nn">NIR_MaskingBinding</span> <span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">spatial</span>
+<span class="c1">#import matplotlib.pyplot as plt</span>
+
+<div class="viewcode-block" id="Saturation">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Saturation.Saturation">[docs]</a>
+<span class="k">class</span> <span class="nc">Saturation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class Saturation</span>
+
+<span class="sd">    @brief This class masks pixels where the true flux cannot be</span>
+<span class="sd">           recovered at better than a TBD level.  These pixels will</span>
+<span class="sd">           be set to a set number of counts and be flagged as saturated.</span>
+<span class="sd">           Pixels which are  not saturated but do not meet the non-linearity</span>
+<span class="sd">           requirements will be flagged by the non-linearity module. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgfile</span><span class="p">,</span> <span class="n">calfile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;Saturation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span> <span class="o">=</span> <span class="n">imgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calfile</span> <span class="o">=</span> <span class="n">calfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+    
+<div class="viewcode-block" id="Saturation.apply">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Saturation.Saturation.apply">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Method to apply the saturation correction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+  
+        <span class="c1"># Read In the input exposure and saturation calibration fits files.</span>
+        <span class="c1"># (data file format: fits file with 3x16 extensions, wheres 3 means</span>
+        <span class="c1"># DET##.SCI, DET##.VAR, DET##.DQ; 16 is for 16 detectors; the</span>
+        <span class="c1"># primary HDU has no data but headers.)</span>
+        
+        <span class="c1"># (cal file format: fits file with 16 extensions (empty primary HDU),</span>
+        <span class="c1"># each extension is a 2D array</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saturation.apply(): read in input data&quot;</span><span class="p">)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span><span class="p">)</span>
+        <span class="n">expmeta</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+        <span class="n">calfits</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calfile</span><span class="p">)</span>
+
+        <span class="n">tempf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calfile</span><span class="p">)</span>
+        <span class="n">tempf</span> <span class="o">=</span> <span class="n">tempf</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="n">tempf</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)]</span>    <span class="c1">#no long lines before astropy 4.0</span>
+        <span class="n">expmeta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;SATCAL&quot;</span><span class="p">,</span> <span class="n">tempf</span><span class="p">,</span> <span class="s2">&quot;Saturation limit calibration file&quot;</span><span class="p">)</span>
+
+        <span class="c1"># make sure both input data and calibraton data have equal</span>
+        <span class="c1"># number of detectors</span>
+        <span class="n">numDect</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getNumDetectors</span><span class="p">()</span>
+        <span class="n">numDect0</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">calfits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>   <span class="c1">#not counting the primary HDU</span>
+        <span class="k">if</span> <span class="n">numDect</span> <span class="o">!=</span> <span class="n">numDect0</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: Saturation.apply(): </span><span class="se">\</span>
+<span class="s2">                unequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+           <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Saturation.apply():  </span><span class="se">\</span>
+<span class="s2">                unequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># loop through all detectors</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDect</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saturation.apply():  </span><span class="se">\</span>
+<span class="s2">                 flag saturation on detector &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="c1"># get detector pointer from input data</span>
+            <span class="n">NDExp_ptr</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> 
+            <span class="n">det_id</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DET_ID&quot;</span><span class="p">)</span>
+            <span class="n">soffset</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;S_OFFSET&quot;</span><span class="p">)</span>
+
+            <span class="c1"># get calibration data for the current detector</span>
+            <span class="n">calarr</span> <span class="o">=</span> <span class="n">calfits</span><span class="p">[</span><span class="s2">&quot;DET&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">)]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">calarr</span> <span class="o">-=</span> <span class="n">soffset</span>   <span class="c1">#issue 14536</span>
+
+            <span class="c1">#from SC8 (as of January 15, 2021), the detector map are in 2048x2048</span>
+            <span class="c1">#make sure the saturation cal data has the same dimension with the image frame</span>
+            <span class="c1">#the image frame should be 2040x2040 at this step in the NIR pipeline</span>
+            <span class="n">caldim</span> <span class="o">=</span> <span class="n">calarr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">caldim</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+                <span class="n">calarr</span> <span class="o">=</span> <span class="n">calarr</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+
+            <span class="c1"># flag saturation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flagSaturation</span><span class="p">(</span><span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">calarr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saturation.apply():  </span><span class="se">\</span>
+<span class="s2">                 finish flag saturation on all detectors&quot;</span><span class="p">)</span>
+
+        <span class="n">calfits</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># saving all three layers in a new FITS file</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saturation.apply(): output writen to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Saturation.flagSaturation">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Saturation.Saturation.flagSaturation">[docs]</a>
+    <span class="k">def</span> <span class="nf">flagSaturation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">calarr</span><span class="p">):</span>
+        <span class="c1"># get the 3 layers of a exposure</span>
+        <span class="n">sciimg</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span>      <span class="c1">#type Image&lt;float&gt;</span>
+        <span class="n">scimsk</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMask</span><span class="p">()</span>         <span class="c1">#type Mask&lt;uint32_t&gt;</span>
+        <span class="n">scimeta</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+        
+        <span class="c1"># get numpy arrays</span>
+        <span class="n">sciimgarray</span> <span class="o">=</span> <span class="n">sciimg</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">scimskarray</span> <span class="o">=</span> <span class="n">scimsk</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        
+        <span class="c1"># find saturated pixels</span>
+        <span class="n">satpix</span> <span class="o">=</span> <span class="n">sciimgarray</span> <span class="o">&gt;=</span> <span class="n">calarr</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">satpix</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">satpix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># find the nearest neighboring pixles   6/9/2022</span>
+            <span class="n">nns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_nns</span><span class="p">(</span><span class="n">satpix</span><span class="p">)</span> 
+
+            <span class="c1">#set saturated pixel flag at the saturated pixels</span>
+            <span class="n">scimskarray</span><span class="p">[</span><span class="n">satpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SATUR&quot;</span><span class="p">])</span>   <span class="c1">#SATUR=10, 4/1/2022</span>
+            <span class="n">scimskarray</span><span class="p">[</span><span class="n">satpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span> <span class="c1">#4/14/2022</span>
+
+            <span class="c1">#set saturated pixel flag at the neighboring pixels</span>
+            <span class="n">nns_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">nns</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">nns</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]))</span>    <span class="c1">#tuple of (i,j)</span>
+            <span class="n">scimskarray</span><span class="p">[</span><span class="n">nns_tuple</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SATUR&quot;</span><span class="p">])</span>
+            <span class="n">scimskarray</span><span class="p">[</span><span class="n">nns_tuple</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+
+            <span class="n">num_sat</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">nns_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_sat</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">scimeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;NSATPIX&quot;</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">,</span> <span class="s2">&quot;Number of pixels flagged for saturation&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels flagged for saturation: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_sat</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Saturation.find_nns">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Saturation.Saturation.find_nns">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_nns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satmsk</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Given a pixel mask of saturation, find the pixels that border the pixels.</span>
+
+<span class="sd">       :param satmsk: 2D bool numpy array, True=saturated, False=not saturated</span>
+
+<span class="sd">       :retrun:  2D numpy array in dimension of [num_nns, 2], (i,j) index of the found bordering pixels</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="c1">#saturated pixel index</span>
+       <span class="n">satmsk</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="n">satmsk</span>
+       <span class="n">dims</span> <span class="o">=</span> <span class="n">satmsk</span><span class="o">.</span><span class="n">shape</span>
+       <span class="n">satpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">satmsk</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> saturated pixels&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">satpix</span><span class="p">)))</span>
+
+       <span class="c1">#query for the nearest neighbors for each saturated pixel</span>
+       <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+       <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span>
+       <span class="n">tree</span> <span class="o">=</span> <span class="n">spatial</span><span class="o">.</span><span class="n">cKDTree</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+       <span class="n">neighbors</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">satpix</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+       <span class="c1">#rid of identity point (the center point of each neighborhood, which is the saturated pixel)</span>
+       <span class="n">all_nns</span> <span class="o">=</span> <span class="p">[[</span><span class="n">points</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">nn_ind</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="p">(</span><span class="n">satpix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">satpix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])]</span>  \
+                  <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nn_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)]</span>
+
+       <span class="c1">#flatten the list of list to list of tuples</span>
+       <span class="n">nns</span> <span class="o">=</span> <span class="p">[(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">xys</span> <span class="ow">in</span> <span class="n">all_nns</span> <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="n">xys</span><span class="p">]</span>
+ 
+       <span class="c1">##check against the saturated pixels, and delete those in the found neighboring pixels</span>
+       <span class="c1">##this can happen when saturated pixels are next to each other</span>
+       <span class="n">satpix</span> <span class="o">=</span> <span class="p">[(</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">satpix</span><span class="p">]</span>   <span class="c1">#from list of list to list of tuple</span>
+       <span class="n">res</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">nns</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">satpix</span><span class="p">))</span>
+       <span class="n">final_nns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">{}</span><span class="s2"> neighboring pixels&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_nns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       #plot all the bad pixels and its nearest neighbors</span>
+<span class="sd">       ind = np.where(satmsk == 1)</span>
+<span class="sd">       plt.plot(ind[0][:], ind[1][:], &#39;.&#39;)</span>
+<span class="sd">       plt.plot(final_nns[:,0], final_nns[:,1], &#39;o&#39;)</span>
+<span class="sd">       plt.show()</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="k">return</span> <span class="n">final_nns</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

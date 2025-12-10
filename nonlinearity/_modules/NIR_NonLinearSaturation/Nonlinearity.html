@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_NonLinearSaturation.Nonlinearity &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_NonLinearSaturation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLApply.html">How to Run the Nonlinearity Apply Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLCal.html">How to Run the Nonlinearity Calibration Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_NonLinearSaturation.Nonlinearity</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_NonLinearSaturation.Nonlinearity</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file Nonlinearity.py</span>
+<span class="sd">@date April. 27, 2016</span>
+<span class="sd">@author Peter Capak &lt;capak@ipac.caltech.edu&gt;</span>
+<span class="sd">        Cate Liu &lt;xliu@ipac.caltehc.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">griddata</span><span class="p">,</span> <span class="n">LinearNDInterpolator</span><span class="p">,</span> <span class="n">NearestNDInterpolator</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+
+<span class="kn">import</span> <span class="nn">ElementsKernel.Logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">from</span> <span class="nn">EL_ImageBinding</span> <span class="kn">import</span> <span class="n">NispSurveyExposure</span>
+<span class="kn">from</span> <span class="nn">NIR_DMInterface.XmlReader</span> <span class="kn">import</span> <span class="n">XmlReader</span>
+<span class="kn">from</span> <span class="nn">NIR_MaskingBinding</span> <span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+<span class="kn">from</span> <span class="nn">ST_DM_MDBTools.Mdb</span> <span class="kn">import</span> <span class="n">Mdb</span>
+<span class="kn">from</span> <span class="nn">NIR_NonLinearSaturation.Utils</span> <span class="kn">import</span> <span class="n">load_list_from_file</span>
+
+<div class="viewcode-block" id="NonLinearityCorrection">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection">[docs]</a>
+<span class="k">class</span> <span class="nc">NonLinearityCorrection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class NonLinearityCorrection</span>
+
+<span class="sd">    @brief This class corrects the non-linear response of the detector as </span>
+<span class="sd">           the well fills.  The non-linearity correction is most likely a</span>
+<span class="sd">           polynomial fit to flat field exposures sampled ever ~2.4s using</span>
+<span class="sd">           multiaccum under constant illumination where the count levels</span>
+<span class="sd">           should increase linearly with time.  Along with the fit a count</span>
+<span class="sd">           range should be given where the model is verified to correct the</span>
+<span class="sd">           response to better than the required 0.3% level per pixel.  This</span>
+<span class="sd">           apply module will use this polynomial fit to calculate a multiplicative</span>
+<span class="sd">           correction and raise a flag when the range is outside of the required</span>
+<span class="sd">           level.  </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">imgfile</span><span class="p">,</span> <span class="n">xmlfile</span><span class="p">,</span> <span class="n">calxmlfile</span><span class="p">,</span> <span class="n">configfile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;NonLinearityCorrection&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span> <span class="o">=</span> <span class="n">imgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xmlfile</span> <span class="o">=</span> <span class="n">xmlfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calxmlfile</span> <span class="o">=</span> <span class="n">calxmlfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">configfile</span>
+
+<div class="viewcode-block" id="NonLinearityCorrection.apply">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.apply">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Method to apply the nonlinearity correction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+  
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;apply()...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Read in input data&quot;</span><span class="p">)</span>
+        <span class="c1"># Read In the input exposure and non-linearity correction fits file</span>
+        <span class="c1"># (data file format: fits file with 3x16 extensions, wheres 3 means</span>
+        <span class="c1"># DET##.SCI, DET##.VAR, DET##.DQ; 16 is for 16 detectors; the</span>
+        <span class="c1"># primary HDU has no data but headers.)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span><span class="p">)</span>
+        
+        <span class="c1"># Check to see which OBSTYPE is in the input image file</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+        <span class="n">obstype</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OBSTYPE&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;OBSTYPE = &quot;</span> <span class="o">+</span> <span class="n">obstype</span><span class="p">)</span>
+
+        <span class="c1"># Find out the MACC mode</span>
+        <span class="n">ng</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NG&quot;</span><span class="p">)</span>
+        <span class="n">nr</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NR&quot;</span><span class="p">)</span>
+        <span class="n">nd</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ND&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ng</span> <span class="o">==</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nr</span><span class="o">==</span><span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nd</span><span class="o">==</span><span class="mi">11</span><span class="p">):</span>
+           <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;SPECTRO&quot;</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">ng</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nr</span><span class="o">==</span><span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nd</span><span class="o">==</span><span class="mi">4</span><span class="p">):</span>
+           <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;PHOTO&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized MACC mode! NG=</span><span class="si">{}</span><span class="s2"> NR=</span><span class="si">{}</span><span class="s2"> ND=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span><span class="n">nr</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
+           <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized MACC mode! NG=</span><span class="si">{}</span><span class="s2"> NR=</span><span class="si">{}</span><span class="s2"> ND=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span><span class="n">nr</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;MACC (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nd</span><span class="p">))</span>
+
+        <span class="c1">#Get the non-linearity coefficients and the variance data file names</span>
+        <span class="c1">#issue 25572</span>
+        <span class="n">thexmlfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findCalProdXmlFile</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The XML file for the nonlinearity calibration products: &quot;</span> <span class="o">+</span> <span class="n">thexmlfile</span><span class="p">)</span>
+
+        <span class="c1">#the following works with a XML file of type DpdNirNonLinearityMask 2/12/2024</span>
+        <span class="n">xmlR</span> <span class="o">=</span> <span class="n">XmlReader</span><span class="p">()</span>
+        <span class="n">fitsfiles</span> <span class="o">=</span> <span class="n">xmlR</span><span class="o">.</span><span class="n">get_non_linearity_fits</span><span class="p">(</span><span class="n">thexmlfile</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">fitsfiles</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fitsfiles</span><span class="p">:</span>
+            <span class="n">hdr</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;FITS_DEF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;nir.NLCoefficients&quot;</span><span class="p">:</span>
+               <span class="n">coeffile</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="k">elif</span> <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;FITS_DEF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;nir.NLCovariance&quot;</span><span class="p">:</span>
+               <span class="n">varfile</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="k">elif</span> <span class="n">hdr</span><span class="p">[</span><span class="s2">&quot;FITS_DEF&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;nir.NLMask&quot;</span><span class="p">:</span>
+               <span class="n">failfile</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized FITS definition!&quot;</span><span class="p">)</span>
+               <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized FITS definition!&quot;</span><span class="p">)</span>
+<span class="w">               </span>
+
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        if mode == &quot;PHOTO&quot;:</span>
+<span class="sd">          coeffile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;P_NonLinearityCorrectionCoeffs&quot;)[0]</span>
+<span class="sd">          varfile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;P_NonLinearityCovarianceMatrix&quot;)[0]</span>
+<span class="sd">          failfile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;P_NonLinearityFailedMask&quot;)[0]</span>
+<span class="sd">        elif mode == &quot;SPECTRO&quot;:</span>
+<span class="sd">          coeffile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;S_NonLinearityCorrectionCoeffs&quot;)[0]</span>
+<span class="sd">          varfile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;S_NonLinearityCovarianceMatrix&quot;)[0]</span>
+<span class="sd">          failfile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;S_NonLinearityFailedMask&quot;)[0]</span>
+<span class="sd">        else:</span>
+<span class="sd">          self.logger.info(&quot;ERROR: Unrecognized MACC mode!&quot;)</span>
+<span class="sd">          raise Exception(&quot;ERROR: Unrecognized MACC mode!&quot;)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+          
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;non-linearity coefficients file: &quot;</span> <span class="o">+</span> <span class="n">coeffile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;non-linearity covariance matrix file: &quot;</span> <span class="o">+</span> <span class="n">varfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;non-linearity failed mask file: &quot;</span> <span class="o">+</span> <span class="n">failfile</span><span class="p">)</span>
+
+        <span class="c1">#check if the frame is dark frame</span>
+        <span class="n">darkframe</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;IMG_T1&quot;</span><span class="p">)</span>
+
+        <span class="c1"># (cal file format: fits file with 16 extensions, each extension</span>
+        <span class="c1"># is a fits cube with dimensions (2+polyorder)x2040x2040 corresponding to the </span>
+        <span class="c1"># {min, max, a0, a1, a2, ...} coefficents  of the correction term</span>
+        <span class="n">thecoeffile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">coeffile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading non-linearity coefficients file: &quot;</span> <span class="o">+</span> <span class="n">thecoeffile</span><span class="p">)</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;NLCAL&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">thecoeffile</span><span class="p">),</span> <span class="s2">&quot;Non-linearity coefficients file&quot;</span><span class="p">)</span>
+        <span class="n">calfits</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">thecoeffile</span><span class="p">)</span>
+
+        <span class="n">thevarfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">varfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading non-linearity covariance matrix file: &quot;</span> <span class="o">+</span> <span class="n">thevarfile</span><span class="p">)</span>
+        <span class="n">varcalfits</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">thevarfile</span><span class="p">)</span>
+
+        <span class="n">thefailcalfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">failfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading non-linearity failed mask file: &quot;</span> <span class="o">+</span> <span class="n">thefailcalfile</span><span class="p">)</span>
+        <span class="n">failcalfits</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">thefailcalfile</span><span class="p">)</span>
+
+        <span class="c1"># get the gain map</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        #issue 19900</span>
+<span class="sd">        gainmapfile = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;NISPGainFile&quot;)[0]</span>
+<span class="sd">        self.logger.info(&quot;Gain map file: {}&quot;.format(gainmapfile))</span>
+<span class="sd">        gain_hdus = fits.open(os.path.join(self._workdir, &#39;data&#39;, gainmapfile))</span>
+<span class="sd">        gain_nis = XmlReader().get_from_mdb_nisp_instrument(mdb_xml=self._xmlfile, field=&quot;NISPDetectorGainAverage&quot;)</span>
+<span class="sd">        self.logger.info(&quot;Gain average for NIS: {}&quot;.format(gain_nis))</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#issue 23336</span>
+        <span class="n">gainmapfile</span> <span class="o">=</span> <span class="n">XmlReader</span><span class="p">()</span><span class="o">.</span><span class="n">get_from_mdb_nisp_instrument</span><span class="p">(</span><span class="n">mdb_xml</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_xmlfile</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;NISPGainFile&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gain map file: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gainmapfile</span><span class="p">))</span>
+        <span class="n">gain_hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">gainmapfile</span><span class="p">))</span>
+
+        <span class="c1"># make sure both input data and calibraton data have equal</span>
+        <span class="c1"># number of detectors</span>
+        <span class="n">numDect</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getNumDetectors</span><span class="p">()</span>
+        <span class="n">numDect0</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">calfits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>   <span class="c1">#not counting the primary HDU</span>
+        <span class="k">if</span> <span class="n">numDect</span> <span class="o">!=</span> <span class="n">numDect0</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: unequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+           <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: nequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># loop through all detectors</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDect</span><span class="p">):</span>
+            <span class="c1"># get detector pointer from input data</span>
+            <span class="n">NDExp_ptr</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> 
+            <span class="n">det_id</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DET_ID&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;===Non-linearity correction on detector H2RG_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">))</span>
+            
+            <span class="c1"># get calibration data for the current detector</span>
+            <span class="c1"># det_mapid is the same as EXTNAME in the cal product!!</span>
+            <span class="n">det_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">det_mapid</span> <span class="o">=</span> <span class="s1">&#39;H2RG_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">det_id</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">calarr</span> <span class="o">=</span> <span class="n">calfits</span><span class="p">[</span><span class="n">det_mapid</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">varcalarr</span> <span class="o">=</span> <span class="n">varcalfits</span><span class="p">[</span><span class="n">det_mapid</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">failarr</span> <span class="o">=</span> <span class="n">failcalfits</span><span class="p">[</span><span class="n">det_mapid</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+
+            <span class="c1">#from SC8 (as of January 15, 2021), the detector map are in 2048x2048</span>
+            <span class="c1">#make sure the nonlinearity cal data has the same dimension with the image frame</span>
+            <span class="c1">#the image frame should be 2040x2040 at this step in the NIR pipeline</span>
+            <span class="n">caldim</span> <span class="o">=</span> <span class="n">calarr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">caldim</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+                <span class="n">calarr</span> <span class="o">=</span> <span class="n">calarr</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+
+            <span class="n">caldim</span> <span class="o">=</span> <span class="n">varcalarr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">caldim</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+                <span class="n">varcalarr</span> <span class="o">=</span> <span class="n">varcalarr</span><span class="p">[:,:,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">failarr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+                <span class="n">failarr</span> <span class="o">=</span> <span class="n">failarr</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+
+            <span class="c1">#get the variance from the diagnoal of the covariance matrix</span>
+            <span class="c1">#vararr = np.sqrt(np.diagonal(varcalarr)).copy()   #there is negative in the data</span>
+            <span class="n">vararr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">varcalarr</span><span class="p">)</span>      <span class="c1">#(5, 5, 2048, 2048)) to (2048, 2048, 5)</span>
+            <span class="n">vararr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">vararr</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span>
+<span class="w">            </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            #apply constant gain before NL correction (inside correction()), issue #19900</span>
+<span class="sd">            gains = np.zeros((2040, 2040), dtype=np.float32)</span>
+<span class="sd">            gains[:,:] = gain_nis</span>
+<span class="sd">            gains[:,:] = 1.    #Mar. 6, 2023, Shooby decided (for PV2) NOT to apply gain before the poly correction</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">gains</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1">#Aug 7, 2023 do away with gain correction before NL correction</span>
+
+            <span class="c1"># do correction</span>
+            <span class="c1">#corrected_img, corrected_var = self.correction(NDExp_ptr, calarr, vararr, failarr, gains, darkframe)</span>
+            <span class="c1">#to use the full covariance matrix:</span>
+            <span class="n">corrected_img</span><span class="p">,</span> <span class="n">corrected_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">correction</span><span class="p">(</span><span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">calarr</span><span class="p">,</span> <span class="n">varcalarr</span><span class="p">,</span> <span class="n">failarr</span><span class="p">,</span> <span class="n">gains</span><span class="p">,</span> <span class="n">darkframe</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> 
+
+            <span class="c1">#apply gain_map/gain_constant after NL correction</span>
+<span class="w">            </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            #the resulting product is back to electrons (e-)</span>
+<span class="sd">            if mode == &quot;PHOTO&quot;:</span>
+<span class="sd">                gains = gain_hdus[det_mapid].data</span>
+<span class="sd">                if gains.shape[1] == 2048:</span>
+<span class="sd">                    gains = gains[4:-4, 4:-4]</span>
+<span class="sd">                #gains /= gain_nis   #19900;  |||Mar. 6, 2023, Shooby decided (for PV2) to just apply the gain-map </span>
+<span class="sd">            elif mode == &quot;SPECTRO&quot;:  #TODO temp fix for sim dark w/o gain-map, 5/23/2022</span>
+<span class="sd">                gains = np.zeros((2040, 2040), dtype=np.float32)  #try not to hack correction()</span>
+<span class="sd">                gains[:,:] = gain_nis</span>
+<span class="sd">                #gains /= gain_nis   #19900;  |||Mar. 6, 2023, Shooby decided (for PV2) to just apply the gain-map</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="c1">#issue 23336</span>
+            <span class="n">gains</span> <span class="o">=</span> <span class="n">gain_hdus</span><span class="p">[</span><span class="n">det_mapid</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">if</span> <span class="n">gains</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+               <span class="n">gains</span> <span class="o">=</span> <span class="n">gains</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+            
+            <span class="c1">#apply</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Apply the gain map after the NL correction. #19900&quot;</span><span class="p">)</span>
+            <span class="n">corrected_img</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">corrected_img</span><span class="p">,</span> <span class="n">gains</span><span class="p">)</span>    <span class="c1">#issue #19421, use gain map</span>
+            <span class="n">corrected_var</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">gains</span><span class="p">,</span> <span class="n">gains</span><span class="p">))</span>
+            <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span><span class="o">.</span><span class="n">setArray</span><span class="p">(</span><span class="n">corrected_img</span><span class="p">)</span>
+            <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getVariance</span><span class="p">()</span><span class="o">.</span><span class="n">setArray</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finish non-linearity correction on all detectors&quot;</span><span class="p">)</span>
+
+        <span class="n">calfits</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">varcalfits</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">failcalfits</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># saving all three layers in a new FITS file</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Output writen to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NonLinearityCorrection.findCalProdXmlFile">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.findCalProdXmlFile">[docs]</a>
+    <span class="k">def</span> <span class="nf">findCalProdXmlFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ng</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nd</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Find the XML file from a list based on the current MACC mode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">flist</span> <span class="o">=</span> <span class="n">load_list_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calxmlfile</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flist</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">el</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;MACCValues&quot;</span><span class="p">:</span>
+                   <span class="n">xnr</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//NRead&#39;</span><span class="p">)</span>
+                   <span class="n">xnr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xnr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                   <span class="n">xng</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//NGroup&#39;</span><span class="p">)</span>
+                   <span class="n">xng</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xng</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                   <span class="n">xnd</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//NDrop&#39;</span><span class="p">)</span>
+                   <span class="n">xnd</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">xng</span> <span class="o">==</span> <span class="n">ng</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">xnr</span> <span class="o">==</span> <span class="n">nr</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">xnd</span> <span class="o">==</span> <span class="n">nd</span><span class="p">):</span>
+               <span class="n">thexmlfn</span> <span class="o">=</span> <span class="n">f</span>
+
+        <span class="k">return</span> <span class="n">thexmlfn</span></div>
+
+
+<div class="viewcode-block" id="NonLinearityCorrection.correction">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.correction">[docs]</a>
+    <span class="k">def</span> <span class="nf">correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">calarr</span><span class="p">,</span> <span class="n">varcalarr</span><span class="p">,</span> <span class="n">failarr</span><span class="p">,</span> <span class="n">gains</span><span class="p">,</span> <span class="n">darkframe</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="c1"># get the 3 layers of a exposure</span>
+        <span class="n">sciimg</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span>      <span class="c1">#type Image&lt;float&gt;</span>
+        <span class="n">scivar</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getVariance</span><span class="p">()</span>     <span class="c1">#type Image&lt;float&gt;</span>
+        <span class="n">scimsk</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMask</span><span class="p">()</span>         <span class="c1">#type Mask&lt;uint32_t&gt;</span>
+        
+        <span class="c1"># get numpy arrays</span>
+        <span class="n">sciimgarray</span> <span class="o">=</span> <span class="n">sciimg</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">scivararray</span> <span class="o">=</span> <span class="n">scivar</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">scimskarray</span> <span class="o">=</span> <span class="n">scimsk</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+
+        <span class="c1"># convert unit from ADU to e-</span>
+        <span class="k">if</span> <span class="n">gains</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+           <span class="c1">#self.logger.info(&quot;Apply the constant gain before the NL correction. #19900&quot;)</span>
+           <span class="n">sciimgarray</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">sciimgarray</span><span class="p">,</span> <span class="n">gains</span><span class="p">)</span>    <span class="c1">#issue #19421, use gain map</span>
+           <span class="n">scivararray</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">scivararray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">gains</span><span class="p">,</span> <span class="n">gains</span><span class="p">))</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;BUNIT&quot;</span><span class="p">,</span> <span class="s2">&quot;ELECTRON&quot;</span><span class="p">,</span> <span class="s2">&quot;physical units of the array values&quot;</span><span class="p">)</span>  <span class="c1">#issue 12715</span>
+
+        <span class="c1"># get non-linearity validity range limits</span>
+        <span class="c1"># use the nonlinearity model by default unless limits are passed on the command line  #issue 21191 #46</span>
+        <span class="n">calmin</span> <span class="o">=</span> <span class="n">calarr</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span>   <span class="c1">#min value</span>
+        <span class="n">calmax</span> <span class="o">=</span> <span class="n">calarr</span><span class="p">[</span><span class="mi">1</span><span class="p">,:,:]</span>   <span class="c1">#max value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+           <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+           <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;PHOTO&quot;</span><span class="p">:</span>
+               <span class="n">calmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;PHOTO_NL_LOW&quot;</span><span class="p">])</span>
+               <span class="n">tmp</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;PHOTO_NL_HIGH&quot;</span><span class="p">]</span>
+           <span class="k">else</span><span class="p">:</span>
+               <span class="n">calmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;SPECTRO_NL_LOW&quot;</span><span class="p">])</span>
+               <span class="n">tmp</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;SPECTRO_NL_HIGH&quot;</span><span class="p">]</span>
+
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using user specified nonlinearity lower validity limit: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">calmin</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;ADU&quot;</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">tmp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+              <span class="n">calmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using user specified nonlinearity upper validity limit: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">calmax</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;ADU&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using nonlinearity model for lower and upper validity limits&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># set non-linearity flag if sciimg &lt; calmin or sciimg &gt; calmax</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sciimgarray</span> <span class="o">&lt;</span> <span class="n">calmin</span><span class="p">)</span>
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>   <span class="c1">#NLINEAR=11</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        #2/14/2023 telecon decided not to flag as INVALID</span>
+<span class="sd">        if darkframe != &quot;DARK&quot;:       #don&#39;t set INVALID to  dark frame</span>
+<span class="sd">           scimskarray[nonlinpix] |= (1 &lt;&lt; EUC_NIR_MASK_DICT[&quot;INVALID&quot;])   #INVALID=0</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels whose value is &lt; cal minimum: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span> 
+
+        <span class="n">nonlinpix1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sciimgarray</span> <span class="o">&gt;</span> <span class="n">calmax</span><span class="p">)</span>
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix1</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>   <span class="c1">#NLINEAR=11</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        #2/14/2023 telecon decided not to flag as INVALID</span>
+<span class="sd">        if darkframe != &quot;DARK&quot;:</span>
+<span class="sd">           scimskarray[nonlinpix1] |= (1 &lt;&lt; EUC_NIR_MASK_DICT[&quot;INVALID&quot;])   #INVALID=0</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels whose value is &gt; cal maxiimum: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix1</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="c1"># now do non-linearity correction</span>
+        <span class="c1"># no non-linearity correction for the following cases:</span>
+        <span class="c1">#  * if saturation flag is set</span>
+        <span class="c1">#  * if sciimgarray &lt;= 0</span>
+        <span class="c1">#  * if failed-dq is flagged</span>
+        <span class="c1">#  * if outside the range  (no longer true, do correction for this case!)</span>
+
+        <span class="c1"># create a mask where the NO nonlinearity correction will be done</span>
+        <span class="n">no_correction_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">invalid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">satmask</span> <span class="o">=</span> <span class="n">scimskarray</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SATUR&quot;</span><span class="p">])</span>
+        <span class="n">satpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">satmask</span><span class="p">)</span>
+        <span class="n">no_correction_mask</span><span class="p">[</span><span class="n">satpix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of saturated pixels: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">satpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="n">negimg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sciimgarray</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">no_correction_mask</span><span class="p">[</span><span class="n">negimg</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels whose signal &lt;=0: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">negimg</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="n">failedpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">failarr</span><span class="p">)</span>
+        <span class="n">no_correction_mask</span><span class="p">[</span><span class="n">failedpix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels flagged as failed: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">failedpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="c1">#flag DQ layer on these no_correction_mask pixels</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">no_correction_mask</span><span class="p">)</span>
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">darkframe</span> <span class="o">!=</span> <span class="s2">&quot;DARK&quot;</span><span class="p">:</span>       <span class="c1">#don&#39;t set INVALID to  dark frame</span>
+           <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+           <span class="n">invalid_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels that have no nonlinearity correction:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="c1">##11/28/2022, telecon suggested to DO the correction even though it&#39;s outside the range!!</span>
+        <span class="c1">##1st, do not correct using the NL coefs/covar; 2nd, linearly extrapolate afterward for &gt; calmax pixels</span>
+        <span class="n">outrange_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sciimgarray</span> <span class="o">&lt;</span> <span class="n">calmin</span><span class="p">)</span>
+        <span class="n">no_correction_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1">#outrange_mask[nonlinpix] = True      #3/38/2023, issue #21191, no linear extropolation when &lt; calmin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels where signal &lt; calibration minimum: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sciimgarray</span> <span class="o">&gt;</span> <span class="n">calmax</span><span class="p">)</span>
+        <span class="n">no_correction_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">outrange_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels where signal &gt; calibration maximum: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="c1">#deal with negative variance</span>
+        <span class="n">negvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">scivararray</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">scivararray</span><span class="p">[</span><span class="n">negvar</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>     <span class="c1">#11/16/2022</span>
+
+        <span class="c1"># apply polynomial non-linearity correction to the un-masked pixels</span>
+        <span class="c1">#corrected_img1, corrected_var1 = self.polyCorrection(sciimgarray, scivararray,  calarr[2:,:,:], varcalarr, ~no_correction_mask)</span>
+        <span class="n">corrected_img1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">polySci</span><span class="p">(</span><span class="n">sciimgarray</span><span class="p">,</span>  <span class="n">calarr</span><span class="p">[</span><span class="mi">2</span><span class="p">:,:,:],</span>  <span class="o">~</span><span class="n">no_correction_mask</span><span class="p">)</span>
+        <span class="n">corrected_var1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">polyVar</span><span class="p">(</span><span class="n">sciimgarray</span><span class="p">,</span> <span class="n">scivararray</span><span class="p">,</span>  <span class="n">calarr</span><span class="p">[</span><span class="mi">2</span><span class="p">:,:,:],</span> <span class="n">varcalarr</span><span class="p">,</span> <span class="o">~</span><span class="n">no_correction_mask</span><span class="p">)</span>
+        
+
+        <span class="c1">#linearly extrapolate pixels where the signal is &gt; fhi    3/28/2023</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Linear extrapolation on pixels whose signal is &gt; calmax&quot;</span><span class="p">)</span>
+        <span class="n">corrected_img</span><span class="p">,</span> <span class="n">corrected_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linearExtrapolate</span><span class="p">(</span><span class="n">corrected_img1</span><span class="p">,</span> <span class="n">corrected_var1</span><span class="p">,</span> <span class="n">sciimgarray</span><span class="p">,</span> <span class="n">scivararray</span><span class="p">,</span> <span class="n">calarr</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:,:],</span> <span class="n">outrange_mask</span><span class="p">)</span>
+
+        <span class="c1"># 1/30/2023, issue #21191, email from Pat M.</span>
+        <span class="c1"># no correction if |correted_signal| &gt; 1E5 ADU</span>
+        <span class="k">if</span> <span class="n">gains</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+           <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">corrected_img</span><span class="p">,</span> <span class="n">gains</span><span class="p">)</span>   <span class="c1">#convert from e- to ADU</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="n">tmp</span> <span class="o">=</span> <span class="n">corrected_img</span>      <span class="c1">#in ADU, for no gain adjustment before the correction</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e5</span><span class="p">)</span>
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span>
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="n">scivararray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span>
+
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">darkframe</span> <span class="o">!=</span> <span class="s2">&quot;DARK&quot;</span><span class="p">:</span>       <span class="c1">#don&#39;t set INVALID to  dark frame</span>
+           <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+           <span class="n">invalid_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels where |correted_signal| &gt; 1E5: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        ##TODO wait till PV2 sim data is out</span>
+<span class="sd">        # 1/30/2023, issue #21191</span>
+<span class="sd">        # no correction where (correted_signal - input_signal)/input_signal is larger than +-30%</span>
+<span class="sd">        limit = 30./100.     </span>
+<span class="sd">        no0img = np.where(sciimgarray != 0.)</span>
+<span class="sd">        imgdiff = np.zeros_like(sciimgarray)</span>
+<span class="sd">        imgdiff[no0img] = np.divide(corrected_img[no0img] - sciimgarray[no0img], sciimgarray[no0img])</span>
+<span class="sd">        nonlinpix = np.where((imgdiff &gt; limit) | (imgdiff &lt; -limit))</span>
+<span class="sd">        corrected_img[nonlinpix] = sciimgarray[nonlinpix]</span>
+<span class="sd">        corrected_var[nonlinpix] = scivararray[nonlinpix]</span>
+
+<span class="sd">        scimskarray[nonlinpix] |= (1 &lt;&lt; EUC_NIR_MASK_DICT[&quot;NLINEAR&quot;])</span>
+<span class="sd">        if darkframe != &quot;DARK&quot;:       #don&#39;t set INVALID to  dark frame</span>
+<span class="sd">           scimskarray[nonlinpix] |= (1 &lt;&lt; EUC_NIR_MASK_DICT[&quot;INVALID&quot;])</span>
+<span class="sd">        self.logger.info(&quot;Number of pixels where (correted-input)/input signal is larger than +-30%: &quot; + str(len(nonlinpix[0])))</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># 1/30/2023, issue #21191</span>
+        <span class="c1"># no correction where input signal is positive but becomes negative after correction</span>
+        <span class="n">nonlinpix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">sciimgarray</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">corrected_img</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">))</span>
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span>
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">=</span> <span class="n">scivararray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span>
+
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">darkframe</span> <span class="o">!=</span> <span class="s2">&quot;DARK&quot;</span><span class="p">:</span>       <span class="c1">#don&#39;t set INVALID to  dark frame</span>
+           <span class="n">scimskarray</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+           <span class="n">invalid_mask</span><span class="p">[</span><span class="n">nonlinpix</span><span class="p">]</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels where input_signal &gt; 0. but correted_signal &lt; 0.: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nonlinpix</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="c1">#tally the number of pixels flagged as NLINEAR</span>
+        <span class="n">nlflagged</span> <span class="o">=</span> <span class="n">scimskarray</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;NLINEAR&quot;</span><span class="p">])</span>
+        <span class="n">nlind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nlflagged</span><span class="p">)</span>
+        <span class="n">nrejnl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nlind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">nlflagged</span> <span class="o">=</span> <span class="n">invalid_mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">])</span>
+        <span class="n">nlind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nlflagged</span><span class="p">)</span>
+        <span class="n">num_invalid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nlind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels flaggeg as NLINEAR by Nonlinearity module: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nrejnl</span><span class="p">))</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;NREJNL&quot;</span><span class="p">,</span> <span class="n">nrejnl</span><span class="p">,</span> <span class="s2">&quot;Number of pixels flaggeg as NLINEAR by Nonlinearity module&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of pixels flaggeg as INVALID by Nonlinearity module: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_invalid</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">corrected_img</span><span class="p">,</span> <span class="n">corrected_var</span></div>
+
+
+<div class="viewcode-block" id="NonLinearityCorrection.polyCorrection">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyCorrection">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">polyCorrection</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">errs</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Polynomial correction.</span>
+<span class="sd">         Build the polynomial corrected_img = a0 + a1 * x + a2 * x^2 + a3 * x^3 + a4 * x^4 </span>
+
+<span class="sd">         Args:</span>
+<span class="sd">             x:          2D numpy array, image frame</span>
+<span class="sd">             var:        2D numpy array, variance</span>
+<span class="sd">             coef:       3D numpy array, nonlinearity coefficients</span>
+<span class="sd">             errs:       3D numpy array, the nolinearity covariance, it&#39;s VAR^2</span>
+<span class="sd">             mask:       2D numpy array, where polynomial is applied</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             corrected_img:  2D numpy array, corrected image</span>
+<span class="sd">             corrected_var:  2D numpy array, corrected variance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">norder</span> <span class="o">=</span> <span class="n">coef</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1">#to be explicit, make a deep copy of input x and var because only the un-masked pixles are modified</span>
+        <span class="n">corrected_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">corrected_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+        <span class="c1">#</span>
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> 
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> 
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">norder</span><span class="p">):</span>
+            <span class="n">cf</span> <span class="o">=</span> <span class="n">coef</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span>
+            <span class="n">ef</span> <span class="o">=</span> <span class="n">errs</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span>
+            <span class="n">corrected_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+
+            <span class="c1">#corrected_var += ((coef[i,:,:]* np.power(x, i))**2) * ((errs[i,:,:]/coef[i,:,:])**2+(i*np.sqrt(var)/x)**2)</span>
+            <span class="n">corrected_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="p">((</span><span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">i</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span>  \
+                                      <span class="p">((</span><span class="n">ef</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">/</span><span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span><span class="o">/</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1">#replace NaNs or infinity with max(var) if any</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            nanpix = np.isnan(corrected_var)</span>
+<span class="sd">            infpix = np.isinf(corrected_var)</span>
+<span class="sd">            xnan = np.where(nanpix)</span>
+<span class="sd">            xinf = np.where(infpix)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">finitepix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">)</span>
+            <span class="n">xfinite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">finitepix</span><span class="p">)</span>
+
+            <span class="n">varmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">[</span><span class="n">finitepix</span><span class="p">])</span>
+            <span class="n">corrected_var</span><span class="p">[</span><span class="o">~</span><span class="n">finitepix</span><span class="p">]</span> <span class="o">=</span> <span class="n">varmax</span>    <span class="c1">#TODO does it need to add to the flag??</span>
+
+        <span class="k">return</span> <span class="n">corrected_img</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NonLinearityCorrection.polySci">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polySci">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">polySci</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Polynomial correction of the science layer.</span>
+<span class="sd">        Build the polynomial corrected_img = a0 + a1 * x + a2 * x^2 + a3 * x^3 + a4 * x^4 </span>
+<span class="sd">        Args:</span>
+<span class="sd">            x:          2D numpy array, image frame</span>
+<span class="sd">            coef:       3D numpy array, nonlinearity coefficients</span>
+<span class="sd">            mask:       2D numpy array, where polynomial is applied</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            corrected_img:  2D numpy array, corrected image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#to be explicit, make a deep copy of input x and var because only the un-masked pixles are modified    </span>
+        <span class="n">corrected_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>    
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> 
+    
+        <span class="n">norder</span> <span class="o">=</span> <span class="n">coef</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">norder</span><span class="p">):</span>
+            <span class="n">cf</span> <span class="o">=</span> <span class="n">coef</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span>
+            <span class="n">corrected_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">corrected_img</span></div>
+
+
+<div class="viewcode-block" id="NonLinearityCorrection.polyVar">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyVar">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">polyVar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span><span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Polynomial correction of the variance layer.</span>
+<span class="sd">        Build the polynomial corrected_variance using the full covariance matrix </span>
+<span class="sd">        Args:  </span>
+<span class="sd">           x:          2D numpy array, image frame</span>
+<span class="sd">           var:        2D numpy array, variance frame</span>
+<span class="sd">           coef:       3D numpy array, nonlinearity coefficients</span>
+<span class="sd">           cov:        4D numpy array, nonlinearity covariance matrix </span>
+<span class="sd">           mask:       2D numpy array, where polynomial is applied</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           corrected_var:  2D numpy array, corrected variance&quot;&quot;&quot;</span>
+        
+        <span class="c1">#fixed second term power from ticket: https://euclid.roe.ac.uk/issues/29844</span>
+        <span class="n">corrected_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>    
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> 
+        <span class="n">var_x_term</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">((</span><span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="c1">#corrected_var[mask] += cov[i,i, mask] * np.power(x[mask], i*2)</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">var_x_term</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">coef</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">mask</span><span class="p">]</span><span class="o">*</span><span class="n">i</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1">#for j in range(i+1, (cov.shape)[0]):</span>
+            <span class="c1">#    corrected_var[mask] += 2 * cov[i,j, mask] * np.power(x[mask],i) * np.power(x[mask],j) </span>
+
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">var_x_term</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        
+        <span class="n">finitepix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">)</span>
+        <span class="n">xfinite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">finitepix</span><span class="p">)</span>
+        <span class="n">varmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">corrected_var</span><span class="p">[</span><span class="n">finitepix</span><span class="p">])</span>
+        <span class="n">corrected_var</span><span class="p">[</span><span class="o">~</span><span class="n">finitepix</span><span class="p">]</span> <span class="o">=</span> <span class="n">varmax</span>    <span class="c1">#TODO does it need to add to the flag?? </span>
+        <span class="k">return</span> <span class="n">corrected_var</span></div>
+
+    
+<div class="viewcode-block" id="NonLinearityCorrection.linearExtrapolate">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.linearExtrapolate">[docs]</a>
+    <span class="k">def</span> <span class="nf">linearExtrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polycorrected_img</span><span class="p">,</span> <span class="n">polycorrected_var</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Issue #21474:</span>
+<span class="sd">         Outside of the validity range, SIM  extrapolates linearly with a slope set by the derivative of </span>
+<span class="sd">         the non-linearity function at the validity limit. </span>
+<span class="sd">         </span>
+<span class="sd">         We caluate the slopes using the derivative of the polynomial directly, at max(f)=calmax.</span>
+<span class="sd">         Also f(x) using the polynomial directly, at max(f).</span>
+<span class="sd">         </span>
+<span class="sd">         y = 1+ (2*x) + (3*x**2) + (4*x**3) + (5*x**4)</span>
+<span class="sd">         dy = np.gradient(y,x)</span>
+<span class="sd">         slope = dy[x==validity_range]</span>
+<span class="sd">         intercept = y[x==validity_range]-slope*validity_range</span>
+<span class="sd"> </span>
+<span class="sd">         Args:</span>
+<span class="sd">             polycorrected_img:  2D numpy array, poly corrected image on good pixels</span>
+<span class="sd">             polycorrected_var:  2D numpy array, poly corrected variance on good pixels</span>
+<span class="sd">             x:                  2D numpy array, original image frame</span>
+<span class="sd">             var:                2D numpy array, original variance</span>
+<span class="sd">             coef:               3D array including calmax and NL coefficient, coef[1:]</span>
+<span class="sd">             mask:               pixels to linearly extrapolate</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             corrected_img:  2D numpy array, corrected image</span>
+<span class="sd">             corrected_var:  2D numpy array, corrected variance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#</span>
+        <span class="n">norder</span> <span class="o">=</span> <span class="n">coef</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+        <span class="n">corrected_img</span> <span class="o">=</span> <span class="n">polycorrected_img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">corrected_var</span> <span class="o">=</span> <span class="n">polycorrected_var</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="n">slope</span><span class="p">,</span><span class="n">intercept</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">coef</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">mask</span><span class="p">]</span>    <span class="c1">#the 0-order term</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">norder</span><span class="p">):</span>
+            <span class="n">cf</span> <span class="o">=</span> <span class="n">coef</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,:]</span>
+            <span class="n">slope</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">i</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">coef</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">mask</span><span class="p">],</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># derivative at max(f)=calmax</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">coef</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">mask</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>         <span class="c1"># y at max(f)=calmax</span>
+        
+        <span class="n">intercept</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">-</span><span class="n">slope</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">*</span><span class="n">coef</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">mask</span><span class="p">]</span>
+    
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">slope</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">corrected_var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>       <span class="c1">#TODO not corrected for now to figure out how</span>
+
+        <span class="c1">#deal with NaNs</span>
+        <span class="n">nans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">corrected_img</span><span class="p">))</span>
+        <span class="n">corrected_img</span><span class="p">[</span><span class="n">nans</span><span class="p">]</span> <span class="o">=</span> <span class="n">polycorrected_img</span><span class="p">[</span><span class="n">nans</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">corrected_img</span><span class="p">,</span> <span class="n">corrected_var</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

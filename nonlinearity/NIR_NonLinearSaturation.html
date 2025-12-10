@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_NonLinearSaturation package &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Run the Nonlinearity Apply Module" href="HowToRunNLApply.html" />
+    <link rel="prev" title="NIR_NonLinearSaturation" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NIR_NonLinearSaturation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">NIR_NonLinearSaturation package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.Combine2Dets">NIR_NonLinearSaturation.Combine2Dets module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Combine2Dets.Combine2Dets"><code class="docutils literal notranslate"><span class="pre">Combine2Dets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Combine2Dets.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Combine2Dets.load_list_from_file"><code class="docutils literal notranslate"><span class="pre">load_list_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Combine2Dets.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Combine2Dets.prepend_dir"><code class="docutils literal notranslate"><span class="pre">prepend_dir()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.FitCoefs">NIR_NonLinearSaturation.FitCoefs module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs"><code class="docutils literal notranslate"><span class="pre">FitCoefs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.Ortho_Polyfit"><code class="docutils literal notranslate"><span class="pre">Ortho_Polyfit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.a_matrix"><code class="docutils literal notranslate"><span class="pre">a_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.a_prime_j"><code class="docutils literal notranslate"><span class="pre">a_prime_j()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.average_arrays"><code class="docutils literal notranslate"><span class="pre">average_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.average_axis0"><code class="docutils literal notranslate"><span class="pre">average_axis0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.beta_k_i"><code class="docutils literal notranslate"><span class="pre">beta_k_i()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.betas"><code class="docutils literal notranslate"><span class="pre">betas()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.compute_polyfit_and_covar"><code class="docutils literal notranslate"><span class="pre">compute_polyfit_and_covar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.get_closer_value"><code class="docutils literal notranslate"><span class="pre">get_closer_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.load_list_from_file"><code class="docutils literal notranslate"><span class="pre">load_list_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.mask_beta"><code class="docutils literal notranslate"><span class="pre">mask_beta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.poly1"><code class="docutils literal notranslate"><span class="pre">poly1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.poly2"><code class="docutils literal notranslate"><span class="pre">poly2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.poly3"><code class="docutils literal notranslate"><span class="pre">poly3()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.poly4"><code class="docutils literal notranslate"><span class="pre">poly4()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.prepend_dir"><code class="docutils literal notranslate"><span class="pre">prepend_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.readDetectorLayout"><code class="docutils literal notranslate"><span class="pre">readDetectorLayout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.refpx_correction"><code class="docutils literal notranslate"><span class="pre">refpx_correction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.sigma_n_m"><code class="docutils literal notranslate"><span class="pre">sigma_n_m()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefs.sum_power"><code class="docutils literal notranslate"><span class="pre">sum_power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.FitCoefsProg">NIR_NonLinearSaturation.FitCoefsProg module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefsProg.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.FitCoefsProg.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.Nonlinearity">NIR_NonLinearSaturation.Nonlinearity module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection"><code class="docutils literal notranslate"><span class="pre">NonLinearityCorrection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.NonlinearityProg">NIR_NonLinearSaturation.NonlinearityProg module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.NonlinearityProg.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.NonlinearityProg.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.Saturation">NIR_NonLinearSaturation.Saturation module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Saturation.Saturation"><code class="docutils literal notranslate"><span class="pre">Saturation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.SaturationProg">NIR_NonLinearSaturation.SaturationProg module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SaturationProg.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SaturationProg.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.SplitDataProg">NIR_NonLinearSaturation.SplitDataProg module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SplitDataProg.SplitData"><code class="docutils literal notranslate"><span class="pre">SplitData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SplitDataProg.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SplitDataProg.load_list_from_file"><code class="docutils literal notranslate"><span class="pre">load_list_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SplitDataProg.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.SplitDataProg.prepend_dir"><code class="docutils literal notranslate"><span class="pre">prepend_dir()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation.Utils">NIR_NonLinearSaturation.Utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Utils.createDetFits"><code class="docutils literal notranslate"><span class="pre">createDetFits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Utils.load_list_from_file"><code class="docutils literal notranslate"><span class="pre">load_list_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Utils.parse_xml"><code class="docutils literal notranslate"><span class="pre">parse_xml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Utils.polyfit2"><code class="docutils literal notranslate"><span class="pre">polyfit2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_NonLinearSaturation.Utils.readFitsByChunk"><code class="docutils literal notranslate"><span class="pre">readFitsByChunk()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_NonLinearSaturation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="HowToRunNLApply.html">How to Run the Nonlinearity Apply Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HowToRunNLCal.html">How to Run the Nonlinearity Calibration Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">NIR_NonLinearSaturation</a></li>
+      <li class="breadcrumb-item active">NIR_NonLinearSaturation package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/NIR_NonLinearSaturation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nir-nonlinearsaturation-package">
+<h1>NIR_NonLinearSaturation package<a class="headerlink" href="#nir-nonlinearsaturation-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-NIR_NonLinearSaturation.Combine2Dets">
+<span id="nir-nonlinearsaturation-combine2dets-module"></span><h2>NIR_NonLinearSaturation.Combine2Dets module<a class="headerlink" href="#module-NIR_NonLinearSaturation.Combine2Dets" title="Link to this heading"></a></h2>
+<p>&#64;file Combine2Dets.py
+&#64;date November 29, 2022
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltehc&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltehc<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.Combine2Dets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Combine2Dets.</span></span><span class="sig-name descname"><span class="pre">Combine2Dets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filelist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#Combine2Dets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.Combine2Dets" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class Combine2Dets</p>
+<dl>
+<dt>&#64;brief This class combines a list of 2-detector-pairs input data</dt><dd><p>(coef.fits, cov.fits. failmask.fits) into 3 FITS files each of which
+contains 16 detectors.</p>
+<p>These input data is the outputs from FitCoef.py.
+Using the default split output format of the IAL, the input list
+is of a JSON file that has 8 nexted elements.
+It looks like:
+[[“iteratio1/nl_coef.fits”, “iteratio1/nl_cov.fits”, “iteratio1/nl_failedmask.fits”],</p>
+<blockquote>
+<div><p>[“iteratio2/nl_coef.fits”, “iteratio2/nl_cov.fits”, “iteratio2/nl_failedmask.fits”],
+…</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.Combine2Dets.combine">
+<span class="sig-name descname"><span class="pre">combine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#Combine2Dets.combine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.Combine2Dets.combine" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to combine the 2-detector-pairs FITS into one 16-detector FITS.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.Combine2Dets.detids">
+<span class="sig-name descname"><span class="pre">detids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[11,</span> <span class="pre">21,</span> <span class="pre">31,</span> <span class="pre">41,</span> <span class="pre">12,</span> <span class="pre">22,</span> <span class="pre">32,</span> <span class="pre">42,</span> <span class="pre">13,</span> <span class="pre">23,</span> <span class="pre">33,</span> <span class="pre">43,</span> <span class="pre">14,</span> <span class="pre">24,</span> <span class="pre">34,</span> <span class="pre">44]</span></em><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.Combine2Dets.detids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Combine2Dets.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for Combine2Dets</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.load_list_from_file">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Combine2Dets.</span></span><span class="sig-name descname"><span class="pre">load_list_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#load_list_from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.load_list_from_file" title="Link to this definition"></a></dt>
+<dd><p>Read in the list file which is in either JSON format or plain list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>fname - file name for the list</em><em> of </em><em>data</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>listobject – list of data files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Combine2Dets.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Combine2Dets.prepend_dir">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Combine2Dets.</span></span><span class="sig-name descname"><span class="pre">prepend_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Combine2Dets.html#prepend_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Combine2Dets.prepend_dir" title="Link to this definition"></a></dt>
+<dd><p>Prepend ddir to a list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong> (<em>alist -- Python</em>)</p></li>
+<li><p><strong>names</strong> (<em>a list</em><em> of </em><em>file</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>olist – Python list, a list of file names prepended with data_dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.FitCoefs">
+<span id="nir-nonlinearsaturation-fitcoefs-module"></span><h2>NIR_NonLinearSaturation.FitCoefs module<a class="headerlink" href="#module-NIR_NonLinearSaturation.FitCoefs" title="Link to this heading"></a></h2>
+<p>&#64;file FitCoefs.py
+&#64;date November 8, 2022</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">FitCoefs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdbxml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmllist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polyorder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef_outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">failed_outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class FitCoefs
+&#64;brief This class creats the non-linearity coefficients by fitting a n-th order polynomial to the full ramp.</p>
+<blockquote>
+<div><p>In addition, it also creates the covariance matrix and the failed mask.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.assignFluxIds">
+<span class="sig-name descname"><span class="pre">assignFluxIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">listsims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.assignFluxIds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.assignFluxIds" title="Link to this definition"></a></dt>
+<dd><p>Assign a flux id to an unique flux_e so that the IDs are in range of [1, n],
+where n is the number of unique fluxes in the list of input data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.avg_Beta_Slope">
+<span class="sig-name descname"><span class="pre">avg_Beta_Slope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">listsims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.avg_Beta_Slope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.avg_Beta_Slope" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.framesArray">
+<span class="sig-name descname"><span class="pre">framesArray</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.framesArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.framesArray" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getDetectorIds">
+<span class="sig-name descname"><span class="pre">getDetectorIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getDetectorIds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getDetectorIds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getEngFileNames">
+<span class="sig-name descname"><span class="pre">getEngFileNames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getEngFileNames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getEngFileNames" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getFluxId">
+<span class="sig-name descname"><span class="pre">getFluxId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getFluxId"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getFluxId" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getFluxIdByCurrentPwm">
+<span class="sig-name descname"><span class="pre">getFluxIdByCurrentPwm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getFluxIdByCurrentPwm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getFluxIdByCurrentPwm" title="Link to this definition"></a></dt>
+<dd><p>Method to calculate a flux_id value from MDB files and
+Intensity and PwmDutyCycle in the XML file.
+Note the corresponding LED_INT and LED_PWM are in the FITS file header after NIR_Init step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getHKFileName">
+<span class="sig-name descname"><span class="pre">getHKFileName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getHKFileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getHKFileName" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getReadoutMode">
+<span class="sig-name descname"><span class="pre">getReadoutMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getReadoutMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getReadoutMode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.getSciFileName">
+<span class="sig-name descname"><span class="pre">getSciFileName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.getSciFileName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.getSciFileName" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.make_nl_cal">
+<span class="sig-name descname"><span class="pre">make_nl_cal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.make_nl_cal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.make_nl_cal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.readRamp">
+<span class="sig-name descname"><span class="pre">readRamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.readRamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.readRamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.readSigma">
+<span class="sig-name descname"><span class="pre">readSigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.readSigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.readSigma" title="Link to this definition"></a></dt>
+<dd><p>read from science extension and convert to ADU/frame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.readSlope">
+<span class="sig-name descname"><span class="pre">readSlope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_xml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.readSlope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.readSlope" title="Link to this definition"></a></dt>
+<dd><p>read from science extension and convert to ADU/frame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.sortByCreationDate">
+<span class="sig-name descname"><span class="pre">sortByCreationDate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">listsims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.sortByCreationDate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.sortByCreationDate" title="Link to this definition"></a></dt>
+<dd><p>Sort the XML list by the creation date of the data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeCoefs">
+<span class="sig-name descname"><span class="pre">writeCoefs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coef1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.writeCoefs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeCoefs" title="Link to this definition"></a></dt>
+<dd><p>Write out the polynomial fit results, the  coefficients.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeCov">
+<span class="sig-name descname"><span class="pre">writeCov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covar1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covar2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.writeCov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeCov" title="Link to this definition"></a></dt>
+<dd><p>Write the polynomial fit results, the covariance matrix)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeFailedMask">
+<span class="sig-name descname"><span class="pre">writeFailedMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#FitCoefs.writeFailedMask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.FitCoefs.writeFailedMask" title="Link to this definition"></a></dt>
+<dd><p>Write out the failed mask</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.Ortho_Polyfit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">Ortho_Polyfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#Ortho_Polyfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.Ortho_Polyfit" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.Ortho_Polyfit.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#Ortho_Polyfit.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.Ortho_Polyfit.fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.a_matrix">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">a_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#a_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.a_matrix" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.a_prime_j">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">a_prime_j</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#a_prime_j"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.a_prime_j" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.average_arrays">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">average_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#average_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.average_arrays" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.average_axis0">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">average_axis0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#average_axis0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.average_axis0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.beta_k_i">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">beta_k_i</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#beta_k_i"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.beta_k_i" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.betas">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">betas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#betas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.betas" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.compute_polyfit_and_covar">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">compute_polyfit_and_covar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polyorder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nframes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">det</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#compute_polyfit_and_covar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.compute_polyfit_and_covar" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.get_closer_value">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">get_closer_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#get_closer_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.get_closer_value" title="Link to this definition"></a></dt>
+<dd><p>Method to get the closest value from a list in input
+:param input_list: input list to compare
+:param target_value: target value to check
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.load_list_from_file">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">load_list_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#load_list_from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.load_list_from_file" title="Link to this definition"></a></dt>
+<dd><p>Read in the list file which is in either JSON format or plain list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>fname - file name for the list</em><em> of </em><em>data</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>listobject – list of data files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.mask_beta">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">mask_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#mask_beta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.mask_beta" title="Link to this definition"></a></dt>
+<dd><p>to make a mask of pixels where beta could not be measured</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.poly1">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">poly1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#poly1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.poly1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.poly2">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">poly2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#poly2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.poly2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.poly3">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">poly3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#poly3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.poly3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.poly4">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">poly4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#poly4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.poly4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.prepend_dir">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">prepend_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#prepend_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.prepend_dir" title="Link to this definition"></a></dt>
+<dd><p>Prepend ddir to a list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong> (<em>alist -- Python</em>)</p></li>
+<li><p><strong>names</strong> (<em>a list</em><em> of </em><em>file</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>olist – Python list, a list of file names prepended with data_dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.readDetectorLayout">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">readDetectorLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mdbfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#readDetectorLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.readDetectorLayout" title="Link to this definition"></a></dt>
+<dd><p>Helper function to get a list of detector slots from the MDB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dictionary with FPAslot and SCA</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.refpx_correction">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">refpx_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sat_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65535</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#refpx_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.refpx_correction" title="Link to this definition"></a></dt>
+<dd><p>This is TESTED/VALIDATED correction function of the reference
+pixels which can be used for future comparisons.
+&#64;author Sylvain Ferriol &lt;<a class="reference external" href="mailto:s&#46;ferriol&#37;&#52;&#48;ip2i&#46;in2p3&#46;fr">s<span>&#46;</span>ferriol<span>&#64;</span>ip2i<span>&#46;</span>in2p3<span>&#46;</span>fr</a>&gt;</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.sigma_n_m">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">sigma_n_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xsp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#sigma_n_m"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.sigma_n_m" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefs.sum_power">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefs.</span></span><span class="sig-name descname"><span class="pre">sum_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_vect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_pow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefs.html#sum_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefs.sum_power" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.FitCoefsProg">
+<span id="nir-nonlinearsaturation-fitcoefsprog-module"></span><h2>NIR_NonLinearSaturation.FitCoefsProg module<a class="headerlink" href="#module-NIR_NonLinearSaturation.FitCoefsProg" title="Link to this heading"></a></h2>
+<p>&#64;file FitCoefs.py
+&#64;date August 24, 2020
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefsProg.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefsProg.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefsProg.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefsProg.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for FitCoefs</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.FitCoefsProg.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.FitCoefsProg.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/FitCoefsProg.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.FitCoefsProg.mainMethod" title="Link to this definition"></a></dt>
+<dd><p>The main method</p>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.Nonlinearity">
+<span id="nir-nonlinearsaturation-nonlinearity-module"></span><h2>NIR_NonLinearSaturation.Nonlinearity module<a class="headerlink" href="#module-NIR_NonLinearSaturation.Nonlinearity" title="Link to this heading"></a></h2>
+<p>&#64;file Nonlinearity.py
+&#64;date April. 27, 2016
+&#64;author Peter Capak &lt;<a class="reference external" href="mailto:capak&#37;&#52;&#48;ipac&#46;caltech&#46;edu">capak<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<blockquote>
+<div><p>Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltehc&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltehc<span>&#46;</span>edu</a>&gt;</p>
+</div></blockquote>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Nonlinearity.</span></span><span class="sig-name descname"><span class="pre">NonLinearityCorrection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmlfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calxmlfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class NonLinearityCorrection</p>
+<dl class="simple">
+<dt>&#64;brief This class corrects the non-linear response of the detector as</dt><dd><p>the well fills.  The non-linearity correction is most likely a
+polynomial fit to flat field exposures sampled ever ~2.4s using
+multiaccum under constant illumination where the count levels
+should increase linearly with time.  Along with the fit a count
+range should be given where the model is verified to correct the
+response to better than the required 0.3% level per pixel.  This
+apply module will use this polynomial fit to calculate a multiplicative
+correction and raise a flag when the range is outside of the required
+level.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.apply" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to apply the nonlinearity correction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.correction">
+<span class="sig-name descname"><span class="pre">correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NDExp_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calarr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varcalarr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">failarr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darkframe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.correction" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.findCalProdXmlFile">
+<span class="sig-name descname"><span class="pre">findCalProdXmlFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.findCalProdXmlFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.findCalProdXmlFile" title="Link to this definition"></a></dt>
+<dd><p>Find the XML file from a list based on the current MACC mode</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.linearExtrapolate">
+<span class="sig-name descname"><span class="pre">linearExtrapolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polycorrected_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polycorrected_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.linearExtrapolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.linearExtrapolate" title="Link to this definition"></a></dt>
+<dd><p>Issue #21474:
+Outside of the validity range, SIM  extrapolates linearly with a slope set by the derivative of
+the non-linearity function at the validity limit.</p>
+<p>We caluate the slopes using the derivative of the polynomial directly, at max(f)=calmax.
+Also f(x) using the polynomial directly, at max(f).</p>
+<p>y = 1+ (2*x) + (3*x**2) + (4*x**3) + (5*x**4)
+dy = np.gradient(y,x)
+slope = dy[x==validity_range]
+intercept = y[x==validity_range]-slope*validity_range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>polycorrected_img</strong> – 2D numpy array, poly corrected image on good pixels</p></li>
+<li><p><strong>polycorrected_var</strong> – 2D numpy array, poly corrected variance on good pixels</p></li>
+<li><p><strong>x</strong> – 2D numpy array, original image frame</p></li>
+<li><p><strong>var</strong> – 2D numpy array, original variance</p></li>
+<li><p><strong>coef</strong> – 3D array including calmax and NL coefficient, coef[1:]</p></li>
+<li><p><strong>mask</strong> – pixels to linearly extrapolate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D numpy array, corrected image
+corrected_var:  2D numpy array, corrected variance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>corrected_img</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyCorrection">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">polyCorrection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.polyCorrection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyCorrection" title="Link to this definition"></a></dt>
+<dd><p>Polynomial correction.
+Build the polynomial corrected_img = a0 + a1 * x + a2 * x^2 + a3 * x^3 + a4 * x^4</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – 2D numpy array, image frame</p></li>
+<li><p><strong>var</strong> – 2D numpy array, variance</p></li>
+<li><p><strong>coef</strong> – 3D numpy array, nonlinearity coefficients</p></li>
+<li><p><strong>errs</strong> – 3D numpy array, the nolinearity covariance, it’s VAR^2</p></li>
+<li><p><strong>mask</strong> – 2D numpy array, where polynomial is applied</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D numpy array, corrected image
+corrected_var:  2D numpy array, corrected variance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>corrected_img</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polySci">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">polySci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.polySci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polySci" title="Link to this definition"></a></dt>
+<dd><p>Polynomial correction of the science layer.
+Build the polynomial corrected_img = a0 + a1 * x + a2 * x^2 + a3 * x^3 + a4 * x^4
+:param x: 2D numpy array, image frame
+:param coef: 3D numpy array, nonlinearity coefficients
+:param mask: 2D numpy array, where polynomial is applied</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy array, corrected image</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>corrected_img</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyVar">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">polyVar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Nonlinearity.html#NonLinearityCorrection.polyVar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Nonlinearity.NonLinearityCorrection.polyVar" title="Link to this definition"></a></dt>
+<dd><p>Polynomial correction of the variance layer.
+Build the polynomial corrected_variance using the full covariance matrix
+:param x: 2D numpy array, image frame
+:param var: 2D numpy array, variance frame
+:param coef: 3D numpy array, nonlinearity coefficients
+:param cov: 4D numpy array, nonlinearity covariance matrix
+:param mask: 2D numpy array, where polynomial is applied</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy array, corrected variance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>corrected_var</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.NonlinearityProg">
+<span id="nir-nonlinearsaturation-nonlinearityprog-module"></span><h2>NIR_NonLinearSaturation.NonlinearityProg module<a class="headerlink" href="#module-NIR_NonLinearSaturation.NonlinearityProg" title="Link to this heading"></a></h2>
+<p>&#64;file NonlinearityProg.py
+&#64;date Jun. 22, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.NonlinearityProg.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.NonlinearityProg.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/NonlinearityProg.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.NonlinearityProg.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for NonlinearityProg</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.NonlinearityProg.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.NonlinearityProg.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/NonlinearityProg.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.NonlinearityProg.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.Saturation">
+<span id="nir-nonlinearsaturation-saturation-module"></span><h2>NIR_NonLinearSaturation.Saturation module<a class="headerlink" href="#module-NIR_NonLinearSaturation.Saturation" title="Link to this heading"></a></h2>
+<p>&#64;file Saturation.py
+&#64;date April. 27, 2016
+&#64;author Cate Peter Capak &lt;<a class="reference external" href="mailto:capak&#37;&#52;&#48;ipac&#46;caltech&#46;edu">capak<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Saturation.Saturation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Saturation.</span></span><span class="sig-name descname"><span class="pre">Saturation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Saturation.html#Saturation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Saturation.Saturation" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class Saturation</p>
+<dl class="simple">
+<dt>&#64;brief This class masks pixels where the true flux cannot be</dt><dd><p>recovered at better than a TBD level.  These pixels will
+be set to a set number of counts and be flagged as saturated.
+Pixels which are  not saturated but do not meet the non-linearity
+requirements will be flagged by the non-linearity module.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Saturation.Saturation.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Saturation.html#Saturation.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Saturation.Saturation.apply" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to apply the saturation correction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Saturation.Saturation.find_nns">
+<span class="sig-name descname"><span class="pre">find_nns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satmsk</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Saturation.html#Saturation.find_nns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Saturation.Saturation.find_nns" title="Link to this definition"></a></dt>
+<dd><p>Given a pixel mask of saturation, find the pixels that border the pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satmsk</strong> – 2D bool numpy array, True=saturated, False=not saturated</p>
+</dd>
+<dt class="field-even">Retrun<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D numpy array in dimension of [num_nns, 2], (i,j) index of the found bordering pixels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Saturation.Saturation.flagSaturation">
+<span class="sig-name descname"><span class="pre">flagSaturation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NDExp_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calarr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Saturation.html#Saturation.flagSaturation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Saturation.Saturation.flagSaturation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.SaturationProg">
+<span id="nir-nonlinearsaturation-saturationprog-module"></span><h2>NIR_NonLinearSaturation.SaturationProg module<a class="headerlink" href="#module-NIR_NonLinearSaturation.SaturationProg" title="Link to this heading"></a></h2>
+<p>&#64;file SaturationProg.py
+&#64;date Jun. 22, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SaturationProg.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SaturationProg.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SaturationProg.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SaturationProg.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for SaturationProg</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SaturationProg.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SaturationProg.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SaturationProg.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SaturationProg.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+<p>Example to use this script:
+./run saturationProg –infile=inexposure.fits –xmlfile=calfile.xml</p>
+<blockquote>
+<div><p>–outfile=outfile.fits –workdir=workdir –logdir=logdir</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.SplitDataProg">
+<span id="nir-nonlinearsaturation-splitdataprog-module"></span><h2>NIR_NonLinearSaturation.SplitDataProg module<a class="headerlink" href="#module-NIR_NonLinearSaturation.SplitDataProg" title="Link to this heading"></a></h2>
+<p>&#64;file SliptData.py
+&#64;date November 19, 2022
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltehc&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltehc<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.SplitData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SplitDataProg.</span></span><span class="sig-name descname"><span class="pre">SplitData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmllist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#SplitData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.SplitData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class SplitData</p>
+<dl class="simple">
+<dt>&#64;brief This class splits the input data into group of 2-detector pairs</dt><dd><p>to be fed as input to FitCoef.py.  This split will enable the parallel
+processing in IAL.
+The input is a list of XML files in JSON.
+The output is a nested list of XML files in JSON.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.SplitData.DCUs">
+<span class="sig-name descname"><span class="pre">DCUs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[[11,</span> <span class="pre">31],</span> <span class="pre">[12,</span> <span class="pre">32],</span> <span class="pre">[13,</span> <span class="pre">33],</span> <span class="pre">[14,</span> <span class="pre">34],</span> <span class="pre">[21,</span> <span class="pre">41],</span> <span class="pre">[22,</span> <span class="pre">42],</span> <span class="pre">[23,</span> <span class="pre">43],</span> <span class="pre">[24,</span> <span class="pre">44]]</span></em><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.SplitData.DCUs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.SplitData.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#SplitData.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.SplitData.split" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to split the input list into nested lists.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SplitDataProg.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for SplitData</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.load_list_from_file">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SplitDataProg.</span></span><span class="sig-name descname"><span class="pre">load_list_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#load_list_from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.load_list_from_file" title="Link to this definition"></a></dt>
+<dd><p>Read in the list file which is in either JSON format or plain list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>fname - file name for the list</em><em> of </em><em>data</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>listobject – list of data files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SplitDataProg.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.SplitDataProg.prepend_dir">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.SplitDataProg.</span></span><span class="sig-name descname"><span class="pre">prepend_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/SplitDataProg.html#prepend_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.SplitDataProg.prepend_dir" title="Link to this definition"></a></dt>
+<dd><p>Prepend ddir to a list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong> (<em>alist -- Python</em>)</p></li>
+<li><p><strong>names</strong> (<em>a list</em><em> of </em><em>file</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>olist – Python list, a list of file names prepended with data_dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation.Utils">
+<span id="nir-nonlinearsaturation-utils-module"></span><h2>NIR_NonLinearSaturation.Utils module<a class="headerlink" href="#module-NIR_NonLinearSaturation.Utils" title="Link to this heading"></a></h2>
+<p>&#64;file Utils.py
+&#64;date August 24, 2018
+&#64;author Cate Liu&lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Utils.createDetFits">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Utils.</span></span><span class="sig-name descname"><span class="pre">createDetFits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdulist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Utils.html#createDetFits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Utils.createDetFits" title="Link to this definition"></a></dt>
+<dd><p>Create the output FITS file for each detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fits.HDUList</strong> (<em>hdulist --</em>)</p></li>
+<li><p><strong>hdus</strong> (<em>to be appended with more</em>)</p></li>
+<li><p><strong>extension</strong> (<em>data for the HDU</em>)</p></li>
+<li><p><strong>array</strong> (<em>data -- numpy</em>)</p></li>
+<li><p><strong>extension</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Utils.load_list_from_file">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Utils.</span></span><span class="sig-name descname"><span class="pre">load_list_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Utils.html#load_list_from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Utils.load_list_from_file" title="Link to this definition"></a></dt>
+<dd><p>Read in the list file which is in JSON format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> (<em>file name for the list</em><em> of </em><em>XML</em>)</p></li>
+<li><p><strong>file</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>listobject – list of XML files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Utils.parse_xml">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Utils.</span></span><span class="sig-name descname"><span class="pre">parse_xml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xml_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Utils.html#parse_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Utils.parse_xml" title="Link to this definition"></a></dt>
+<dd><p>Parse a list of XML files for the content of FileName tag
+:param xml_list - list of XML files:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>file_list - list of file names found inside the XML</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Utils.polyfit2">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Utils.</span></span><span class="sig-name descname"><span class="pre">polyfit2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Utils.html#polyfit2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Utils.polyfit2" title="Link to this definition"></a></dt>
+<dd><p>Do 2nd (default) order polynomial fit: y(x) = a0 + a1*x + a2*x^2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>x -- 1D numpy</em>)</p></li>
+<li><p><strong>array</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a – (a2, a1, a0),  n-th order polynomial coefficients</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_NonLinearSaturation.Utils.readFitsByChunk">
+<span class="sig-prename descclassname"><span class="pre">NIR_NonLinearSaturation.Utils.</span></span><span class="sig-name descname"><span class="pre">readFitsByChunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hdus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">firsthdu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_NonLinearSaturation/Utils.html#readFitsByChunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_NonLinearSaturation.Utils.readFitsByChunk" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Read a FITS file by chunks and return data from num_hdus HDUs per detector</dt><dd><p>For large FITS file and many of them, there is a need to read in small chunks at a time.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>filename -- the FITS file</em>)</p></li>
+<li><p><strong>file</strong> (<em>num_hdus -- number</em><em> of </em><em>HDUs per detector in the fits</em>) – e.g., a NISP image frame typically has 3 layers per detector</p></li>
+<li><p><strong>datasets.</strong> (<em>this is to accomadate different</em>) – e.g., a NISP image frame typically has 3 layers per detector</p></li>
+<li><p><strong>index</strong> (<em>firsthdu -- the</em>)</p></li>
+<li><p><strong>[</strong><strong>m1</strong> (<em>n2</em><em>] </em><em>the index range</em>) – m2,n1:n2] in the image array</p></li>
+<li><p><strong>m2</strong> – m2,n1:n2] in the image array</p></li>
+<li><p><strong>n1</strong> – m2,n1:n2] in the image array</p></li>
+<li><p><strong>[</strong><strong>m1</strong> – m2,n1:n2] in the image array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the data for this chunk and hdu, dimension [num_hdus, segment]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>hdudata</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_NonLinearSaturation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-NIR_NonLinearSaturation" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="NIR_NonLinearSaturation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="HowToRunNLApply.html" class="btn btn-neutral float-right" title="How to Run the Nonlinearity Apply Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

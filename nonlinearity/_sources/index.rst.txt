@@ -1,0 +1,184 @@
+.. NIR_NonLinearSaturation documentation master file, created by
+   sphinx-quickstart on Tue Dec  9 10:35:01 2025.
+
+Nonlinearity and Saturation
+===========================
+
+The component identifier is **NIR_NonLinearSaturation**.  
+This module corrects for detector non-linearity and masks saturated pixels in the Euclid NISP detectors.
+
+It consists of three main components:
+
+1. **Calibration Module** – derives non-linearity correction coefficients from calibration data.  
+2. **Non-linearity Application Module** – applies the per-pixel correction model to science exposures.  
+3. **Saturation Application Module** – masks pixels exceeding detector-dependent saturation thresholds.
+
+Scientific Background
+---------------------
+
+Nonlinearity in H2RG detectors arises mainly from changes in the photodiode junction capacitance as charge accumulates. As the depletion region narrows, the effective capacitance increases, altering the conversion from charge to voltage and producing a measurable deviation from linear response. Additional effects in the readout chain—such as the source follower and ADC—contribute further nonlinear behaviour.
+
+Euclid calibrates pixel-level nonlinearity using custom-designed LEDs that illuminate the focal plane at multiple fluence levels. These measurements provide both the nonlinear response and the MACC group data used to estimate the underlying linear flux. Pixel responses are modelled with orthonormal polynomials for stability and efficiency. Reference pixels are corrected, repeated exposures are averaged, high-fluence frames are excluded, and the resulting coefficients with full covariance matrices form the nonlinearity calibration products used in the NIR pipeline. The validity range of the coefficients is set by the LED fluence coverage.
+
+Non-linearity Calibration Module
+--------------------------------
+
+The calibration module derives the pixel-level model used by the apply module. It ingests a list of calibration XML files (SUTR ramps taken at multiple fluence levels) and produces, for each MACC configuration (PHOTO / SPECTRO):
+
+* a coefficient cube (``nir.NLCoefficients``),
+* a covariance cube (``nir.NLCovariance``),
+* a failed-pixel mask (``nir.NLMask``).
+
+**Input data and flux sampling**
+
+For each calibration file, the module:
+
+* reads MACC parameters (NG, NR, ND),
+* identifies detector and FPA slot metadata from the MDB,
+* computes the effective LED flux from commanded settings and LED lookup tables,
+* assigns flux-level identifiers so repeated exposures can be combined.
+
+Typically five fluence levels are used per mode, spanning the expected dynamic range.
+
+For each detector and exposure, the module:
+
+* reads the frame ramps and applies the validated reference-pixel correction,
+* reads the upstream ramp-fitted slope and its uncertainty,
+* flattens the data and fits orthonormal polynomials to determine the non-linearity parameter for each pixel,
+* averages measurements across repeated exposures at each fluence level.
+
+**Polynomial fit and quality control**
+
+For every pixel:
+
+* the averaged non-linearity measurements are fitted with an n-th order polynomial (currently 4th order),  
+* the resulting polynomial coefficients and full covariance matrix are recorded,
+* unusable or NaN measurements are masked and filled with average values solely to stabilize the fit,
+* pixels for which the fit fails or produces invalid coefficients are added to the failed-pixel mask.
+
+The final calibration products include:
+
+* a coefficient cube:
+
+  ``{f_low, f_up, a0, a1, a2, a3, a4}``
+
+  where ``f_low`` and ``f_up`` define the validity range and ``a0..a4`` are the polynomial coefficients;
+
+* a covariance cube of shape ``(n_coeff, n_coeff, ny, nx)`` storing the full covariance matrix for ``a0..a4`` at each pixel;
+
+* a failed-pixel mask identifying pixels that cannot be reliably corrected.
+
+All products are written as Euclid-compliant FITS files, with one extension per detector and appropriate metadata.
+
+See :doc:`HowToRunNLCal` for instructions on running the calibration module.
+
+Non-linearity Application Module
+--------------------------------
+
+The non-linearity apply module linearises the detector response, propagates uncertainties, and sets appropriate data-quality flags.
+
+For each input exposure, the module:
+
+* reads the SCI, VAR, and DQ arrays for all detectors,
+* identifies PHOTO or SPECTRO MACC mode,
+* selects the correct calibration XML for that configuration,
+* loads the coefficient cube, covariance cube, and failed-pixel mask,
+* loads the detector gain map (applied after the correction).
+
+The coefficient cube provides, per pixel, a lower and upper validity limit and a set of polynomial coefficients describing the calibrated response. These limits may be overridden by a configuration file if needed.
+
+**Flagging before correction**
+
+Pixels are flagged as non-linear (``NLINEAR``) if:
+
+* their values fall below the lower limit or above the upper limit,  
+* they are saturated (``SATUR`` already set),  
+* their signal is non-positive,  
+* they are marked as failed in the calibration mask.
+
+For non-dark frames, such pixels are additionally flagged as ``INVALID``. Their SCI/VAR values are unchanged.
+
+**Applying the correction**
+
+For all remaining pixels, the module:
+
+* evaluates the calibrated per-pixel polynomial  
+
+  ``f(x) = a0 + a1 x + a2 x² + ...``  
+
+  to produce a linearised SCI image,
+* propagates uncertainties using the full covariance matrix, producing an updated VAR image,
+* performs linear extrapolation for pixels above the upper validity limit, using the derivative of the polynomial at that limit.
+
+If the correction produces unphysical results (e.g., enormous absolute values or a positive input becoming negative), the original pixel values are restored and the corresponding DQ flags are set.
+
+After the non-linearity correction, the detector gain map is applied so SCI and VAR are expressed in the appropriate physical units. Metadata fields such as ``NREJNL`` (pixels flagged as non-linear) are updated.
+
+For usage examples, arguments, and command-line execution, see
+:doc:`HowToRunNLApply`.
+
+Saturation Application Module
+-----------------------------
+
+The saturation module masks pixels for which the true flux cannot be reliably recovered. Saturated pixels are flagged using dedicated mask bits; pixels that later fail non-linearity checks are flagged separately.
+
+On-board software assigns saturation flags when pixel values reach the nominal 16-bit limit, but ground processing provides a more accurate detection because:
+
+- on-board logic may miss cases where only the final reads saturate,
+- upstream corrections (non-linearity, IPC) can push values into saturation,
+- some pixels saturate below the nominal limit,
+- MDB saturation maps provide detector-specific, pixel-dependent thresholds.
+
+In the ground pipeline, saturation masking is performed by ``SaturationProg``:
+
+* reads the exposure and the MDB saturation map,
+* compares per-pixel SCI values to their thresholds,
+* may optionally expand the mask to neighbouring pixels depending on configuration and pipeline version,
+* sets ``SATUR`` and ``INVALID`` in the DQ plane,
+* records ``NSATPIX`` in the metadata.
+
+The SCI layer is left unchanged. Downstream steps—including non-linearity correction—rely on these DQ flags to handle saturated pixels appropriately.
+
+For details on running the saturation task, see :doc:`HowToRunNLApply`.
+
+Purpose and Requirements
+------------------------
+
+Primary requirement: **<1.5% relative photometry per source** (R-CAL-A-NP-1000).  
+Non-linearity must be corrected to **<0.3%** (R-NIR-CAL-NA-050).
+
+Other applicable requirements include:
+
+- R-NIR-CAL-NA-051: Non-linearity solution error < 0.9%
+- R-NIR-MSK-NA-020 / 030: Saturation imaging/spectra
+- R-NIR-MSK-F-010 / 020: Masking rules
+- R-SIR-CAL-010, 140, 200, 220: Calibration and bad pixels
+- R-SIR-PRD-F-100, 140, 160, 170: Product specifications
+- R-SIR-QUA-CN-010, F-010, F-020: Quality control
+
+Function Summary
+----------------
+
+- **Saturation module**  
+  Masks saturated pixels using MDB thresholds and updates DQ flags.
+
+- **Non-linearity module**  
+  Applies per-pixel non-linearity corrections and propagates uncertainties.
+
+- **Calibration module**  
+  Fits per-pixel polynomial models from SUTR calibration data.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   modules
+   HowToRunNLApply
+   HowToRunNLCal
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

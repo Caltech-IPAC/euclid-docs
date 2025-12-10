@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Run the Nonlinearity Apply Module &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Run the Nonlinearity Calibration Module" href="HowToRunNLCal.html" />
+    <link rel="prev" title="NIR_NonLinearSaturation package" href="NIR_NonLinearSaturation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">NIR_NonLinearSaturation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Run the Nonlinearity Apply Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-syntax">Command syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-data">Test data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="HowToRunNLCal.html">How to Run the Nonlinearity Calibration Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">How to Run the Nonlinearity Apply Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/HowToRunNLApply.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-run-the-nonlinearity-apply-module">
+<h1>How to Run the Nonlinearity Apply Module<a class="headerlink" href="#how-to-run-the-nonlinearity-apply-module" title="Link to this heading"></a></h1>
+<p>This document describes how to run the Euclid Nonlinearity apply module.</p>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Link to this heading"></a></h2>
+<p>The nonlinearity apply module source code is in project NIR_NonLinearSaturation:
+https://gitlab.euclid-sgs.uk/PF-NIR/NIR_NonLinearSaturation.
+The main source code file is Nonlinearity.py.</p>
+<p>In general, use the ‘develop’ branch.  This is the default under Euclid CVMFS.
+When there are modifications in your local copy of the code,
+you’ll need to make &amp; install first, and your modification should be
+picked by the ERun.</p>
+</section>
+<section id="command-syntax">
+<h2>Command syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ERun NIR_NonLinearSaturation correctNonlinearity --help
+
+usage: Nonlinearity correction
+             ~&gt; ERun NIR_NonLinearSaturation correctNonlinearity   \
+                --xmlfile=The_MDB_file                             \
+                --calxmlfile=ListOfCalProductsXmlFiles             \
+                --config=$workdir/theNIRconfigset.xml              \
+                --infile=input_data.fits                           \
+                --outfile=output_data.fits                         \
+                --workdir=./                                       \
+                --logdir=./                                        \
+             
+       [-h] [--infile INFILE] [--xmlfile XMLFILE] [--calxmlfile CALXMLFILE] [--outfile OUTFILE] [--workdir WORKDIR] [--logdir LOGDIR]
+       [--config CONFIG] [--config-file CONFIG_FILE] [--log-file LOG_FILE] [--log-level LOG_LEVEL] [--version]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --infile INFILE       Input image frame Fits file
+  --xmlfile XMLFILE     The MDB XML file
+  --calxmlfile CALXMLFILE
+                        JSON file listing the calibration products XML files
+  --outfile OUTFILE     Output Fits file
+  --workdir WORKDIR     Working directory path
+  --logdir LOGDIR       Logging directory path
+  --config CONFIG       The NIR configuration set, optional if using the nonlinearity model
+
+Generic Options:
+  --config-file CONFIG_FILE
+                        Name of a configuration file
+  --log-file LOG_FILE   Name of a log file
+  --log-level LOG_LEVEL
+                        Log level: FATAL, ERROR, WARN, INFO (default), DEBUG
+  --version             show program&#39;s version number and exit
+
+</pre></div>
+</div>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>Task correctNonlinearity accepts the following arguments:</p>
+<ul class="simple">
+<li><p>infile: input image frame in FITS</p></li>
+<li><p>xmlfile: the MDB XML file</p></li>
+<li><p>calxmlfile: JSON file listing the nonlinearity calibration products XML files</p></li>
+<li><p>outfile: nonlinearity corrected image frame in FITS</p></li>
+<li><p>workdir: working directory path</p></li>
+<li><p>logdir: logging directory path</p></li>
+<li><p>config: the NIR configuration set, optional if using the nonlinearity model</p></li>
+</ul>
+<p>Actual data needed include the following:</p>
+<ul class="simple">
+<li><p>NISP gain file (data/EUC_NISP_GAIN-Flight_00.01.fits, specified in the MDB XML file)</p></li>
+<li><p>nonlinearity calibration products (specified in calxmlfile):</p>
+<ul>
+<li><p>photo coefficients (data/EUC_NIR_NLPHOTO_COEF-IPAC_20241211T190325.078510Z.fits)</p></li>
+<li><p>photo covariance matrix (data/EUC_NIR_NLPHOTO_COVMAT-IPAC_20241211T190339.214700Z.fits)</p></li>
+<li><p>photo failed mask (data/EUC_NIR_NLPHOTO_FAILED-IPAC_20241211T190439.915903Z.fits)</p></li>
+<li><p>spectro coefficients (data/EUC_NIR_NLSPECTRO_COEF-IPAC_20241203T004842.582055Z.fits)</p></li>
+<li><p>spectro covariance matrix (data/EUC_NIR_NLSPECTRO_COVMAT-IPAC_20241203T004900.174221Z.fits)</p></li>
+<li><p>spectro failed mask (data/EUC_NIR_NLSPECTRO_FAILED-IPAC_20241203T004956.643629Z.fits)</p></li>
+</ul>
+</li>
+<li><p>nonlinearity limits file (data/EUC_NIR_NONLINEARITY_LIMITS.json) if config is specified</p></li>
+</ul>
+</section>
+<section id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading"></a></h2>
+<p>The output is a nonlinearity corrected image frame, in FITS format.</p>
+</section>
+<section id="test-data">
+<h2>Test data<a class="headerlink" href="#test-data" title="Link to this heading"></a></h2>
+<p>The following data can be used for test purposes.
+There are LE1 images, containing 2 dithers for both Photo and Spectro modes.</p>
+<p>See: /euclid/ops/data/xliu/F-001_240606_R2</p>
+<p>Refer to the README file. Four run steps had been executed:
+runInitialize, badPixMasking, saturation, nonLinearity.</p>
+<ul>
+<li><p>infile argument</p>
+<p>For the purpuse just running the nonlinearity apply module, one can start from
+the saturation corrected results.  They are:</p>
+<ul class="simple">
+<li><p>outs/photo_sat.fits for Photo mode</p></li>
+<li><p>outs/spectro_sat.fits for Spectro mode</p></li>
+</ul>
+</li>
+<li><p>xmlfile argument</p>
+<p>input/EUC_MDB_MISSIONCONFIGURATION_DEV_2024-03-04-2.xml</p>
+</li>
+<li><p>calxmlfile argument</p>
+<p>input/nonlinearcalibfile.json</p>
+</li>
+<li><p>outfile argument</p>
+<p>your_dir/nl.fits</p>
+</li>
+<li><p>workdir argument</p>
+<p>/euclid/ops/data/xliu/F-001_240606_R2</p>
+</li>
+<li><p>logdir argument</p>
+<p>/euclid/ops/data/xliu/F-001_240606_R2/</p>
+</li>
+<li><p>config argument</p>
+<p>This argument is optional if the nolinearity model is used.  It means that the calmin &amp; calmax are
+from the nonlinearity coeficients array.</p>
+<p>Otherwise, it is:
+input/DpdNirConfigurationSet-NIR_PROCFIELD_CONFIG_GAIA_V5.0.1_20250214-0.xml
+Note that, this config file specifies the JSON file which contains upper and/or lower limits.
+In this case, it’s data/EUC_NIR_NONLINEARITY_LIMITS.json.</p>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="NIR_NonLinearSaturation.html" class="btn btn-neutral float-left" title="NIR_NonLinearSaturation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="HowToRunNLCal.html" class="btn btn-neutral float-right" title="How to Run the Nonlinearity Calibration Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

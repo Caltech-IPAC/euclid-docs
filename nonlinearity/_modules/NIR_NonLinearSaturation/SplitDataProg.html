@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_NonLinearSaturation.SplitDataProg &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_NonLinearSaturation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLApply.html">How to Run the Nonlinearity Apply Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HowToRunNLCal.html">How to Run the Nonlinearity Calibration Module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_NonLinearSaturation.SplitDataProg</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_NonLinearSaturation.SplitDataProg</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file SliptData.py</span>
+<span class="sd">@date November 19, 2022</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltehc.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+
+<span class="kn">import</span> <span class="nn">ElementsKernel.Logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">from</span> <span class="nn">NIR_misc_utils.ListUtils</span> <span class="kn">import</span> <span class="n">flattenList</span>
+
+<div class="viewcode-block" id="defineSpecificProgramOptions">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.defineSpecificProgramOptions">[docs]</a>
+<span class="k">def</span> <span class="nf">defineSpecificProgramOptions</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief</span>
+<span class="sd">        Define the command line and configuration file options</span>
+<span class="sd">        specific to this program</span>
+<span class="sd">    @details</span>
+<span class="sd">        Input options definition for SplitData</span>
+<span class="sd">    @return</span>
+<span class="sd">        An ArgumentParser</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;SpliteDat.  Usage syntax:</span>
+<span class="s2">             ~&gt; ERun NIR_NonLinearSaturation splitData   </span><span class="se">\\</span>
+<span class="s2">                --xmllist=xmllist.json                   </span><span class="se">\\</span>
+<span class="s2">                --outfile=output_list.json               </span><span class="se">\\</span>
+<span class="s2">                --workdir=./                             </span><span class="se">\\</span>
+<span class="s2">                --logdir=./                              </span><span class="se">\\</span>
+<span class="s2">             &quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--xmllist&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;xmllist&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The XML list file in JSON&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--outfile&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;outfile&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The nested list file in JSON&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--workdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;workdir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Working directory path&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--logdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;logdir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Logging directory path&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="mainMethod">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.mainMethod">[docs]</a>
+<span class="k">def</span> <span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief</span>
+<span class="sd">        The &quot;main&quot; method</span>
+<span class="sd">    @details</span>
+<span class="sd">        This method is the entry point to the program</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;SplitData&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Entering SplitData mainMethod&#39;</span><span class="p">)</span>
+
+    <span class="c1">#input list file</span>
+    <span class="n">xmllistfn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">xmllist</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">xmllistfn</span><span class="p">):</span>
+       <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Input XML list file: &#39;</span> <span class="o">+</span> <span class="n">xmllistfn</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The XML list file </span><span class="si">{}</span><span class="s1"> not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xmllistfn</span><span class="p">)</span>
+       <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+       <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">outfn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">outfile</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Output file: &#39;</span> <span class="o">+</span> <span class="n">outfn</span><span class="p">)</span>
+
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">SplitData</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">xmllistfn</span><span class="p">,</span> <span class="n">outfn</span><span class="p">)</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Exiting SplitData mainMethod&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SplitData">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.SplitData">[docs]</a>
+<span class="k">class</span> <span class="nc">SplitData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class SplitData</span>
+
+<span class="sd">    @brief This class splits the input data into group of 2-detector pairs</span>
+<span class="sd">     to be fed as input to FitCoef.py.  This split will enable the parallel</span>
+<span class="sd">     processing in IAL.</span>
+<span class="sd">     The input is a list of XML files in JSON.</span>
+<span class="sd">     The output is a nested list of XML files in JSON.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#DCUs are group of pair of detectors</span>
+    <span class="n">DCUs</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">31</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">33</span><span class="p">],</span> <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">41</span><span class="p">],</span> <span class="p">[</span><span class="mi">22</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">23</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span> <span class="p">[</span><span class="mi">24</span><span class="p">,</span> <span class="mi">44</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">xmllist</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;SplitData&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xmllist</span> <span class="o">=</span> <span class="n">xmllist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+
+<div class="viewcode-block" id="SplitData.split">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.SplitData.split">[docs]</a>
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Method to split the input list into nested lists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+  
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;split(): read in input data&quot;</span><span class="p">)</span>
+        <span class="c1">#load the list</span>
+        <span class="n">inlist</span> <span class="o">=</span> <span class="n">load_list_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xmllist</span><span class="p">)</span>
+        <span class="n">listxmls</span> <span class="o">=</span> <span class="n">prepend_dir</span><span class="p">(</span><span class="n">inlist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">)</span>
+        
+        <span class="c1">#loop through the DCUs and split the pairs into nested list</span>
+        <span class="n">fin_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DCUs</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">pairxml</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1">#loop though the XML list and find those belog to the pair</span>
+            <span class="k">for</span> <span class="n">xmlfn</span> <span class="ow">in</span> <span class="n">listxmls</span><span class="p">:</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xmlfn</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">el</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DetectorList&quot;</span><span class="p">:</span>
+                       <span class="n">detid</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//DetectorId&#39;</span><span class="p">)</span>
+                       <span class="n">detid</span> <span class="o">=</span> <span class="n">detid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+                       <span class="k">if</span> <span class="p">(</span><span class="n">detid</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">detid</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+                          <span class="n">pairxml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xmlfn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairxml</span><span class="p">)</span> <span class="o">!=</span><span class="mi">0</span> <span class="p">:</span>
+               <span class="n">fin_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pairxml</span><span class="p">)</span>
+                
+        <span class="c1">#dump as a JSON file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">listfile</span><span class="p">:</span>
+             <span class="n">finlist_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fin_list</span><span class="p">)</span>
+             <span class="n">listfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">finlist_json</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="load_list_from_file">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.load_list_from_file">[docs]</a>
+<span class="k">def</span> <span class="nf">load_list_from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Read in the list file which is in either JSON format or plain list of files</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         fname - file name for the list of data file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         listobject -- list of data files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+         <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="s1">&#39;{[&#39;</span><span class="p">:</span>    <span class="c1">#JSON format</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">listobject</span> <span class="o">=</span> <span class="n">flattenList</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+            <span class="c1">#listobject = json.load(f)</span>
+         <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            <span class="c1">#get rid of the carriage return at end of the lines if any</span>
+            <span class="n">listobject</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+
+         <span class="k">return</span> <span class="n">listobject</span></div>
+
+
+<div class="viewcode-block" id="prepend_dir">
+<a class="viewcode-back" href="../../NIR_NonLinearSaturation.html#NIR_NonLinearSaturation.SplitDataProg.prepend_dir">[docs]</a>
+<span class="k">def</span> <span class="nf">prepend_dir</span><span class="p">(</span><span class="n">alist</span><span class="p">,</span> <span class="n">ddir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Prepend ddir to a list of files</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         alist -- Python list, a list of file names</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         olist -- Python list, a list of file names prepended with data_dir</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">olist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">alist</span><span class="p">:</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ddir</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">olist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">olist</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

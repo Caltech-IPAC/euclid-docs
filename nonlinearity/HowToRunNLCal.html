@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Run the Nonlinearity Calibration Module &mdash; NIR_NonLinearSaturation 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="How to Run the Nonlinearity Apply Module" href="HowToRunNLApply.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NIR_NonLinearSaturation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">NIR_NonLinearSaturation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HowToRunNLApply.html">How to Run the Nonlinearity Apply Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Run the Nonlinearity Calibration Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#execution-steps">Execution steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-file-examples">Configuration file examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ial-config-file-eden3-1-pipelinerunner3-2-2-n-nodes-properties">IAL config file (eden3.1_pipelinerunner3.2.2_n_nodes.properties)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-dat">run.dat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#helper-scripts-link-manyfiles-sh">Helper scripts (link_manyfiles.sh)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NIR_NonLinearSaturation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">How to Run the Nonlinearity Calibration Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/HowToRunNLCal.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-run-the-nonlinearity-calibration-module">
+<h1>How to Run the Nonlinearity Calibration Module<a class="headerlink" href="#how-to-run-the-nonlinearity-calibration-module" title="Link to this heading"></a></h1>
+<p>This document describes how to run the Euclid Nonlinearity calibration module.</p>
+<section id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Link to this heading"></a></h2>
+<p>The nonlinearity calibration module (cal-module) source code is in project
+NIR_NonLinearSaturation: https://gitlab.euclid-sgs.uk/PF-NIR/NIR_NonLinearSaturation.</p>
+<p>In general, use the ‘develop’ branch for runs.  This is the default under Euclid CVMFS.
+When there are modifications in your local copy of the code,
+you’ll need to make &amp; install first, and your modifications should be picked by the pipeline runner.</p>
+<p>The nonlinearity IAL pipeline scripts are under project NIR_IAL_Pipelines:
+https://gitlab.euclid-sgs.uk/PF-NIR/NIR_IAL_Pipelines/-/tree/develop/NIR_IAL_Pipelines/auxdir/NIR_Pipelines/NIR_Nonlinearity_Pipeline?ref_type=heads</p>
+<p>To find out which version of the pipeline script to use, look under:
+/cvmfs/euclid-dev.in2p3.fr/EDEN-3.1/opt/euclid/NIR_IAL_Pipelines/</p>
+<p>Use one of the newer versions.  As of 7/11/2025, use 6.0+.</p>
+</section>
+<section id="inputs">
+<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
+<p>The inputs to the cal-module include the nonlinearity calibration data
+taken during the PV phase and during the flight, the MDB XML file,
+the NISP detector slot CSV file, and the NISP LED fluence look up table, also a CSV file.</p>
+<p>The calibration datasets are the PV-018, F-008 and F-009,
+taken from 11/2023 through current day.  These datasets have been downloaded from the
+ESA and are staged on the ENSCI server.</p>
+<p>The paths to these datasets are the following:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/euclid/observations/PV/CALBLOCK_PV-018_Nov2023/data
+
+/euclid/observations/PV/CALBLOCK-F-008/data
+
+/euclid/observations/PV/CALBLOCK-F-009/data
+</pre></div>
+</div>
+<p>Inside each of these calibration data directories, there are XML list files
+which correspond to the data inside/under that directory.
+One will need to assemble the right combinations of these list files before each cal-module run.
+This result is a JSON file that combined the necessary lists of XML files.</p>
+</section>
+<section id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Link to this heading"></a></h2>
+<p>Three products are generated for each run of the cal-module: the nonlinearity
+coefficients, covariance matrix and failed mask.</p>
+<p>A XML file associated with these 3 products is also generated.  It is located as combineData/outfile.xml.</p>
+<p>The cal-module works on both MACC modes, Photo and Spectro.</p>
+</section>
+<section id="environment">
+<h2>Environment<a class="headerlink" href="#environment" title="Link to this heading"></a></h2>
+<p>To be able to run the Euclid IAL pipeline runner, one needs to have a <strong>bash</strong>
+login shell on the ENSCI clusters.  One can login to any of the euclidops nodes to run the cal-module.</p>
+</section>
+<section id="directory-structure">
+<h2>Directory structure<a class="headerlink" href="#directory-structure" title="Link to this heading"></a></h2>
+<p>IAL has certain directory structure assumptions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">|--</span> <span class="n">your_current_run_dir</span>
+     <span class="o">|--</span><span class="n">data</span>
+     <span class="o">|--</span><span class="nb">input</span>
+     <span class="o">|--</span><span class="n">runs</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>All the data file in FITS and CSV need to be under ‘data’ directory.
+Other XML files should be under ‘input’ directory.  Directory ‘runs’ is
+optional but conveniently used to store files such as ‘run.dat’.</p>
+<p>Due to the large volume of calibration data, it is recommended that
+symbolic links are created inside the ‘data’ directory rather than copying.
+A helper function to make the symbolic links is at the end of this document.</p>
+</section>
+<section id="execution-steps">
+<h2>Execution steps<a class="headerlink" href="#execution-steps" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>###set the CONFIG environment variable
+###assume $IAL_ROOT_DIR=/euclid/staff/your_login_name/euclid-ial/workspace for example
+export CONFIG=$IAL_ROOT_DIR/eden3.1_pipelinerunner3.2.2_n_nodes.properties
+
+###set the IAL pipeline runner
+export PR=/cvmfs/euclid-dev.in2p3.fr/CentOS7/INFRA/1.1/opt/euclid/ST_PipelineRunner/3.2.8
+
+###start the server in background (indefinitely)
+cd $PR/bin
+nohup ./python pipeline_runner.py server --config=$CONFIG &amp;
+
+###source /cvmfs/euclid-dev.in2p3.fr/EDEN-3.1/bin/activate if not already done
+###make &amp; install your projects (need link the /euclide/staff/your_login_name/Work/Projects to /home/your_login_name/
+###Work/Projects as pipeline_runner looks under /home/your_login_name!!)
+
+export PIPELINE=PipScript_NIR_Nonlinearity.py
+export CWORKDIR=your_current_run_dir
+export RUN_DAT=$IAL_ROOT_DIR/$CWORKDIR/runs/run.dat
+
+###run the pipeline script
+./python pipeline_runner.py submit --pipeline=$PIPELINE --data=$RUN_DAT --serverurl=http://localhost:50000
+
+</pre></div>
+</div>
+<p>The above steps will start your pipeline using all available nodes/resources on the ENSCI cluster.
+One can monitor the run using slurm command such as squeue.</p>
+<p>IAL actually has a graphical monitor interface which is omitted here for simplicity reason.</p>
+</section>
+<section id="configuration-file-examples">
+<h2>Configuration file examples<a class="headerlink" href="#configuration-file-examples" title="Link to this heading"></a></h2>
+<section id="ial-config-file-eden3-1-pipelinerunner3-2-2-n-nodes-properties">
+<h3>IAL config file (eden3.1_pipelinerunner3.2.2_n_nodes.properties)<a class="headerlink" href="#ial-config-file-eden3-1-pipelinerunner3-2-2-n-nodes-properties" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pipelinerunner</span><span class="o">.</span><span class="n">rootDirectory</span><span class="o">=/</span><span class="n">euclid</span><span class="o">/</span><span class="n">staff</span><span class="o">/</span><span class="n">xliu</span><span class="o">/</span><span class="n">euclid</span><span class="o">-</span><span class="n">ial</span>
+<span class="n">workspace</span><span class="o">.</span><span class="n">rootPath</span><span class="o">=/</span><span class="n">euclid</span><span class="o">/</span><span class="n">staff</span><span class="o">/</span><span class="n">xliu</span><span class="o">/</span><span class="n">euclid</span><span class="o">-</span><span class="n">ial</span><span class="o">/</span><span class="n">workspace</span><span class="o">/</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">submissionHost</span><span class="o">.</span><span class="n">protocol</span><span class="o">=</span><span class="n">SSH</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">submissionHost</span><span class="o">.</span><span class="n">host</span><span class="o">=</span><span class="n">euclidslurm</span><span class="o">.</span><span class="n">ipac</span><span class="o">.</span><span class="n">caltech</span><span class="o">.</span><span class="n">edu</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">submissionHost</span><span class="o">.</span><span class="n">username</span><span class="o">=</span><span class="n">your_login_name</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">submissionHost</span><span class="o">.</span><span class="n">password</span><span class="o">=</span><span class="n">your_password_to_euclidslurm</span>
+<span class="c1">#drm.submissionHost.useSSHKey=True                # [bool] True if SSH key should be used instead of password</span>
+<span class="c1">#drm.submissionHost.SSHKeyPath=$HOME/.ssh/id_rsa.bastet      # [Path] Path to rsa key file.</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">defaultQueue</span><span class="o">.</span><span class="n">scheduler</span><span class="o">=</span><span class="n">SLURM</span>
+<span class="n">drm</span><span class="o">.</span><span class="n">defaultQueue</span><span class="o">.</span><span class="n">destination</span><span class="o">=</span><span class="n">regular</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">webserver</span><span class="o">.</span><span class="n">useSSL</span><span class="o">=</span><span class="kc">False</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">genericLight</span><span class="o">.</span><span class="n">CPUcores</span><span class="o">=</span><span class="mi">15</span>              <span class="c1">#no of cores per node</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">genericLight</span><span class="o">.</span><span class="n">rssInMB</span><span class="o">=</span><span class="mi">50000</span>            <span class="c1">#50G, total RAM requested</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">genericLight</span><span class="o">.</span><span class="n">walltimeInMin</span><span class="o">=</span><span class="mi">10000</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">genericLight</span><span class="o">.</span><span class="n">maxInstances</span><span class="o">=</span><span class="mi">8</span>           <span class="c1">#no of pilots to be use, a pilot can be a full node or part of a node</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">genericLight</span><span class="o">.</span><span class="n">maxQueued</span><span class="o">=</span><span class="mi">6</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">profiling</span><span class="o">.</span><span class="n">updateIntervalInSec</span><span class="o">=</span><span class="mi">15</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">messaging</span><span class="o">.</span><span class="n">requestTimeoutInSec</span><span class="o">=</span><span class="mi">40</span>
+<span class="c1"># [int]   Interval in seconds which the Pilot sends updates and asks for new jobs.</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">updateIntervalInSec</span><span class="o">=</span><span class="mi">20</span>
+<span class="c1"># [int]   Interval in seconds which the scheduling for new pilots gets triggered</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">schedulingIntervalInSec</span><span class="o">=</span><span class="mi">30</span>
+<span class="c1"># [int]   Max retries to talk to the PipelineRunner. Should be gracefull to survivie a restart.</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">maxConnectionRetries</span><span class="o">=</span><span class="mi">40</span>
+<span class="c1"># [int]   Max time in seconds before a pilot shutsdown due to idle state.</span>
+<span class="n">pipelinerunner</span><span class="o">.</span><span class="n">pilots</span><span class="o">.</span><span class="n">maxIdleTimeInSec</span><span class="o">=</span><span class="mi">600</span>
+</pre></div>
+</div>
+</section>
+<section id="run-dat">
+<h3>run.dat<a class="headerlink" href="#run-dat" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">workdir</span><span class="o">=</span> <span class="n">your_current_run_dir</span>
+<span class="n">logdir</span><span class="o">=</span><span class="n">log</span>
+<span class="n">xmllistfile</span><span class="o">=</span><span class="nb">input</span><span class="o">/</span><span class="n">xmllist_spectro_PV202311</span><span class="o">.</span><span class="n">json</span>
+<span class="n">mdbxmlfile</span><span class="o">=</span><span class="nb">input</span><span class="o">/</span><span class="n">DpdMdbDataBase</span><span class="o">-</span><span class="n">EUC_MDB_MISSIONCONFIGURATION_SURVEY_2024</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.</span><span class="n">xml</span>
+<span class="n">pkgRepository</span><span class="o">=/</span><span class="n">cvmfs</span><span class="o">/</span><span class="n">euclid</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">in2p3</span><span class="o">.</span><span class="n">fr</span><span class="o">/</span><span class="n">EDEN</span><span class="o">-</span><span class="mf">3.1</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">euclid</span><span class="o">/</span><span class="n">NIR_IAL_Pipelines</span><span class="o">/</span><span class="mf">6.0</span><span class="o">/</span><span class="n">InstallArea</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">conda_ry9</span><span class="o">-</span><span class="n">gcc11</span><span class="o">-</span><span class="n">o2g</span><span class="o">/</span><span class="n">auxdir</span><span class="o">/</span><span class="n">NIR_Pipelines</span>
+<span class="n">pipelineDir</span><span class="o">=/</span><span class="n">cvmfs</span><span class="o">/</span><span class="n">euclid</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">in2p3</span><span class="o">.</span><span class="n">fr</span><span class="o">/</span><span class="n">EDEN</span><span class="o">-</span><span class="mf">3.1</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">euclid</span><span class="o">/</span><span class="n">NIR_IAL_Pipelines</span><span class="o">/</span><span class="mf">6.0</span><span class="o">/</span><span class="n">InstallArea</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">conda_ry9</span><span class="o">-</span><span class="n">gcc11</span><span class="o">-</span><span class="n">o2g</span><span class="o">/</span><span class="n">auxdir</span><span class="o">/</span><span class="n">NIR_Pipelines</span><span class="o">/</span><span class="n">NIR_Nonlinearity_Pipeline</span>
+<span class="n">edenVersion</span><span class="o">=</span><span class="n">eden</span><span class="o">-</span><span class="mf">3.1</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>Note:</p>
+<ul class="simple">
+<li><p>workdir is relative to $IAL_ROOT_DIR</p></li>
+<li><p>xmllistfile is the list of data for this run, in JSON format</p></li>
+<li><p>use the latest MDB file</p></li>
+<li><p>the version of the pipeline should match the one you plan to use</p></li>
+</ul>
+</section>
+<section id="helper-scripts-link-manyfiles-sh">
+<h3>Helper scripts (link_manyfiles.sh)<a class="headerlink" href="#helper-scripts-link-manyfiles-sh" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+## Make soft links of calibration data to a local directory
+## Syntax:
+##cd your_current_run_dir/data
+##  ./link_manyfiles.sh  cal_data_dir   EUC_LE1_NISP  fits.gz
+
+#data directory
+dir=$1
+#specific prefix for the data
+fitsprefix=$2
+#FITS file extension in either fits or fits.gz
+fitsext=$3
+
+files=`ls -1 $dir/${fitsprefix}*.${fitsext}` 
+for f in $files
+do
+   target=$(basename $f)
+   ln -s $f $target
+done
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="HowToRunNLApply.html" class="btn btn-neutral float-left" title="How to Run the Nonlinearity Apply Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
