@@ -1,0 +1,102 @@
+SIR Relative Flux Calibration Product
+=====================================
+
+Overview
+--------
+
+
+The SIR relative flux calibration product is a Euclid-compliant FITS cube
+produced by ``SelfCalibWave.writeOutputSir``. It contains the large-scale
+relative response of the NISP spectroscopic channel as a function of focal-plane
+position (and, internally, wavelength) for each grism/tilt configuration.
+
+The product is used later by the **Relative Flux Apply Module** to compute a
+multiplicative correction factor along each extracted spectrum trace.
+
+File structure
+--------------
+
+Each grism/tilt configuration is stored in its own FITS extension. The general
+structure is:
+
+- one primary HDU with minimal metadata;
+- for each configuration, a set of 2–3 extensions containing:
+
+  - the **SCI** cube with Δmag values on a regular
+    :math:`(\lambda, x_\mathrm{FP}, y_\mathrm{FP})` grid;
+  - the **DQ** (data-quality) cube with weights or bit masks that encode the
+    reliability of the SCI values at each grid point;
+  - optional auxiliary maps (e.g. gap maps) that mark regions outside the
+    instrument field of view or with insufficient constraints.
+
+Axes and WCS-like metadata
+--------------------------
+
+The calibration cube is sampled on a regular grid in:
+
+- wavelength :math:`\lambda`,
+- focal-plane X coordinate :math:`x_\mathrm{FP}`,
+- focal-plane Y coordinate :math:`y_\mathrm{FP}`.
+
+The corresponding WCS-like keywords provide:
+
+- the number of grid points along each axis,
+- the reference pixel, reference value, and step size,
+- the normalisation convention for :math:`x_\mathrm{FP}, y_\mathrm{FP}`
+  (typically :math:`[-1, 1]` in both directions),
+- the wavelength range and sampling appropriate for the grism.
+
+For Q1, the solution is effectively achromatic; in this case the wavelength
+dimension is collapsed internally, but the product is kept compatible with the
+general 3D design.
+
+SCI cube (Δmag)
+---------------
+
+The SCI cube contains the relative response values expressed in magnitudes:
+
+.. math::
+
+   \Delta \mathrm{mag}(\lambda, x_\mathrm{FP}, y_\mathrm{FP}) \, ,
+
+such that a positive Δmag corresponds to a fainter instrumental response at that
+focal-plane position. These values are derived from the self-calibration fit
+described in the main documentation (``SIR_RFXModel`` overview).
+
+In practical use, the Δmag values are converted into a multiplicative flux
+correction factor :math:`f_\mathrm{corr}` via:
+
+.. math::
+
+   f_\mathrm{corr} = 10^{-0.4 \, \Delta \mathrm{mag}} \, ,
+
+which is applied to the extracted 1D spectrum.
+
+DQ / quality cube
+-----------------
+
+The DQ (or quality) cube encodes where the SCI values are well constrained:
+
+- pixels with high S/N in the self-calibration fit are assigned high weights or
+  “good” quality flags;
+- pixels with poor constraints, missing data, or outside the instrument field of
+  view are down-weighted or flagged as bad.
+
+The exact encoding (weights vs bit flags) is implementation-specific but is
+interpreted consistently by ``RelativeFluxCorrectionCore`` when building the
+interpolators.
+
+Usage in the pipeline
+---------------------
+
+At runtime, the relative flux apply module:
+
+1. loads the calibration FITS product for the relevant grism/tilt;
+2. reads the SCI and DQ cubes plus the axis definitions and WCS-like keywords;
+3. constructs trilinear interpolators over the Δmag and quality cubes;
+4. evaluates the correction factor along each spectrum trace;
+5. propagates the corresponding correction and quality information into the
+   output 1D spectra.
+
+The calibration product is thus the authoritative reference for the large-scale
+spectrophotometric response of NISP in the SIR relative flux scaling step.

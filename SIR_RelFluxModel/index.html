@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR Relative Flux Scaling (SIR_RFXModel) &mdash; SIR_RFXModel  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SIR_RFXModel Modules" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            SIR_RFXModel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SIR_RFXModel Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">SIR_RFXModel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">SIR Relative Flux Scaling (SIR_RFXModel)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sir-relative-flux-scaling-sir-rfxmodel">
+<h1>SIR Relative Flux Scaling (SIR_RFXModel)<a class="headerlink" href="#sir-relative-flux-scaling-sir-rfxmodel" title="Link to this heading"></a></h1>
+<p>The component identifier is <strong>SIR_RFXModel</strong>.
+This module derives and applies large–scale relative flux corrections to NISP
+slitless spectra so that repeated observations of the same source yield
+consistent instrumental fluxes, independent of detector position, grism/tilt
+configuration, or epoch.</p>
+<p>The module is structured into two main components:</p>
+<ol class="arabic simple">
+<li><p><strong>Relative Flux Calibration Module</strong> – derives the large-scale response of the instrument using repeated observations of bright stars.</p></li>
+<li><p><strong>Relative Flux Apply Module</strong> – applies the derived relative flux correction to the 1D extracted spectra.</p></li>
+</ol>
+<section id="scientific-background">
+<h2>Scientific Background<a class="headerlink" href="#scientific-background" title="Link to this heading"></a></h2>
+<p>Large-scale transmission variations across the NISP focal plane arise from a
+combination of optical throughput, detector response, and vignetting effects.
+These variations can reach the ~10% level in some grism/tilt configurations and
+must be corrected to ensure spatially uniform spectrophotometry.</p>
+<p>Euclid measures these variations using repeated observations of bright
+self-calibration stars (typically <span class="math notranslate nohighlight">\(16 &lt; H_E &lt; 18\)</span>) obtained at many dither
+positions, detector locations, and grism/tilt settings.
+Because each star is observed multiple times at different focal-plane
+positions, the ensemble of observations provides strong statistical constraints
+on the large-scale flat pattern that must be corrected.</p>
+<p>For the Q1 data release, the relative response is found to be largely
+achromatic. To maximise signal-to-noise, an achromatic solution is therefore
+derived that depends only on focal-plane coordinates for each grism/tilt
+configuration. This solution successfully flattens repeated observations of
+bright sources and shows clear signatures of the expected vignetting pattern.</p>
+</section>
+<section id="relative-flux-calibration-module">
+<h2>1. Relative Flux Calibration Module<a class="headerlink" href="#relative-flux-calibration-module" title="Link to this heading"></a></h2>
+<p>The calibration module constructs the relative flux scaling solution for each
+combination of <strong>grism</strong> and <strong>tilt</strong>, and as a function of <strong>wavelength</strong> and
+focal-plane position.</p>
+<section id="high-level-strategy">
+<h3>High-level strategy<a class="headerlink" href="#high-level-strategy" title="Link to this heading"></a></h3>
+<p>At a high level, the calibration proceeds in three stages:</p>
+<ol class="arabic simple">
+<li><p><strong>Extract per-star, per-visit photometric measurements</strong>
+from the self-calibration spectra (or simulations), in a
+narrow wavelength bin centred on <span class="math notranslate nohighlight">\(\lambda_\mathrm{center}\)</span>.</p></li>
+<li><p><strong>Fit a self-calibration model</strong> that simultaneously solves for:</p>
+<ul class="simple">
+<li><p>the intrinsic magnitude of each calibration star,</p></li>
+<li><p>a smooth 2D large-scale flat pattern per detector,</p></li>
+<li><p>per-detector QE offsets, using overlapping regions between detectors.</p></li>
+</ul>
+</li>
+<li><p><strong>Interpolate the fitted flat field onto a regular focal-plane grid</strong>
+for each wavelength bin and grism configuration, producing a 3D cube
+<span class="math notranslate nohighlight">\(\Delta\mathrm{mag}(\lambda, x_\mathrm{FP}, y_\mathrm{FP})\)</span> with associated
+uncertainties and quality information.</p></li>
+</ol>
+<p>This procedure is implemented mainly in the classes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SelfCalibWave</span></code> – orchestrates the wavelength loop and grism loop and
+builds the calibration cubes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData</span></code>, <code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData</span></code>, <code class="docutils literal notranslate"><span class="pre">SelfDitherData</span></code> – prepare
+the self-calibration constraints for different observing/simulation modes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SelfCalib</span></code> – performs the core self-calibration fit per wavelength bin.</p></li>
+</ul>
+</section>
+<section id="calibration-modes">
+<h3>Calibration modes<a class="headerlink" href="#calibration-modes" title="Link to this heading"></a></h3>
+<p>The code supports three calibration “modes”, selected via
+<code class="docutils literal notranslate"><span class="pre">calmode</span></code> in <code class="docutils literal notranslate"><span class="pre">SelfCalibWave</span></code>:</p>
+<ul class="simple">
+<li><p><strong>Mode 0 – Self-cal observations (default):</strong>
+Uses actual self-calibration observations: repeated spectra of stars in
+dedicated self-cal fields. Data are gathered directly from the Euclid
+self-cal exposures.</p></li>
+<li><p><strong>Mode 1 – Simple random dithering:</strong>
+In the absence of dedicated self-cal observations, existing spectra are
+randomly re-dithered across the focal plane using the instrument model
+to simulate different detector positions and build an artificial
+self-cal dataset.</p></li>
+<li><p><strong>Mode 2 – Gaia-based simulated self-cal:</strong>
+Uses a Gaia+WISE star catalog as a sky prior. The code simulates Euclid
+self-cal pointings and uses a pre-defined “fake” flat cube to perturb the
+magnitudes as stars fall at different focal-plane positions, mimicking the
+self-calibration pattern. This produces a realistic synthetic self-cal
+dataset, including magnitude perturbations and noise.</p></li>
+</ul>
+<p>In all cases, the result is a table of repeated stellar measurements across
+the focal plane, with:</p>
+<ul class="simple">
+<li><p>object IDs,</p></li>
+<li><p>focal-plane coordinates (normalised <span class="math notranslate nohighlight">\([-1, 1]\)</span>),</p></li>
+<li><p>detector coordinates,</p></li>
+<li><p>per-visit magnitudes and uncertainties in a narrow spectral band,</p></li>
+<li><p>detector IDs and dither indices.</p></li>
+</ul>
+</section>
+<section id="building-the-self-calibration-constraints">
+<h3>Building the self-calibration constraints<a class="headerlink" href="#building-the-self-calibration-constraints" title="Link to this heading"></a></h3>
+<p>For each grism configuration and each wavelength bin <span class="math notranslate nohighlight">\(\lambda_\mathrm{center}\)</span>,
+the calibration code:</p>
+<ul class="simple">
+<li><p>selects spectra or simulated observations belonging to that grism,</p></li>
+<li><p>measures a narrow-band magnitude around <span class="math notranslate nohighlight">\(\lambda_\mathrm{center}\)</span> using
+<code class="docutils literal notranslate"><span class="pre">measureChunkMagnitude1D</span></code> on the 1D spectra,</p></li>
+<li><p>applies quality cuts, such as:</p>
+<ul>
+<li><p>magnitude limits (e.g. <span class="math notranslate nohighlight">\(16 &lt; H &lt; \mathrm{limmag}\)</span>),</p></li>
+<li><p>valid on-detector positions,</p></li>
+<li><p>sufficient S/N (e.g. magnitude uncertainty below a threshold),</p></li>
+</ul>
+</li>
+<li><p>records for each valid measurement:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OBJECT_ID</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MAG_APER</span></code> (measured magnitude) and <code class="docutils literal notranslate"><span class="pre">MAGERR_APER</span></code>,</p></li>
+<li><p>normalised detector coordinates (<code class="docutils literal notranslate"><span class="pre">Xdet</span></code>, <code class="docutils literal notranslate"><span class="pre">Ydet</span></code>),</p></li>
+<li><p>normalised focal-plane coordinates (<code class="docutils literal notranslate"><span class="pre">Xfp</span></code>, <code class="docutils literal notranslate"><span class="pre">Yfp</span></code>),</p></li>
+<li><p>detector index and dither index.</p></li>
+</ul>
+</li>
+</ul>
+<p>For each wavelength bin, a <strong>star catalog</strong> is then built:</p>
+<ul class="simple">
+<li><p>unique IDs of all stars with repeated measurements,</p></li>
+<li><p>number of observations per star (<code class="docutils literal notranslate"><span class="pre">nobs</span></code>),</p></li>
+<li><p>mean magnitude and scatter (or uncertainty) per star,</p></li>
+<li><p>mappings:</p>
+<ul>
+<li><p>from each star to the indices of its observations,</p></li>
+<li><p>from each detector to the indices of its observations.</p></li>
+</ul>
+</li>
+</ul>
+<p>Stars with only a single observation are removed, and an additional
+per-object sigma clipping in magnitude is applied to reject outliers before
+fitting.</p>
+</section>
+<section id="self-calibration-model">
+<h3>Self-calibration model<a class="headerlink" href="#self-calibration-model" title="Link to this heading"></a></h3>
+<p>The actual self-calibration model is implemented in the <code class="docutils literal notranslate"><span class="pre">SelfCalib</span></code> class
+and is solved independently for each wavelength bin and grism configuration.</p>
+<p>For each observation <span class="math notranslate nohighlight">\(k\)</span>, the model predicts the measured magnitude as</p>
+<div class="math notranslate nohighlight">
+\[m_k^\mathrm{model}
+   = m_{*, i(k)}
+   + F_{d(k)}(x_k, y_k)
+   + \mathrm{QE}_{d(k)} ,\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(m_{*, i(k)}\)</span> is the intrinsic magnitude of star <span class="math notranslate nohighlight">\(i\)</span> observed in
+observation <span class="math notranslate nohighlight">\(k\)</span>,</p></li>
+<li><p><span class="math notranslate nohighlight">\(F_{d(k)}(x_k, y_k)\)</span> is the large-scale flat pattern on detector
+<span class="math notranslate nohighlight">\(d(k)\)</span>, evaluated at the local detector coordinates
+<span class="math notranslate nohighlight">\((x_k, y_k)\)</span>,</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathrm{QE}_{d(k)}\)</span> is a per-detector QE offset,</p></li>
+<li><p>the <strong>flat pattern</strong> on each detector is represented as a smooth 2D
+polynomial (e.g. Chebyshev-like) using the <code class="docutils literal notranslate"><span class="pre">Fit2D</span></code> helpers.</p></li>
+</ul>
+<p>The residuals are</p>
+<div class="math notranslate nohighlight">
+\[r_k = \frac{m_k^\mathrm{obs} - m_k^\mathrm{model}}{\sigma_k} ,\]</div>
+<p>where <span class="math notranslate nohighlight">\(m_k^\mathrm{obs}\)</span> and <span class="math notranslate nohighlight">\(\sigma_k\)</span> are the measured magnitude
+and its uncertainty. The fit is obtained by iteratively minimising the total</p>
+<div class="math notranslate nohighlight">
+\[\chi^2 = \sum_k r_k^2\]</div>
+<p>by:</p>
+<ol class="arabic simple">
+<li><p>updating stellar magnitudes (weighted averages over the star’s visits),</p></li>
+<li><p>solving for the large-scale 2D flat on each detector,</p></li>
+<li><p>optionally adjusting per-detector QE offsets using overlapping regions
+between neighbouring detectors (via <code class="docutils literal notranslate"><span class="pre">fitQE</span></code>),</p></li>
+<li><p>iterating until the reduced <span class="math notranslate nohighlight">\(\chi^2\)</span> stops improving or a maximum
+iteration count is reached.</p></li>
+</ol>
+<p>The model internally keeps track of:</p>
+<ul class="simple">
+<li><p>the final per-star magnitudes,</p></li>
+<li><p>per-detector 2D flat models and their uncertainties,</p></li>
+<li><p>per-detector QE offsets.</p></li>
+</ul>
+</section>
+<section id="constructing-the-3d-relative-flux-cube">
+<h3>Constructing the 3D relative flux cube<a class="headerlink" href="#constructing-the-3d-relative-flux-cube" title="Link to this heading"></a></h3>
+<p>Once the self-calibration fit converges for a given wavelength bin and grism,
+the fitted flat pattern is interpolated onto a regular, normalised focal-plane
+grid using <code class="docutils literal notranslate"><span class="pre">interpolateOnFocal</span></code>:</p>
+<ul class="simple">
+<li><p>the focal plane is sampled on a uniform grid in
+<span class="math notranslate nohighlight">\((x_\mathrm{FP}, y_\mathrm{FP}) \in [-1, 1] \times [-1, 1]\)</span>,</p></li>
+<li><p>each grid point is mapped through the instrument model to a specific
+detector (if any) and detector coordinates,</p></li>
+<li><p>the 2D flat model for that detector is evaluated at the mapped position,</p></li>
+<li><p>if no physical detector covers the position, the grid point is flagged as a
+gap.</p></li>
+</ul>
+<p>This results in:</p>
+<ul class="simple">
+<li><p>a <strong>response cube</strong> of Δmag values on a regular
+<span class="math notranslate nohighlight">\((\lambda, x_\mathrm{FP}, y_\mathrm{FP})\)</span> grid,</p></li>
+<li><p>a corresponding <strong>uncertainty cube</strong> derived from the fit,</p></li>
+<li><p>an auxiliary <strong>gap map</strong> encoding which focal-plane regions are covered by
+real detectors.</p></li>
+</ul>
+<p>An optional spatial smoothing step can be applied to the response maps while
+respecting detector boundaries, to suppress small-scale noise and ensure a
+smooth large-scale solution.</p>
+</section>
+<section id="combining-wavelength-bins-and-grisms">
+<h3>Combining wavelength bins and grisms<a class="headerlink" href="#combining-wavelength-bins-and-grisms" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">SelfCalibWave</span></code> class loops over:</p>
+<ul class="simple">
+<li><p>all relevant grism configurations, and</p></li>
+<li><p>all wavelength bins within the grism’s spectral range,</p></li>
+</ul>
+<p>and fills a 4D cube</p>
+<div class="math notranslate nohighlight">
+\[\Delta\mathrm{mag}(\lambda_i, x_j, y_k; g)\]</div>
+<p>where <span class="math notranslate nohighlight">\(g\)</span> indexes the grism/tilt configuration. For Q1, where the solution
+is effectively achromatic, the wavelength dimension is collapsed to produce an
+achromatic 2D large-scale response per grism/tilt, but the internal machinery
+supports a fully wavelength-dependent solution.</p>
+</section>
+<section id="quality-assessment-and-diagnostics">
+<h3>Quality assessment and diagnostics<a class="headerlink" href="#quality-assessment-and-diagnostics" title="Link to this heading"></a></h3>
+<p>Several diagnostics are computed to assess the quality of the derived
+solution:</p>
+<ul class="simple">
+<li><p>histograms of the fitted corrections (Δmag) per wavelength bin and grism,</p></li>
+<li><p>histograms of the uncertainties,</p></li>
+<li><p>focal-plane maps of residuals after applying the model,</p></li>
+<li><p>per-grism summary statistics (mean and robust scatter of Δmag vs wavelength).</p></li>
+</ul>
+<p>These are stored as:</p>
+<ul class="simple">
+<li><p>diagnostic plots on disk (e.g. residuals vs constraint index, residual maps,
+flat-field maps and histograms),</p></li>
+<li><p>a dictionary of data-quality parameters (e.g. wavelength grid, grism-wise
+mean and scatter of corrections) that can be written into the
+calibration product metadata.</p></li>
+</ul>
+</section>
+<section id="writing-the-calibration-fits-product">
+<h3>Writing the calibration FITS product<a class="headerlink" href="#writing-the-calibration-fits-product" title="Link to this heading"></a></h3>
+<p>The final calibration product is written by
+<code class="docutils literal notranslate"><span class="pre">SelfCalibWave.writeOutputSir</span></code> as a Euclid-compliant FITS cube:</p>
+<ul class="simple">
+<li><p>each grism/tilt configuration is stored in its own extension,</p></li>
+<li><p>the primary <strong>SCI</strong> layer stores the Δmag correction
+<span class="math notranslate nohighlight">\(\Delta\mathrm{mag}(\lambda, x_\mathrm{FP}, y_\mathrm{FP})\)</span>,</p></li>
+<li><p>a matching <strong>DQ</strong> layer stores a quality mask / weight derived from the
+uncertainty (mapped with a smooth sigmoid from low to high S/N),</p></li>
+<li><p>WCS-like keywords describe the focal-plane and wavelength axes:</p>
+<ul>
+<li><p>normalised FP coordinates in X and Y,</p></li>
+<li><p>grism-specific wavelength sampling.</p></li>
+</ul>
+</li>
+</ul>
+<p>This FITS cube is the calibration product read later by the <strong>Apply</strong> module
+to compute the relative flux correction factor at arbitrary positions along
+each extracted spectrum trace.</p>
+</section>
+</section>
+<section id="relative-flux-apply-module">
+<h2>2. Relative Flux Apply Module<a class="headerlink" href="#relative-flux-apply-module" title="Link to this heading"></a></h2>
+<p>The apply module reads the pre-computed large-scale flat solution and applies
+it to each 1D extracted spectrum, producing a new, relative-flux–corrected
+product.</p>
+<p><strong>Inputs and setup</strong></p>
+<p>The core implementation is provided by
+<code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore</span></code>. For a given grism/tilt configuration it is
+initialised with:</p>
+<ul class="simple">
+<li><p>a 3D <strong>relative flux cube</strong> in Δmag, sampled on a grid in
+(wavelength, Y, X) over the focal plane, and</p></li>
+<li><p>a corresponding <strong>quality cube</strong> that encodes where the solution is valid.</p></li>
+</ul>
+<p>During initialisation of the interpolators:</p>
+<ul class="simple">
+<li><p>X and Y are mapped to a regular grid in the normalised focal-plane
+coordinates <span class="math notranslate nohighlight">\([-1, 1]\)</span>,</p></li>
+<li><p>wavelength is sampled between the minimum and maximum values used to derive
+the calibration,</p></li>
+<li><p>NaNs in the flux cube are set to 0.0 (no correction),</p></li>
+<li><p>NaNs in the quality cube are set to 1.0 (good quality),</p></li>
+<li><p>two trilinear interpolators (SciPy <code class="docutils literal notranslate"><span class="pre">RegularGridInterpolator</span></code>) are built for
+the Δmag solution and its quality.</p></li>
+</ul>
+<p><strong>Per-spectrum correction</strong></p>
+<p>For each input spectrum (<code class="docutils literal notranslate"><span class="pre">H5ExtractedSpectrum</span></code>):</p>
+<ul class="simple">
+<li><p>the 1D dataset labelled <code class="docutils literal notranslate"><span class="pre">SPEC1D</span></code> is retrieved (flux, variance, quality,
+mask, covariance tolerance, LSF width, exposure time),</p></li>
+<li><p>the wavelength grid is taken directly from the spectrum,</p></li>
+<li><p>the spatial trace is evaluated at the <strong>middle row</strong> of the extraction
+aperture using the associated <code class="docutils literal notranslate"><span class="pre">LocationSpectrum</span></code> object,</p></li>
+<li><p>the detector model (<code class="docutils literal notranslate"><span class="pre">DetectorModel</span></code>) and its envelope box are used to
+convert trace positions into focal-plane coordinates,</p></li>
+<li><p>these focal-plane coordinates are transformed into normalised <span class="math notranslate nohighlight">\([-1, 1]\)</span>
+coordinates and tested against the calibrated field of view.</p></li>
+</ul>
+<p>For all wavelengths that fall <strong>inside</strong> the calibrated FoV:</p>
+<ul class="simple">
+<li><p>the Δmag correction is interpolated from the relative flux cube,</p></li>
+<li><p>a multiplicative correction factor is computed from Δmag,</p></li>
+<li><p>the flux is multiplied by this factor,</p></li>
+<li><p>the variance is multiplied by the square of the factor.</p></li>
+</ul>
+<p>Wavelength samples <strong>outside</strong> the calibrated FoV keep their original flux and
+variance; they are not extrapolated.</p>
+<p>The method returns, per spectrum:</p>
+<ul class="simple">
+<li><p>the corrected flux array,</p></li>
+<li><p>the corrected variance array,</p></li>
+<li><p>the Δmag values used for the correction (with a sentinel value for
+out-of-FoV samples).</p></li>
+</ul>
+<p><strong>Masking and quality flags</strong></p>
+<p>The existing spectral mask and quality flags are carried through, with specific
+updates related to the relative flux correction:</p>
+<ul class="simple">
+<li><p>a dedicated mask bit (<code class="docutils literal notranslate"><span class="pre">SUSP_RFX</span></code> in <code class="docutils literal notranslate"><span class="pre">SPECTRUM_MASK</span></code>) is set for
+wavelengths where no valid relative flux solution is available or where the
+correction is judged suspicious,</p></li>
+<li><p>these pixels are thus marked as unreliable for relative spectrophotometry,
+while their flux values remain unchanged.</p></li>
+</ul>
+<p>The relative-flux–corrected spectrum is written as a <strong>new 1D product</strong>:</p>
+<ul class="simple">
+<li><p>a fresh <code class="docutils literal notranslate"><span class="pre">SpectrumDataSet</span></code> is created with the same exposure time and LSF
+information as the input,</p></li>
+<li><p>corrected flux, variance, quality, and mask arrays are set,</p></li>
+<li><p>the dataset is attached to the spectrum under the label
+<code class="docutils literal notranslate"><span class="pre">&quot;1D</span> <span class="pre">REL&quot;</span></code> (<code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL</span></code>), either
+replacing any existing product with that label or creating a new one.</p></li>
+</ul>
+<p><strong>Global red/green diagnostic flag</strong></p>
+<p>As part of the processing of a collection of spectra, the module gathers the
+Δmag corrections from all <strong>unmasked, good-quality pixels</strong> and computes:</p>
+<ul class="simple">
+<li><p>the mean of the Δmag distribution,</p></li>
+<li><p>the standard deviation of that distribution.</p></li>
+</ul>
+<p>A simple global diagnostic is then derived:</p>
+<ul class="simple">
+<li><p>if both <span class="math notranslate nohighlight">\(\langle \Delta \mathrm{mag} \rangle &lt; 0.3\)</span> and
+<span class="math notranslate nohighlight">\(\sigma(\Delta \mathrm{mag}) &lt; 0.3\)</span>, a <strong>green</strong> flag (0) is returned;</p></li>
+<li><p>otherwise, a <strong>red</strong> flag (1) is returned, indicating that the relative flux
+behaviour in the input sample is atypical and may require further inspection.</p></li>
+</ul>
+<p>This flag is intended for pipeline-level health checks and quality reports; it
+does not affect the per-pixel correction itself.</p>
+</section>
+<section id="function-summary">
+<h2>Function Summary<a class="headerlink" href="#function-summary" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Relative Flux Calibration Module</strong>
+Derives the large-scale response of the instrument as a function of
+wavelength and focal-plane position, using repeated stellar observations
+(real or simulated). Produces per-configuration correction cubes for use in
+the pipeline.</p></li>
+<li><p><strong>Relative Flux Apply Module</strong>
+Uses the calibration cubes to interpolate a Δmag correction along each 1D
+spectrum trace, applies the corresponding multiplicative factor to flux and
+variance, updates masks and quality flags, and produces a new corrected 1D
+spectrum (labelled <code class="docutils literal notranslate"><span class="pre">1D</span> <span class="pre">REL</span></code>) together with a global red/green diagnostic.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SIR_RFXModel Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="calibration_product.html">SIR Relative Flux Calibration Product</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="SIR_RFXModel Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

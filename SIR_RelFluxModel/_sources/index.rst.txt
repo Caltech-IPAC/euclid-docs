@@ -1,0 +1,402 @@
+SIR Relative Flux Scaling (SIR_RFXModel)
+========================================
+
+The component identifier is **SIR_RFXModel**.  
+This module derives and applies large–scale relative flux corrections to NISP
+slitless spectra so that repeated observations of the same source yield
+consistent instrumental fluxes, independent of detector position, grism/tilt
+configuration, or epoch.
+
+The module is structured into two main components:
+
+1. **Relative Flux Calibration Module** – derives the large-scale response of the instrument using repeated observations of bright stars.
+2. **Relative Flux Apply Module** – applies the derived relative flux correction to the 1D extracted spectra.
+
+Scientific Background
+---------------------
+
+Large-scale transmission variations across the NISP focal plane arise from a
+combination of optical throughput, detector response, and vignetting effects.
+These variations can reach the ~10% level in some grism/tilt configurations and
+must be corrected to ensure spatially uniform spectrophotometry.
+
+Euclid measures these variations using repeated observations of bright
+self-calibration stars (typically :math:`16 < H_E < 18`) obtained at many dither
+positions, detector locations, and grism/tilt settings.  
+Because each star is observed multiple times at different focal-plane
+positions, the ensemble of observations provides strong statistical constraints
+on the large-scale flat pattern that must be corrected.
+
+For the Q1 data release, the relative response is found to be largely
+achromatic. To maximise signal-to-noise, an achromatic solution is therefore
+derived that depends only on focal-plane coordinates for each grism/tilt
+configuration. This solution successfully flattens repeated observations of
+bright sources and shows clear signatures of the expected vignetting pattern.
+
+1. Relative Flux Calibration Module
+-----------------------------------
+
+The calibration module constructs the relative flux scaling solution for each
+combination of **grism** and **tilt**, and as a function of **wavelength** and
+focal-plane position.
+
+High-level strategy
+~~~~~~~~~~~~~~~~~~~
+
+At a high level, the calibration proceeds in three stages:
+
+1. **Extract per-star, per-visit photometric measurements**
+   from the self-calibration spectra (or simulations), in a
+   narrow wavelength bin centred on :math:`\lambda_\mathrm{center}`.
+2. **Fit a self-calibration model** that simultaneously solves for:
+
+   - the intrinsic magnitude of each calibration star,
+   - a smooth 2D large-scale flat pattern per detector,
+   - per-detector QE offsets, using overlapping regions between detectors.
+
+3. **Interpolate the fitted flat field onto a regular focal-plane grid**
+   for each wavelength bin and grism configuration, producing a 3D cube
+   :math:`\Delta\mathrm{mag}(\lambda, x_\mathrm{FP}, y_\mathrm{FP})` with associated
+   uncertainties and quality information.
+
+This procedure is implemented mainly in the classes:
+
+- ``SelfCalibWave`` – orchestrates the wavelength loop and grism loop and
+  builds the calibration cubes.
+- ``SelfCalibSirData``, ``SelfCalibSirGaiaData``, ``SelfDitherData`` – prepare
+  the self-calibration constraints for different observing/simulation modes.
+- ``SelfCalib`` – performs the core self-calibration fit per wavelength bin.
+
+Calibration modes
+~~~~~~~~~~~~~~~~~
+
+The code supports three calibration “modes”, selected via
+``calmode`` in ``SelfCalibWave``:
+
+- **Mode 0 – Self-cal observations (default):**  
+  Uses actual self-calibration observations: repeated spectra of stars in
+  dedicated self-cal fields. Data are gathered directly from the Euclid
+  self-cal exposures.
+
+- **Mode 1 – Simple random dithering:**  
+  In the absence of dedicated self-cal observations, existing spectra are
+  randomly re-dithered across the focal plane using the instrument model
+  to simulate different detector positions and build an artificial
+  self-cal dataset.
+
+- **Mode 2 – Gaia-based simulated self-cal:**  
+  Uses a Gaia+WISE star catalog as a sky prior. The code simulates Euclid
+  self-cal pointings and uses a pre-defined “fake” flat cube to perturb the
+  magnitudes as stars fall at different focal-plane positions, mimicking the
+  self-calibration pattern. This produces a realistic synthetic self-cal
+  dataset, including magnitude perturbations and noise.
+
+In all cases, the result is a table of repeated stellar measurements across
+the focal plane, with:
+
+- object IDs,
+- focal-plane coordinates (normalised :math:`[-1, 1]`),
+- detector coordinates,
+- per-visit magnitudes and uncertainties in a narrow spectral band,
+- detector IDs and dither indices.
+
+Building the self-calibration constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For each grism configuration and each wavelength bin :math:`\lambda_\mathrm{center}`,
+the calibration code:
+
+- selects spectra or simulated observations belonging to that grism,
+- measures a narrow-band magnitude around :math:`\lambda_\mathrm{center}` using
+  ``measureChunkMagnitude1D`` on the 1D spectra,
+- applies quality cuts, such as:
+
+  - magnitude limits (e.g. :math:`16 < H < \mathrm{limmag}`),
+  - valid on-detector positions,
+  - sufficient S/N (e.g. magnitude uncertainty below a threshold),
+
+- records for each valid measurement:
+
+  - ``OBJECT_ID``,
+  - ``MAG_APER`` (measured magnitude) and ``MAGERR_APER``,
+  - normalised detector coordinates (``Xdet``, ``Ydet``),
+  - normalised focal-plane coordinates (``Xfp``, ``Yfp``),
+  - detector index and dither index.
+
+For each wavelength bin, a **star catalog** is then built:
+
+- unique IDs of all stars with repeated measurements,
+- number of observations per star (``nobs``),
+- mean magnitude and scatter (or uncertainty) per star,
+- mappings:
+
+  - from each star to the indices of its observations,
+  - from each detector to the indices of its observations.
+
+Stars with only a single observation are removed, and an additional
+per-object sigma clipping in magnitude is applied to reject outliers before
+fitting.
+
+Self-calibration model
+~~~~~~~~~~~~~~~~~~~~~~
+
+The actual self-calibration model is implemented in the ``SelfCalib`` class
+and is solved independently for each wavelength bin and grism configuration.
+
+For each observation :math:`k`, the model predicts the measured magnitude as
+
+.. math::
+
+   m_k^\mathrm{model}
+      = m_{*, i(k)}
+      + F_{d(k)}(x_k, y_k)
+      + \mathrm{QE}_{d(k)} ,
+
+where:
+
+- :math:`m_{*, i(k)}` is the intrinsic magnitude of star :math:`i` observed in
+  observation :math:`k`,
+- :math:`F_{d(k)}(x_k, y_k)` is the large-scale flat pattern on detector
+  :math:`d(k)`, evaluated at the local detector coordinates
+  :math:`(x_k, y_k)`,
+- :math:`\mathrm{QE}_{d(k)}` is a per-detector QE offset,
+- the **flat pattern** on each detector is represented as a smooth 2D
+  polynomial (e.g. Chebyshev-like) using the ``Fit2D`` helpers.
+
+The residuals are
+
+.. math::
+
+   r_k = \frac{m_k^\mathrm{obs} - m_k^\mathrm{model}}{\sigma_k} ,
+
+where :math:`m_k^\mathrm{obs}` and :math:`\sigma_k` are the measured magnitude
+and its uncertainty. The fit is obtained by iteratively minimising the total
+
+.. math::
+
+   \chi^2 = \sum_k r_k^2
+
+by:
+
+1. updating stellar magnitudes (weighted averages over the star’s visits),
+2. solving for the large-scale 2D flat on each detector,
+3. optionally adjusting per-detector QE offsets using overlapping regions
+   between neighbouring detectors (via ``fitQE``),
+4. iterating until the reduced :math:`\chi^2` stops improving or a maximum
+   iteration count is reached.
+
+The model internally keeps track of:
+
+- the final per-star magnitudes,
+- per-detector 2D flat models and their uncertainties,
+- per-detector QE offsets.
+
+Constructing the 3D relative flux cube
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the self-calibration fit converges for a given wavelength bin and grism,
+the fitted flat pattern is interpolated onto a regular, normalised focal-plane
+grid using ``interpolateOnFocal``:
+
+- the focal plane is sampled on a uniform grid in
+  :math:`(x_\mathrm{FP}, y_\mathrm{FP}) \in [-1, 1] \times [-1, 1]`,
+- each grid point is mapped through the instrument model to a specific
+  detector (if any) and detector coordinates,
+- the 2D flat model for that detector is evaluated at the mapped position,
+- if no physical detector covers the position, the grid point is flagged as a
+  gap.
+
+This results in:
+
+- a **response cube** of Δmag values on a regular
+  :math:`(\lambda, x_\mathrm{FP}, y_\mathrm{FP})` grid,
+- a corresponding **uncertainty cube** derived from the fit,
+- an auxiliary **gap map** encoding which focal-plane regions are covered by
+  real detectors.
+
+An optional spatial smoothing step can be applied to the response maps while
+respecting detector boundaries, to suppress small-scale noise and ensure a
+smooth large-scale solution.
+
+Combining wavelength bins and grisms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``SelfCalibWave`` class loops over:
+
+- all relevant grism configurations, and
+- all wavelength bins within the grism’s spectral range,
+
+and fills a 4D cube
+
+.. math::
+
+   \Delta\mathrm{mag}(\lambda_i, x_j, y_k; g)
+
+where :math:`g` indexes the grism/tilt configuration. For Q1, where the solution
+is effectively achromatic, the wavelength dimension is collapsed to produce an
+achromatic 2D large-scale response per grism/tilt, but the internal machinery
+supports a fully wavelength-dependent solution.
+
+Quality assessment and diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Several diagnostics are computed to assess the quality of the derived
+solution:
+
+- histograms of the fitted corrections (Δmag) per wavelength bin and grism,
+- histograms of the uncertainties,
+- focal-plane maps of residuals after applying the model,
+- per-grism summary statistics (mean and robust scatter of Δmag vs wavelength).
+
+These are stored as:
+
+- diagnostic plots on disk (e.g. residuals vs constraint index, residual maps,
+  flat-field maps and histograms),
+- a dictionary of data-quality parameters (e.g. wavelength grid, grism-wise
+  mean and scatter of corrections) that can be written into the
+  calibration product metadata.
+
+Writing the calibration FITS product
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The final calibration product is written by
+``SelfCalibWave.writeOutputSir`` as a Euclid-compliant FITS cube:
+
+- each grism/tilt configuration is stored in its own extension,
+- the primary **SCI** layer stores the Δmag correction
+  :math:`\Delta\mathrm{mag}(\lambda, x_\mathrm{FP}, y_\mathrm{FP})`,
+- a matching **DQ** layer stores a quality mask / weight derived from the
+  uncertainty (mapped with a smooth sigmoid from low to high S/N),
+- WCS-like keywords describe the focal-plane and wavelength axes:
+
+  - normalised FP coordinates in X and Y,
+  - grism-specific wavelength sampling.
+
+This FITS cube is the calibration product read later by the **Apply** module
+to compute the relative flux correction factor at arbitrary positions along
+each extracted spectrum trace.
+
+2. Relative Flux Apply Module
+-----------------------------
+
+The apply module reads the pre-computed large-scale flat solution and applies
+it to each 1D extracted spectrum, producing a new, relative-flux–corrected
+product.
+
+**Inputs and setup**
+
+The core implementation is provided by
+``RelativeFluxCorrectionCore``. For a given grism/tilt configuration it is
+initialised with:
+
+- a 3D **relative flux cube** in Δmag, sampled on a grid in
+  (wavelength, Y, X) over the focal plane, and
+- a corresponding **quality cube** that encodes where the solution is valid.
+
+During initialisation of the interpolators:
+
+- X and Y are mapped to a regular grid in the normalised focal-plane
+  coordinates :math:`[-1, 1]`,
+- wavelength is sampled between the minimum and maximum values used to derive
+  the calibration,
+- NaNs in the flux cube are set to 0.0 (no correction),
+- NaNs in the quality cube are set to 1.0 (good quality),
+- two trilinear interpolators (SciPy ``RegularGridInterpolator``) are built for
+  the Δmag solution and its quality.
+
+**Per-spectrum correction**
+
+For each input spectrum (``H5ExtractedSpectrum``):
+
+- the 1D dataset labelled ``SPEC1D`` is retrieved (flux, variance, quality,
+  mask, covariance tolerance, LSF width, exposure time),
+- the wavelength grid is taken directly from the spectrum,
+- the spatial trace is evaluated at the **middle row** of the extraction
+  aperture using the associated ``LocationSpectrum`` object,
+- the detector model (``DetectorModel``) and its envelope box are used to
+  convert trace positions into focal-plane coordinates,
+- these focal-plane coordinates are transformed into normalised :math:`[-1, 1]`
+  coordinates and tested against the calibrated field of view.
+
+For all wavelengths that fall **inside** the calibrated FoV:
+
+- the Δmag correction is interpolated from the relative flux cube,
+- a multiplicative correction factor is computed from Δmag,
+- the flux is multiplied by this factor,
+- the variance is multiplied by the square of the factor.
+
+Wavelength samples **outside** the calibrated FoV keep their original flux and
+variance; they are not extrapolated.
+
+The method returns, per spectrum:
+
+- the corrected flux array,
+- the corrected variance array,
+- the Δmag values used for the correction (with a sentinel value for
+  out-of-FoV samples).
+
+**Masking and quality flags**
+
+The existing spectral mask and quality flags are carried through, with specific
+updates related to the relative flux correction:
+
+- a dedicated mask bit (``SUSP_RFX`` in ``SPECTRUM_MASK``) is set for
+  wavelengths where no valid relative flux solution is available or where the
+  correction is judged suspicious,
+- these pixels are thus marked as unreliable for relative spectrophotometry,
+  while their flux values remain unchanged.
+
+The relative-flux–corrected spectrum is written as a **new 1D product**:
+
+- a fresh ``SpectrumDataSet`` is created with the same exposure time and LSF
+  information as the input,
+- corrected flux, variance, quality, and mask arrays are set,
+- the dataset is attached to the spectrum under the label
+  ``"1D REL"`` (``RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL``), either
+  replacing any existing product with that label or creating a new one.
+
+**Global red/green diagnostic flag**
+
+As part of the processing of a collection of spectra, the module gathers the
+Δmag corrections from all **unmasked, good-quality pixels** and computes:
+
+- the mean of the Δmag distribution,
+- the standard deviation of that distribution.
+
+A simple global diagnostic is then derived:
+
+- if both :math:`\langle \Delta \mathrm{mag} \rangle < 0.3` and
+  :math:`\sigma(\Delta \mathrm{mag}) < 0.3`, a **green** flag (0) is returned;
+- otherwise, a **red** flag (1) is returned, indicating that the relative flux
+  behaviour in the input sample is atypical and may require further inspection.
+
+This flag is intended for pipeline-level health checks and quality reports; it
+does not affect the per-pixel correction itself.
+
+Function Summary
+----------------
+
+- **Relative Flux Calibration Module**  
+  Derives the large-scale response of the instrument as a function of
+  wavelength and focal-plane position, using repeated stellar observations
+  (real or simulated). Produces per-configuration correction cubes for use in
+  the pipeline.
+
+- **Relative Flux Apply Module**  
+  Uses the calibration cubes to interpolate a Δmag correction along each 1D
+  spectrum trace, applies the corresponding multiplicative factor to flux and
+  variance, updates masks and quality flags, and produces a new corrected 1D
+  spectrum (labelled ``1D REL``) together with a global red/green diagnostic.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   modules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
