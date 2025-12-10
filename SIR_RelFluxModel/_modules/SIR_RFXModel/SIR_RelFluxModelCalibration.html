@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_RFXModel.SIR_RelFluxModelCalibration &mdash; SIR_RFXModel  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SIR_RFXModel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_RFXModel Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_RFXModel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_RFXModel.SIR_RelFluxModelCalibration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_RFXModel.SIR_RelFluxModelCalibration</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="c1">#File: python/SIR_SelfCalib/SIR_Compute.py</span>
+<span class="c1">#Created on: 04/14/20</span>
+<span class="c1">#Author: shemmati, Georgio</span>
+<span class="c1">#Compute Self-calibration image using the relative flux estimates of wavelength chunks of spectra taken from the decontaminated spectra.</span>
+<span class="c1">#</span>
+<span class="c1">#Example:</span>
+<span class="c1">#ERun SIR_Calibration SIR_RelFluxModelCalibration \</span>
+<span class="c1">#  --workdir=/stage/euclid-staff-shemmati/Work/Projects/spectra/R13 </span>
+<span class="c1">#  --inlist=R13_specs_xmls.json </span>
+<span class="c1">#  --ms_flat=SIR_RelativeFluxScaling.xml</span>
+<span class="c1"># --mdbfile=EUC_MDB.xml</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">ElementsKernel.Logging</span> <span class="k">as</span> <span class="nn">log</span>
+
+<span class="kn">from</span> <span class="nn">SIR_Products.DpdMdbDataBase</span> <span class="kn">import</span> <span class="n">DpdMdbDataBase</span>
+<span class="kn">from</span> <span class="nn">SIR_Products.DpdSirRelativeFluxScaling</span> <span class="kn">import</span> <span class="n">DpdSirRelativeFluxScaling</span>
+<span class="kn">from</span> <span class="nn">SIR_Products.DpdSirExtractedSpectraCollection</span> <span class="kn">import</span> <span class="n">DpdSirExtractedSpectraCollection</span>
+
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">SIR_RFXModel.SelfCalib</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1">#from SIR_Utilities.Mdb import Mdb</span>
+
+
+<span class="c1"># class DpdRelFluxScaling(DpdGeneric):</span>
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def make_header(cls):</span>
+<span class="c1">#         return cls._createSirHeader(&#39;DpdSirRelativeFluxScaling&#39;)</span>
+
+<div class="viewcode-block" id="get_input_data">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.get_input_data">[docs]</a>
+<span class="k">def</span> <span class="nf">get_input_data</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span> <span class="n">extr_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; get input XML file name &quot;&quot;&quot;</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">extr_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.xml&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">extr_list</span>
+
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">workdir</span><span class="p">,</span><span class="n">extr_list</span><span class="p">),</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">list_file</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_file</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">list_file</span>
+
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid input file </span><span class="si">{</span><span class="n">extr_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<span class="c1"># def getGWTiltxml(workdir,xml_path):</span>
+<span class="c1">#     spectra_xml_obj = DpdSirExtractedSpectraCollection(os.path.join(workdir,xml_path))</span>
+<span class="c1">#     return spectra_xml_obj.get_gwa_tilt()</span>
+<span class="c1">#     # with open(os.path.join(workdir,xml_path)) as xml_file:</span>
+<span class="c1">#     #     xml_text = xml_file.read()</span>
+<span class="c1">#     #     dpd = extractedspectracollection_stub.CreateFromDocument(xml_text)</span>
+<span class="c1">#     # return dpd.Data.GrismWheelTilt</span>
+
+<span class="c1"># def getGWPosxml(workdir,xml_path):</span>
+<span class="c1">#     spectra_xml_obj = DpdSirExtractedSpectraCollection(os.path.join(workdir,xml_path))</span>
+<span class="c1">#     return spectra_xml_obj.get_gwa_pos()</span>
+<span class="c1">#     # with open(os.path.join(workdir,xml_path)) as xml_file:</span>
+<span class="c1">#     #     xml_text = xml_file.read()</span>
+<span class="c1">#     #     dpd = extractedspectracollection_stub.CreateFromDocument(xml_text)</span>
+<span class="c1">#     # return dpd.Data.GrismWheelPos</span>
+
+<div class="viewcode-block" id="defineSpecificProgramOptions">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.defineSpecificProgramOptions">[docs]</a>
+<span class="k">def</span> <span class="nf">defineSpecificProgramOptions</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief Allows to define the (command line and configuration file) options</span>
+<span class="sd">    specific to this program</span>
+
+<span class="sd">    @details</span>
+<span class="sd">        See the Elements documentation for more details.</span>
+<span class="sd">    @return</span>
+<span class="sd">        An  ArgumentParser.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--workdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;workdir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Working directory path&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--inlist&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;inlist&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Input file name containing the list of extracted 1D spectra (JSON)&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--inloclist&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;inloclist&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Input file name containing the list of XML Location tables (JSON)&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ncoeff&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;ncoeff&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of model coefficients per side of detector (default: 16)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--limmag&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;limmag&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Limiting H magnitude of star to be used for calibration (default: 18)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ms_flat&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;SIR_RelativeFluxScaling.xml&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The starting flat field solution product&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--calmode&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;calmode&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;0 for SelfCal data, 1 for random dither positions, 2 for GAIA matched stars (default:0)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--iterative&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;iterative&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;0 for no iteration, 1 for adding with input response(default:1)&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--smooth_kernel_sigma&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;smooth_kernel_sigma&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;width of the gaussian kernel to smooth per detector responses in the output array&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mdbfile&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The MDB file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--optxmlfile&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;opt.xml&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The OPT file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--output_xml&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;output_xml&#39;</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;The output xml file&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;SIR_RelativeFluxScaling.xml&#39;</span><span class="p">)</span> <span class="c1">#JX</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--logdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The log directory&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+
+<div class="viewcode-block" id="mainMethod">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.mainMethod">[docs]</a>
+<span class="k">def</span> <span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main entry point for the SIR relative flux calibration.</span>
+
+<span class="sd">    This method wraps the end-to-end workflow:</span>
+
+<span class="sd">    1. Parse configuration and command-line options.</span>
+<span class="sd">    2. Build the self-calibration data sets for the selected mode.</span>
+<span class="sd">    3. Run the SelfCalibWave solver to derive the relative flux cubes.</span>
+<span class="sd">    4. Write the Euclid-compliant calibration product to disk.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;SIR_RelFluxModelCalibration&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;# Entering SIR_RelFluxModelCalibration mainMethod()&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Work dir </span><span class="si">{}</span><span class="s1"> not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">infile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">inlist</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">infile</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Input JSON file </span><span class="si">{}</span><span class="s1"> not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+    <span class="c1">#inlocfile = os.path.join(args.workdir, args.inloclist)</span>
+    <span class="c1">#if not os.path.isfile(inlocfile):</span>
+    <span class="c1">#    msg = &#39;Input JSON file {} not found&#39;.format(inlocfile)</span>
+    <span class="c1">#    logger.info(msg)</span>
+    <span class="c1">#    raise IOError(msg)</span>
+
+
+    <span class="c1"># Log validated command line arguments</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input JSON file: </span><span class="si">{</span><span class="n">infile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;       work dir: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">grismdict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;RGS000&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;RGS180&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;BGS000&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="s1">&#39;RGS270&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span> <span class="c1"># not sure about 270 no data to check</span>
+    <span class="n">in_xml</span> <span class="o">=</span> <span class="n">get_input_data</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">infile</span><span class="p">)</span>
+    <span class="n">extspecnames</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">list_grisms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">xmlname</span> <span class="ow">in</span> <span class="n">in_xml</span><span class="p">:</span>
+        <span class="c1"># get HDF5 filename from XML</span>
+        <span class="c1"># print(args.workdir,xmlname)</span>
+        <span class="c1"># extspecnames.append(DpdExtractedSpectraCollection.getHDF5FileNames(args.workdir, xmlname)[0])</span>
+        <span class="c1"># list_grisms.append(grismdict[getGWPosxml(args.workdir, xmlname)]+getGWTiltxml(args.workdir, xmlname))</span>
+        <span class="n">spectra_xml_obj</span> <span class="o">=</span> <span class="n">DpdSirExtractedSpectraCollection</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">xmlname</span><span class="p">))</span>
+        <span class="n">extspecnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span><span class="n">spectra_xml_obj</span><span class="o">.</span><span class="n">get_hdf5_filename</span><span class="p">()))</span>
+        <span class="n">list_grisms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grismdict</span><span class="p">[</span><span class="n">spectra_xml_obj</span><span class="o">.</span><span class="n">get_gwa_pos</span><span class="p">()]</span> <span class="o">+</span> <span class="n">spectra_xml_obj</span><span class="o">.</span><span class="n">get_gwa_tilt</span><span class="p">())</span>
+    
+    <span class="c1">######## change on march152024</span>
+    <span class="n">list_grisms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">list_grisms</span><span class="p">)</span><span class="c1">#np.unique(np.array(list_grisms)) # this identifies which grisms will be in the calibration         </span>
+    <span class="c1"># mdb = Mdb.load(args.workdir, args.mdbfile)</span>
+    <span class="n">mdb</span> <span class="o">=</span> <span class="n">DpdMdbDataBase</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">mdbfile</span><span class="p">,</span> <span class="n">workdir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span>
+
+    <span class="n">optxml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">optxmlfile</span><span class="p">)</span>
+
+    
+
+    <span class="c1">## need this NISP detector slots for some NIR detector layout routines##       </span>
+    <span class="c1"># csv = os.path.join(args.workdir, &#39;data&#39;, mdb.get(&#39;SpaceSegment.Instrument.NISP.NISPDetectorSlots&#39;)[0])</span>
+    <span class="n">csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_nisp_detector_slots_file</span><span class="p">())</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;        WCS CSV: &#39;</span> <span class="o">+</span> <span class="n">csv</span><span class="p">)</span>
+    <span class="n">NIRFP</span><span class="o">.</span><span class="n">use_wcs</span><span class="p">(</span><span class="n">csv</span><span class="p">)</span>
+
+    
+    <span class="c1"># link to the previous &quot;fits&quot; file solution from the input &quot;XML&quot; product</span>
+    <span class="n">msflat_obj</span> <span class="o">=</span> <span class="n">DpdSirRelativeFluxScaling</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">ms_flat</span><span class="p">))</span>
+    <span class="n">msfits</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span> <span class="p">,</span><span class="n">msflat_obj</span><span class="o">.</span><span class="n">get_sens_fits_file</span><span class="p">())</span>
+    <span class="c1"># msflat_xml = os.path.join(args.workdir, args.ms_flat)</span>
+    <span class="c1"># mytree = ET.parse(msflat_xml)</span>
+    <span class="c1"># root = mytree.getroot()</span>
+    <span class="c1"># for actor in root.findall(&#39;Data&#39;):</span>
+    <span class="c1">#     for a in actor.find(&#39;DataStorage&#39;):</span>
+    <span class="c1">#         msflat_fits = a.find(&#39;FileName&#39;).text</span>
+    <span class="c1"># msfits = os.path.join(args.workdir,&#39;data&#39; ,msflat_fits)</span>
+
+            
+    <span class="c1">#change waveres to 2 and spatialres to 10 to just runfast</span>
+    <span class="n">waveres</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># number of wavelength points to measure</span>
+    <span class="n">spatialres</span> <span class="o">=</span> <span class="mi">68</span> <span class="c1"># good to be a factor of 16</span>
+    <span class="n">deltaw</span> <span class="o">=</span> <span class="mi">350</span> <span class="c1"># in Angstrom corresponds to ~44 pixels </span>
+    <span class="n">ndither</span> <span class="o">=</span> <span class="mi">15</span> <span class="c1"># for the GAIA simulation</span>
+    <span class="n">noisefactor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1">#deep fields have less noise compared to spectra in testing, should be changed to 1 in actual code</span>
+    <span class="n">ncoeff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ncoeff</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">calmode</span> <span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="n">LocationTableSet</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">inlocfile</span><span class="p">)</span>    
+        <span class="n">n</span> <span class="o">=</span> <span class="n">SelfCalibWave</span><span class="p">(</span><span class="n">extspecnames</span><span class="p">,</span> <span class="n">list_grisms</span><span class="p">,</span> <span class="n">ncoeff</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">limmag</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">calmode</span><span class="p">,</span><span class="n">args</span><span class="o">.</span><span class="n">smooth_kernel_sigma</span><span class="p">,</span> <span class="n">noisefactor</span><span class="p">,</span> <span class="n">deltaw</span><span class="p">,</span> <span class="n">spatialres</span><span class="p">,</span> <span class="n">waveres</span><span class="p">,</span>
+                      <span class="n">ndither</span><span class="p">,</span> <span class="n">mdb</span><span class="p">,</span> <span class="n">optxml</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">ms_flat</span> <span class="o">=</span> <span class="n">msfits</span><span class="p">,</span> <span class="n">tables</span> <span class="o">=</span> <span class="n">tables</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">SelfCalibWave</span><span class="p">(</span><span class="n">extspecnames</span><span class="p">,</span> <span class="n">list_grisms</span><span class="p">,</span> <span class="n">ncoeff</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">limmag</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">calmode</span><span class="p">,</span><span class="n">args</span><span class="o">.</span><span class="n">smooth_kernel_sigma</span><span class="p">,</span> <span class="n">noisefactor</span><span class="p">,</span> <span class="n">deltaw</span><span class="p">,</span> <span class="n">spatialres</span><span class="p">,</span> <span class="n">waveres</span><span class="p">,</span>
+                          <span class="n">ndither</span><span class="p">,</span> <span class="n">mdb</span><span class="p">,</span> <span class="n">optxml</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">ms_flat</span> <span class="o">=</span> <span class="n">msfits</span><span class="p">)</span>
+    <span class="n">n</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+    <span class="c1">#comment out next line to run fast</span>
+    <span class="c1">#n.cross_grism() # to bring different grisms in agreement with a mean shift</span>
+
+    <span class="n">n</span><span class="o">.</span><span class="n">quality_prod</span><span class="p">()</span> <span class="c1"># to make a final histogram of the response for a quality assessment</span>
+
+    <span class="c1"># write FITS datacontainer</span>
+    <span class="n">fits_filename</span> <span class="o">=</span> <span class="n">DpdSirRelativeFluxScaling</span><span class="o">.</span><span class="n">create_container_name</span><span class="p">(</span><span class="s1">&#39;SCALE&#39;</span><span class="p">)</span>
+    <span class="n">fits_whole_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">fits_filename</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Write FITS file </span><span class="si">{</span><span class="n">fits_whole_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">n</span><span class="o">.</span><span class="n">writeOutputSir</span><span class="p">(</span><span class="n">fits_whole_path</span><span class="p">,</span> <span class="n">msfits</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">iterative</span><span class="p">)</span>
+
+    <span class="c1"># write XML product</span>
+    <span class="n">xml_whole_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output_xml</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Write XML file </span><span class="si">{</span><span class="n">fits_whole_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">relflux_obj</span> <span class="o">=</span> <span class="n">DpdSirRelativeFluxScaling</span><span class="p">()</span>
+    <span class="n">relflux_obj</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">sens_file</span><span class="o">=</span><span class="n">fits_whole_path</span><span class="p">)</span>
+    <span class="n">relflux_obj</span><span class="o">.</span><span class="n">append_dqc</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_dq_parameters</span><span class="p">())</span>
+    <span class="n">relflux_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_whole_path</span><span class="p">)</span>
+
+    <span class="c1"># ##Writing the xml and fits file</span>
+    <span class="c1"># fits_filename = os.path.join(&#39;&#39;,FileNameProvider().get_allowed_filename(processing_function=&#39;SIR&#39;,</span>
+    <span class="c1">#                                                                         type_name=&#39;W-RelativeFlux-SCALE&#39;,</span>
+    <span class="c1">#                                                                        instance_id=str(1), extension=&#39;fits&#39;))</span>
+
+    <span class="c1"># fits_whole_path = os.path.join(args.workdir, &quot;data&quot;, fits_filename)</span>
+    <span class="c1"># n.writeOutputSir(fits_whole_path, msfits, args.iterative)</span>
+
+
+    <span class="c1"># header = DpdRelFluxScaling.make_header()</span>
+    <span class="c1"># product = relativeflux_stub.DpdSirRelativeFluxScaling(Header=header)</span>
+    <span class="c1"># ValidityRange = ins_stub.calibrationValidPeriod()</span>
+    <span class="c1"># ValidityRange.TimestampStart = &#39;2010-01-01T00:00:00.0&#39;</span>
+    <span class="c1"># ValidityRange.TimestampEnd = &#39;2050-01-01T00:00:00.0&#39;</span>
+
+    <span class="c1"># product.Data = sir_stub.relativeFluxScaling.Factory(ValidityRange=ValidityRange, CalibrationID=&#39;1&#39;, CalibrationVersion=1)</span>
+    <span class="c1"># fits_file_storage = sir_stub.relativeFluxScalingFitsFile(format=&#39;sir.relativeFluxScaling&#39;,version=&#39;0.1&#39;)</span>
+    <span class="c1"># fits_file_storage.DataContainer = dss_stub.dataContainer(FileName=fits_filename,filestatus=&quot;PROPOSED&quot;)</span>
+    <span class="c1"># product.Data.DataStorage = fits_file_storage</span>
+    <span class="c1"># product.Data.QualityParameters = n.get_dq_parameters() #JX</span>
+
+    <span class="c1"># with open(os.path.join(args.workdir, args.output_xml), &#39;w&#39;) as ott:</span>
+    <span class="c1">#     ott.write(product.toDOM().toprettyxml())</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;# Exiting SIR_RelFluxModelCalibration mainMethod()&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

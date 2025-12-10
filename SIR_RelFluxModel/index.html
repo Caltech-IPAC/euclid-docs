@@ -87,33 +87,21 @@ configuration, or epoch.</p>
 </ol>
 <section id="scientific-background">
 <h2>Scientific Background<a class="headerlink" href="#scientific-background" title="Link to this heading"></a></h2>
-<p>Large-scale transmission variations across the NISP focal plane arise from a
-combination of optical throughput, detector response, and vignetting effects.
-These variations can reach the ~10% level in some grism/tilt configurations and
-must be corrected to ensure spatially uniform spectrophotometry.</p>
-<p>Euclid measures these variations using repeated observations of bright
-self-calibration stars (typically <span class="math notranslate nohighlight">\(16 &lt; H_E &lt; 18\)</span>) obtained at many dither
-positions, detector locations, and grism/tilt settings.
-Because each star is observed multiple times at different focal-plane
-positions, the ensemble of observations provides strong statistical constraints
-on the large-scale flat pattern that must be corrected.</p>
-<p>For the Q1 data release, the relative response is found to be largely
-achromatic. To maximise signal-to-noise, an achromatic solution is therefore
-derived that depends only on focal-plane coordinates for each grism/tilt
-configuration. This solution successfully flattens repeated observations of
-bright sources and shows clear signatures of the expected vignetting pattern.</p>
+<p>Large-scale transmission variations across the NISP focal plane arise from a combination of optical throughput, detector response, and vignetting effects.
+These variations can reach the ~10% level in some grism/tilt configurations and must be corrected to ensure spatially uniform spectrophotometry.</p>
+<p>Euclid measures these variations using repeated observations of bright self-calibration stars (typically 16 &lt; H &lt; 18) obtained at many dither positions, detector locations, and grism/tilt settings. Because each star is observed multiple times at different focal-plane positions, the ensemble of observations provides strong statistical constraints on the large-scale flat pattern that must be corrected.</p>
+<p>For the Q1 data release, the relative response is found to be largely achromatic. To maximise signal-to-noise, an achromatic solution is therefore derived that depends only on focal-plane coordinates for each grism/tilt configuration. This solution successfully flattens repeated observations of bright sources and shows clear signatures of the expected vignetting pattern.</p>
 </section>
 <section id="relative-flux-calibration-module">
 <h2>1. Relative Flux Calibration Module<a class="headerlink" href="#relative-flux-calibration-module" title="Link to this heading"></a></h2>
-<p>The calibration module constructs the relative flux scaling solution for each
-combination of <strong>grism</strong> and <strong>tilt</strong>, and as a function of <strong>wavelength</strong> and
+<p>The calibration module constructs the relative flux scaling solution for each combination of <strong>grism</strong> and <strong>tilt</strong>, and as a function of <strong>wavelength</strong> and
 focal-plane position.</p>
 <section id="high-level-strategy">
 <h3>High-level strategy<a class="headerlink" href="#high-level-strategy" title="Link to this heading"></a></h3>
 <p>At a high level, the calibration proceeds in three stages:</p>
 <ol class="arabic simple">
 <li><p><strong>Extract per-star, per-visit photometric measurements</strong>
-from the self-calibration spectra (or simulations), in a
+from the extracted 1D spectra (or simulations), in a
 narrow wavelength bin centred on <span class="math notranslate nohighlight">\(\lambda_\mathrm{center}\)</span>.</p></li>
 <li><p><strong>Fit a self-calibration model</strong> that simultaneously solves for:</p>
 <ul class="simple">
@@ -442,6 +430,7 @@ spectrum (labelled <code class="docutils literal notranslate"><span class="pre">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">SIR_RFXModel Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html">SIR_RFXModel package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="calibration_product.html">SIR Relative Flux Calibration Product</a></li>
 </ul>
 </li>

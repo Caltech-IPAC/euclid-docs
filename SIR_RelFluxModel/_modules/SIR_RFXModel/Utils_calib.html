@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_RFXModel.Utils_calib &mdash; SIR_RFXModel  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SIR_RFXModel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_RFXModel Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_RFXModel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_RFXModel.Utils_calib</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_RFXModel.Utils_calib</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">from</span> <span class="nn">SIR_RFXModel.FPA_Geometry_calib</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndimage</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">gaussian_filter</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">zscore</span>
+
+<span class="kn">from</span> <span class="nn">astropy.wcs</span> <span class="kn">import</span> <span class="n">wcs</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="n">pi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="c1">#from NIR_misc_utils.FocalPlaneModel import *</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">astropy.wcs</span> <span class="kn">import</span> <span class="n">WCS</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span>
+
+
+<div class="viewcode-block" id="FPModel">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel">[docs]</a>
+<span class="k">class</span> <span class="nc">FPModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;FPModel provides routines to perform conversions of locations from focal plane to detector pixel (and vice-versa).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">npix_horiz</span><span class="p">,</span> <span class="n">npix_vert</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief FPModel constructor</span>
+
+<span class="sd">        @param file: path to the NISPDetectorSlots.csv file containing the WCS conversion numbers;</span>
+<span class="sd">        @param npix_horiz, npix_vert: number of pixels in the detectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">WCS_KEYS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CD1_1&#39;</span><span class="p">,</span><span class="s1">&#39;CD1_2&#39;</span><span class="p">,</span><span class="s1">&#39;CD2_1&#39;</span><span class="p">,</span><span class="s1">&#39;CD2_2&#39;</span><span class="p">,</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;CRPIX2&#39;</span><span class="p">,</span><span class="s1">&#39;CRVAL1&#39;</span><span class="p">,</span><span class="s1">&#39;CRVAL2&#39;</span><span class="p">]</span>
+
+        <span class="n">nispdetslots</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SCE_POS,SCA_ID,CFC_ID,SCE_ID,SCS_ID,SCS_NUM,CD1_1,CD1_2,CD2_1,CD2_2,CRPIX1,CRPIX2,CRVAL1,CRVAL2</span>
+<span class="s2">23,18284,008-1(108),108,284-081-108,6,0.017921,0.0,0.0,0.017921,2044,2044,-1.507418,39.286377</span>
+<span class="s2">24,18249,001-4(103),016,249-014-016,2,0.017921,0.0,0.0,0.017921,2044,2044,-1.509616,82.217854</span>
+<span class="s2">41,18267,008-4(131),054,267-084-054,16,0.017921,0.0,0.0,0.017921,4,4,41.231023,-82.236338</span>
+<span class="s2">44,18628,005-2(115),074,628-052-074,4,0.017921,0.0,0.0,0.017921,2044,2044,77.925605,82.184582</span>
+<span class="s2">34,18221,009-4(130),069,221-094-069,3,0.017921,0.0,0.0,0.017921,2044,2044,38.24906,82.205164</span>
+<span class="s2">21,18272,004-2(114),021,272-042-021,14,0.017921,0.0,0.0,0.017921,4,4,-38.189211,-82.185681</span>
+<span class="s2">42,18452,007-4(138),104,452-074-104,12,0.017921,0.0,0.0,0.017921,4,4,41.256901,-39.308359</span>
+<span class="s2">22,18285,006-4(127),057,285-064-057,10,0.017921,0.0,0.0,0.017921,4,4,-38.22488,-39.27089</span>
+<span class="s2">43,18269,007-2(119),058,269-072-058,8,0.017921,0.0,0.0,0.017921,2044,2044,77.913416,39.282381</span>
+<span class="s2">32,18548,007-1(132),075,548-071-075,11,0.017921,0.0,0.0,0.017921,4,4,1.520706,-39.355818</span>
+<span class="s2">12,18268,004-5(109),060,268-045-060,9,0.017921,0.0,0.0,0.017921,4,4,-77.9317,-39.232923</span>
+<span class="s2">31,18632,008-5(122),063,632-085-063,15,0.017921,0.0,0.0,0.017921,4,4,1.514711,-82.175889</span>
+<span class="s2">11,18453,002-4(118),107,453-024-107,13,0.017921,0.0,0.0,0.017921,4,4,-77.938494,-82.1629</span>
+<span class="s2">14,18458,010-3(110),017,458-103-017,1,0.017921,0.0,0.0,0.017921,2044,2044,-41.243113,82.216355</span>
+<span class="s2">13,18280,011-4(111),053,280-114-053,5,0.017921,0.0,0.0,0.017921,2044,2044,-41.250906,39.294171</span>
+<span class="s2">33,18278,004-3(137),071,278-043-071,7,0.017921,0.0,0.0,0.017921,2044,2044,38.160735,39.263697</span>
+<span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">slots_reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">nispdetslots</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">file</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">det_slots</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">slots_reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="n">det_slots</span><span class="p">))</span>
+
+        <span class="n">fpwcs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">slots_reader</span><span class="p">:</span>
+            <span class="n">wcs_coeffs</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">WCS_KEYS</span><span class="p">}</span>
+            <span class="n">wcs_coeffs</span><span class="o">.</span><span class="n">update</span><span class="p">([(</span><span class="s1">&#39;CTYPE1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_MOSA&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CTYPE2&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_MOSA&#39;</span><span class="p">)])</span>
+            <span class="n">wcs_coeffs</span><span class="o">.</span><span class="n">update</span><span class="p">([(</span><span class="s1">&#39;CUNIT1&#39;</span><span class="p">,</span> <span class="s1">&#39;mm&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CUNIT2&#39;</span><span class="p">,</span> <span class="s1">&#39;mm&#39;</span><span class="p">)])</span>
+            <span class="n">fpwcs</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;SCE_POS&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">wcs_coeffs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">det_slots</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fpwcs</span> <span class="o">=</span> <span class="n">fpwcs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npix_horiz</span> <span class="o">=</span> <span class="n">npix_horiz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npix_vert</span>  <span class="o">=</span> <span class="n">npix_vert</span>
+
+<div class="viewcode-block" id="FPModel.detnames">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.detnames">[docs]</a>
+    <span class="k">def</span> <span class="nf">detnames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Return names of detectors (as read from the NISPDetectorSlots.csv file)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fpwcs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">l</span></div>
+
+
+<div class="viewcode-block" id="FPModel.pix2fp">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.pix2fp">[docs]</a>
+    <span class="k">def</span> <span class="nf">pix2fp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;@brief Convert the location of pixel(s) in a detector to</span>
+<span class="sd">        the corresponding position(s) in the focal plane.</span>
+
+<span class="sd">        @param det: a scalar detector name (among the allowed ones, see detnames());</span>
+<span class="sd">        @param x: list or numpy array of pixel coordinates along horizontal direction;</span>
+<span class="sd">        @param y: list or numpy array of pixel coordinates along vertical direction;</span>
+
+<span class="sd">        @returns 2-element tuple of N-element lists, each containing</span>
+<span class="sd">        the locations on the focal plane (in mm) along the horizontal</span>
+<span class="sd">        and vertical directions respectively of the N pixel</span>
+<span class="sd">        coordinates provided as input.</span>
+
+<span class="sd">        Note: the pixel coordinates are supposed to be in the range</span>
+<span class="sd">        0:det_npix_horiz-1 or 0:det_npix_vert-1.  However, it is</span>
+<span class="sd">        possible to provide numbers outside this limit, to obtain</span>
+<span class="sd">        positions in the focal plane corresponding to the gaps between</span>
+<span class="sd">        detectors.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        from NIR_misc_utils.FocalPlaneModel import *</span>
+<span class="sd">        fpmodel = FPModel(&#39;NISPDetectorSlots.csv&#39;, 2048, 2048)</span>
+<span class="sd">        fp_x, fp_y = fpmodel.pix2fp(&#39;33&#39;, [3, 2043], [3, 2043])</span>
+<span class="sd">        # ([1.601895000000006, 38.160735], [2.704857000000004, 397.683697])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpwcs</span><span class="p">[</span><span class="n">det</span><span class="p">]</span><span class="o">.</span><span class="n">pixel_to_world</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">outx</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cc</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">outy</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cc</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FPModel.fp2pix">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.fp2pix">[docs]</a>
+    <span class="k">def</span> <span class="nf">fp2pix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_fp</span><span class="p">,</span> <span class="n">y_fp</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert focal-plane coordinates to detector pixel coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_fp : float or ndarray</span>
+<span class="sd">            Normalised focal-plane X coordinate.</span>
+<span class="sd">        y_fp : float or ndarray</span>
+<span class="sd">            Normalised focal-plane Y coordinate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        det_id : int or ndarray</span>
+<span class="sd">            Detector index for each input position.</span>
+<span class="sd">        x_pix : float or ndarray</span>
+<span class="sd">            Pixel coordinate along the detector X axis.</span>
+<span class="sd">        y_pix : float or ndarray</span>
+<span class="sd">            Pixel coordinate along the detector Y axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># existing implementation...</span>
+
+        <span class="k">if</span> <span class="n">use_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">use_det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detnames</span><span class="p">()</span>
+        <span class="n">outd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="s1">&#39;  &#39;</span>  <span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">outx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">outy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">Inf</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detnames</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">use_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">det</span> <span class="o">!=</span> <span class="n">use_det</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="p">(</span><span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpwcs</span><span class="p">[</span><span class="n">det</span><span class="p">]</span><span class="o">.</span><span class="n">world_to_pixel</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mm</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">mm</span><span class="p">)</span>
+            <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">ox</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">det_npix_horiz</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+                         <span class="p">(</span><span class="n">oy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">det_npix_vert</span><span class="p">()</span>  <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dd</span> <span class="o">&lt;</span> <span class="n">dist</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">outd</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">det</span>
+                <span class="n">outx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ox</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">outy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">oy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">dist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dd</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">outd</span><span class="p">,</span> <span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FPModel.det_npix_horiz">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.det_npix_horiz">[docs]</a>
+    <span class="k">def</span> <span class="nf">det_npix_horiz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Return number of pixels along horizontal direction of each detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_npix_horiz</span></div>
+
+
+<div class="viewcode-block" id="FPModel.det_npix_vert">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.det_npix_vert">[docs]</a>
+    <span class="k">def</span> <span class="nf">det_npix_vert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Return number of pixels along vertical direction of each detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_npix_vert</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NIRFP">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.NIRFP">[docs]</a>
+<span class="k">class</span> <span class="nc">NIRFP</span><span class="p">(</span><span class="n">FPModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief Provides access to a static instance of FPModel representing the NIR focal plane.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fpmodel</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="NIRFP.use_wcs">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.NIRFP.use_wcs">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">use_wcs</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Invoke constructor for the static FPModel object.</span>
+
+<span class="sd">        @param file: path to the NISPDetectorSlots.csv file containing the WCS data;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;The NIRFP.use_wcs() method can only be called once.&#39;</span>
+        <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span> <span class="o">=</span> <span class="n">FPModel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief NIRFP constructor</span>
+
+<span class="sd">        Note: The NIRFP.use_wcs() method must be called before instantiating a NIRFP object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;The NIRFP.use_wcs() method must be called before instantiating a NIRFP object.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fpwcs</span> <span class="o">=</span> <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span><span class="o">.</span><span class="n">_fpwcs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npix_horiz</span> <span class="o">=</span> <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span><span class="o">.</span><span class="n">_npix_horiz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npix_vert</span>  <span class="o">=</span> <span class="n">NIRFP</span><span class="o">.</span><span class="n">_fpmodel</span><span class="o">.</span><span class="n">_npix_vert</span></div>
+
+
+
+
+<div class="viewcode-block" id="PixCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords">[docs]</a>
+<span class="k">class</span> <span class="nc">PixCoords</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">det</span><span class="p">):</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">det</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">x</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">y</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>  <span class="ow">and</span>  <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">det</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="k">assert</span> <span class="n">det</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PixCoords.toDetCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords.toDetCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toDetCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DetCoords</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">det_npix_horiz</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">det_npix_vert</span><span class="p">()</span>  <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PixCoords.toFPCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords.toFPCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toFPCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">outx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">outy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">detnames</span><span class="p">():</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">==</span> <span class="n">det</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">ox</span><span class="p">,</span> <span class="n">oy</span><span class="p">)</span> <span class="o">=</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">pix2fp</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">outx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ox</span>
+                <span class="n">outy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">oy</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">outx</span><span class="p">))</span>  <span class="c1"># No detector found for coordinates</span>
+        <span class="k">return</span> <span class="n">FPCoords</span><span class="p">(</span><span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DetCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords">[docs]</a>
+<span class="k">class</span> <span class="nc">DetCoords</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">det</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">det</span><span class="p">):</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">det</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">x</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">y</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>  <span class="ow">and</span>  <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">det</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="k">assert</span> <span class="n">det</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetCoords.toPixCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords.toPixCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toPixCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PixCoords</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="p">,</span>
+                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">det_npix_horiz</span><span class="p">(),</span>
+                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">det_npix_vert</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="DetCoords.toFPCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords.toFPCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toFPCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toPixCoords</span><span class="p">()</span><span class="o">.</span><span class="n">toFPCoords</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FPCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords">[docs]</a>
+<span class="k">class</span> <span class="nc">FPCoords</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">x</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">y</span><span class="p">,))</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>  <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FPCoords.toDetCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords.toDetCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toDetCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">use_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toPixCoords</span><span class="p">(</span><span class="n">use_det</span><span class="p">)</span><span class="o">.</span><span class="n">toDetCoords</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toPixCoords</span><span class="p">()</span><span class="o">.</span><span class="n">toDetCoords</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FPCoords.toPixCoords">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords.toPixCoords">[docs]</a>
+    <span class="k">def</span> <span class="nf">toPixCoords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_det</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">outd</span><span class="p">,</span> <span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span> <span class="o">=</span> <span class="n">NIRFP</span><span class="p">()</span><span class="o">.</span><span class="n">fp2pix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">use_det</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PixCoords</span><span class="p">(</span><span class="n">outd</span><span class="p">,</span> <span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span></div>
+</div>
+
+
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># Matplotlib wrappers to deal with proper transformations</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="boundaries">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.boundaries">[docs]</a>
+<span class="k">def</span> <span class="nf">boundaries</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return boundaries in an array of coordinates.</span>
+
+<span class="sd">    Given an input 1D array of sorted coordinates, returns the array</span>
+<span class="sd">    of boundaries (or edges).  Note that output arrays has 1 extra</span>
+<span class="sd">    element with respect to input one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="plt_pcolormesh">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_pcolormesh">[docs]</a>
+<span class="k">def</span> <span class="nf">plt_pcolormesh</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="o">==</span> <span class="n">FPCoords</span>
+    <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">boundaries</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="n">img</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plt_scatter">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_scatter">[docs]</a>
+<span class="k">def</span> <span class="nf">plt_scatter</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="o">==</span> <span class="n">FPCoords</span>
+    <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">fp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># I need to transpose here to get consistent results</span>
+        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">fp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">val</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plt_text">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_text">[docs]</a>
+<span class="k">def</span> <span class="nf">plt_text</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="o">==</span> <span class="n">FPCoords</span>
+    <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fp</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="flux2mag">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.flux2mag">[docs]</a>
+<span class="k">def</span> <span class="nf">flux2mag</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="mf">23.9</span></div>
+
+
+
+<div class="viewcode-block" id="replace_nan_with_interpolation">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.replace_nan_with_interpolation">[docs]</a>
+<span class="k">def</span> <span class="nf">replace_nan_with_interpolation</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace NaN values in an image with interpolated values from non-NaN neighbors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">non_nan_elements</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    
+    <span class="n">interpolated_values</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">griddata</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">non_nan_elements</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">non_nan_elements</span><span class="p">]),</span>  <span class="c1"># Points where the data is not NaN</span>
+        <span class="n">image</span><span class="p">[</span><span class="n">non_nan_elements</span><span class="p">],</span>  <span class="c1"># Non-NaN values</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">non_nan_elements</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">non_nan_elements</span><span class="p">]),</span>  <span class="c1"># Points where the data is NaN</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span>
+    <span class="p">)</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">result</span><span class="p">[</span><span class="o">~</span><span class="n">non_nan_elements</span><span class="p">]</span> <span class="o">=</span> <span class="n">interpolated_values</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="nan_helper">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.nan_helper">[docs]</a>
+<span class="k">def</span> <span class="nf">nan_helper</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply 2D Gaussian smoothing to a 3D array (3x100x100) where each 100x100 matrix is an image.</span>
+<span class="sd">    NaN values are handled by interpolation.</span>
+<span class="sd">    </span>
+<span class="sd">    :param arr: Input 3D array of shape (3, 100, 100).</span>
+<span class="sd">    :param sigma: Standard deviation for Gaussian kernel.</span>
+<span class="sd">    :return: Smoothed 3D array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">smoothed_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>  <span class="c1"># Iterate through the first dimension (wavelengths)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">image_with_no_nan</span> <span class="o">=</span> <span class="n">replace_nan_with_interpolation</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">smoothed_image</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">image_with_no_nan</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="n">smoothed_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">smoothed_image</span>
+    
+    <span class="k">return</span> <span class="n">smoothed_array</span></div>
+
+
+<div class="viewcode-block" id="sigma_clipped_mean">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.sigma_clipped_mean">[docs]</a>
+<span class="k">def</span> <span class="nf">sigma_clipped_mean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># Calculate the Z-scores</span>
+    <span class="n">z_scores</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    
+    <span class="c1"># Mask the data entries that are beyond the sigma threshold</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_scores</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">sigma</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="c1"># Compute the mean along the specified axis while ignoring masked values</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="smooth_avoidgaps">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.smooth_avoidgaps">[docs]</a>
+<span class="k">def</span> <span class="nf">smooth_avoidgaps</span><span class="p">(</span><span class="n">oo</span><span class="p">,</span><span class="n">gap</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+    <span class="n">copyoo</span> <span class="o">=</span> <span class="n">oo</span>
+    <span class="k">for</span> <span class="n">idet</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span>
+        <span class="n">minx</span><span class="p">,</span><span class="n">maxx</span><span class="p">,</span><span class="n">miny</span><span class="p">,</span><span class="n">maxy</span> <span class="o">=</span> <span class="n">find_bounds</span><span class="p">(</span><span class="n">gap</span><span class="p">,</span><span class="n">idet</span><span class="p">)</span>
+        <span class="n">minx</span><span class="p">,</span><span class="n">maxx</span><span class="p">,</span><span class="n">miny</span><span class="p">,</span><span class="n">maxy</span> <span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">minx</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">maxx</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">miny</span><span class="p">),</span><span class="nb">int</span><span class="p">(</span><span class="n">maxy</span><span class="p">)</span> 
+        <span class="n">im</span> <span class="o">=</span> <span class="n">oo</span><span class="p">[</span><span class="n">minx</span><span class="p">:</span><span class="n">maxx</span><span class="p">,</span><span class="n">miny</span><span class="p">:</span><span class="n">maxy</span><span class="p">]</span>
+        <span class="n">copyoo</span><span class="p">[</span><span class="n">minx</span><span class="p">:</span><span class="n">maxx</span><span class="p">,</span><span class="n">miny</span><span class="p">:</span><span class="n">maxy</span><span class="p">]</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">copyoo</span></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">id = np.array((1, 2, 1, 1))</span>
+<span class="sd">(i1, i2) = findMatchingObs(id)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="findMatchingObs">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.findMatchingObs">[docs]</a>
+<span class="k">def</span> <span class="nf">findMatchingObs</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">out1</span><span class="p">,</span> <span class="n">out2</span><span class="p">)</span> <span class="o">=</span> <span class="n">sortmerge</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+    <span class="c1"># Discard identities and reversed pairs</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">out2</span> <span class="o">&gt;</span> <span class="n">out1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">i</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">out1</span> <span class="o">=</span> <span class="n">out1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">out2</span> <span class="o">=</span> <span class="n">out2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">[</span><span class="n">out1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">id</span><span class="p">[</span><span class="n">out2</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">out1</span><span class="p">,</span> <span class="n">out2</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">printStatistics</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{label:20s}</span><span class="s2"> :  min=</span><span class="si">{min:9.3g}</span><span class="s2">   max=</span><span class="si">{max:9.3g}</span><span class="s2">   avg=</span><span class="si">{avg:9.3g}</span><span class="s2">   std=</span><span class="si">{std:9.3g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="nb">max</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">avg</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">std</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+<div class="viewcode-block" id="gaus">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.gaus">[docs]</a>
+<span class="k">def</span> <span class="nf">gaus</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">b</span><span class="o">+</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="measureChunkMagnitude1D">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.measureChunkMagnitude1D">[docs]</a>
+<span class="k">def</span> <span class="nf">measureChunkMagnitude1D</span><span class="p">(</span><span class="n">wave</span><span class="p">,</span><span class="n">flux</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">quality</span><span class="p">,</span> <span class="n">center_w</span><span class="o">=</span><span class="mi">15000</span><span class="p">,</span><span class="n">delta_w</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;This returns the magnitude of a wavelength chunk of a 1D spectra&#39;&#39;&#39;</span>   
+    <span class="n">u1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wave</span><span class="o">&gt;</span><span class="p">(</span><span class="n">center_w</span><span class="o">-</span><span class="n">delta_w</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">u2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">wave</span><span class="o">&lt;</span><span class="p">(</span><span class="n">center_w</span><span class="o">+</span><span class="n">delta_w</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  
+    <span class="n">f</span> <span class="o">=</span> <span class="n">flux</span><span class="p">[</span><span class="n">u1</span><span class="p">:</span><span class="n">u2</span><span class="p">]</span>   
+    <span class="n">v</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="n">u1</span><span class="p">:</span><span class="n">u2</span><span class="p">]</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">quality</span><span class="p">[</span><span class="n">u1</span><span class="p">:</span><span class="n">u2</span><span class="p">]</span>   
+
+    <span class="n">good</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">f</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">q</span><span class="o">&gt;=</span><span class="mf">0.8</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">v</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">v</span><span class="o">&lt;</span><span class="mi">50000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">good</span><span class="p">)</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">good</span><span class="p">])</span><span class="o">&gt;</span><span class="mf">0.0</span><span class="p">):</span>
+            <span class="c1">#mag = -2.5*np.log10(np.sum(f[good])/len(good[0]))+25.0</span>
+            <span class="n">mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">good</span><span class="p">]))</span><span class="o">+</span><span class="mf">25.0</span>
+            <span class="n">dmag</span> <span class="o">=</span> <span class="mf">1.08</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">good</span><span class="p">])))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">good</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mag</span><span class="o">=</span><span class="mf">99.0</span>
+            <span class="n">dmag</span><span class="o">=</span><span class="mf">99.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="mf">99.0</span>
+        <span class="n">dmag</span> <span class="o">=</span> <span class="mf">99.0</span>
+        
+    <span class="k">return</span> <span class="n">mag</span><span class="p">,</span><span class="n">dmag</span></div>
+
+
+<div class="viewcode-block" id="find_bounds">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.find_bounds">[docs]</a>
+<span class="k">def</span> <span class="nf">find_bounds</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+    <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">y</span><span class="p">])):</span>
+            <span class="k">if</span> <span class="n">arr</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                <span class="n">max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                <span class="n">min_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">min_x</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_x</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_y</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_y</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="illuminate">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.illuminate">[docs]</a>
+<span class="k">def</span> <span class="nf">illuminate</span><span class="p">(</span><span class="n">imsize</span><span class="o">=</span> <span class="mi">100</span><span class="p">,</span><span class="n">wsize</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Illuminating the detector with a asymmetric gaussian for dither simulation&#39;&#39;&#39;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">imsize</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">imsize</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">imsize</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">imsize</span><span class="p">))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">imsize</span><span class="o">/</span><span class="mf">2.1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">imsize</span><span class="o">/</span><span class="mf">1.9</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">wsize</span><span class="p">,</span><span class="n">imsize</span><span class="p">,</span><span class="n">imsize</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">wsize</span><span class="p">):</span>
+        <span class="n">cube</span><span class="p">[</span><span class="n">w</span><span class="p">,:,:]</span><span class="o">=-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mf">1.2</span><span class="o">*</span><span class="n">d</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma</span><span class="o">+</span><span class="mf">10.0</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">))))</span>
+    <span class="k">return</span> <span class="n">cube</span></div>
+
+
+<div class="viewcode-block" id="find_nearest">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.find_nearest">[docs]</a>
+<span class="k">def</span> <span class="nf">find_nearest</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span> <span class="o">-</span> <span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">idx</span></div>
+
+
+<div class="viewcode-block" id="get_euclid_wcs">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.get_euclid_wcs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_euclid_wcs</span><span class="p">(</span><span class="n">ra_boresight</span><span class="p">,</span> <span class="n">dec_boresight</span><span class="p">,</span> <span class="n">roll</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">oversample</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                   <span class="n">pixel_size</span> <span class="o">=</span> <span class="mf">0.13104</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A routine to generate the World Coordinate System corresponding Euclid FOV</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ra_boresight : float</span>
+<span class="sd">        The boresight right ascencion in degrees.</span>
+<span class="sd">        If ecliptic=True, this is actually the ecliptic longitude.</span>
+<span class="sd">    dec_boresight : float</span>
+<span class="sd">        The boresight declination in degrees.</span>
+<span class="sd">        if ecliptic=True, this is actually ecliptic latitude</span>
+<span class="sd">    roll : float, optional</span>
+<span class="sd">        A roll angle around the telescope line of sight in degrees. The default is None.</span>
+
+<span class="sd">    pixel_size : float, optional</span>
+<span class="sd">        pixel size in arcseconds. The default is 0.13104, chosen such that a pixel value of</span>
+<span class="sd">        10,000 is the edge of the FOV.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w : WCS</span>
+<span class="sd">        An astropy WCS (world-coordinate system) object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+  
+    <span class="c1"># set up the wcs</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">WCS</span><span class="p">(</span><span class="n">naxis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crval</span> <span class="o">=</span> <span class="p">[</span><span class="n">ra_boresight</span><span class="p">,</span> <span class="n">dec_boresight</span><span class="p">]</span> <span class="c1"># boresight pointing</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crpix</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>        
+    <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span> <span class="o">=</span> <span class="p">[</span><span class="n">pixel_size</span> <span class="o">/</span> <span class="n">oversample</span> <span class="o">/</span> <span class="mf">3600.0</span> <span class="p">,</span> <span class="n">pixel_size</span> <span class="o">/</span> <span class="n">oversample</span> <span class="o">/</span> <span class="mf">3600.0</span> <span class="p">]</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RA---SIN&quot;</span><span class="p">,</span><span class="s2">&quot;DEC--SIN&quot;</span><span class="p">]</span>
+            
+    <span class="c1"># if roll is present, insert that</span>
+    <span class="k">if</span> <span class="n">roll</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crota</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">roll</span> <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crota</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span> <span class="p">]</span>
+            
+    <span class="k">return</span> <span class="n">w</span></div>
+
+
+
+<div class="viewcode-block" id="FitsDimensions">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FitsDimensions">[docs]</a>
+<span class="k">def</span> <span class="nf">FitsDimensions</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">20</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">i</span></div>
+
+
+
+<div class="viewcode-block" id="MakeCubeTess">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.MakeCubeTess">[docs]</a>
+<span class="k">def</span> <span class="nf">MakeCubeTess</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;writes each grism/tilt in the fourth dimension&#39;&#39;&#39;</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">FitsDimensions</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">dims</span><span class="p">])</span>
+    <span class="n">berr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">dims</span><span class="p">])</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">[:,:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">berr</span><span class="p">[:,:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>          
+    <span class="k">return</span> <span class="n">b</span><span class="p">,</span><span class="n">berr</span></div>
+
+
+<div class="viewcode-block" id="normaldet">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normaldet">[docs]</a>
+<span class="k">def</span> <span class="nf">normaldet</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span><span class="n">maxx</span><span class="o">=</span><span class="mi">2040</span><span class="p">,</span><span class="n">maxy</span><span class="o">=</span><span class="mi">2040</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;gets </span>
+<span class="sd">    - the detector coordinate in pixel</span>
+<span class="sd">    returns:</span>
+<span class="sd">    - the detector coordinates in normalized [-1,1] range &quot;&quot;&quot;</span>
+    <span class="n">xslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">maxx</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xslope</span><span class="o">*</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">maxx</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
+        
+    <span class="n">yslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">maxy</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">yslope</span><span class="o">*</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">maxy</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="normaldet_r">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normaldet_r">[docs]</a>
+<span class="k">def</span> <span class="nf">normaldet_r</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span><span class="n">maxx</span><span class="o">=</span><span class="mi">2040</span><span class="p">,</span><span class="n">maxy</span><span class="o">=</span><span class="mi">2040</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;gets </span>
+<span class="sd">    - the detector coordinate in [-1,1]</span>
+<span class="sd">    returns:</span>
+<span class="sd">    - the detector coordinates in pixel &quot;&quot;&quot;</span>
+    <span class="n">xslope</span> <span class="o">=</span> <span class="n">maxx</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xslope</span><span class="o">*</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">maxx</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+        
+    <span class="n">yslope</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxy</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">yslope</span><span class="o">*</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="n">maxy</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="normalfov">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normalfov">[docs]</a>
+<span class="k">def</span> <span class="nf">normalfov</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">fov</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;gets </span>
+<span class="sd">    - the detector model which has the corners of the FOV in mm </span>
+<span class="sd">    - the fov in mm</span>
+<span class="sd">    returns:</span>
+<span class="sd">    - the focal plane coordinates in normalized [-1,1] range &quot;&quot;&quot;</span>
+    <span class="n">xslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">xint</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xslope</span><span class="o">*</span><span class="n">fov</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">xint</span>
+        
+    <span class="n">yslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">yint</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">yslope</span><span class="o">*</span><span class="n">fov</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">yint</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="normalfov_r">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normalfov_r">[docs]</a>
+<span class="k">def</span> <span class="nf">normalfov_r</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">fov</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;gets </span>
+<span class="sd">    - the detector model which has the corners of the FOV in normalized [-1,1]</span>
+<span class="sd">    - the fov in mm</span>
+<span class="sd">    returns:</span>
+<span class="sd">    - the focal plane coordinates in mm &quot;&quot;&quot;</span>
+    <span class="n">xslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">xint</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">fov</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">xint</span><span class="p">)</span><span class="o">/</span><span class="n">xslope</span>
+        
+    <span class="n">yslope</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">/</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">yint</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">fov</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">yint</span><span class="p">)</span><span class="o">/</span><span class="n">yslope</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="sortmerge">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.sortmerge">[docs]</a>
+<span class="k">def</span> <span class="nf">sortmerge</span><span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">):</span>
+    <span class="n">size_incr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">id1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">id2</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">out1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size_incr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">out2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size_incr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">isort1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">id1</span><span class="p">)</span>
+    <span class="n">isort2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">id2</span><span class="p">)</span>
+    <span class="n">i2a</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">id1</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i2a</span><span class="p">,</span> <span class="n">id2</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">j1</span> <span class="o">=</span> <span class="n">isort1</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span>
+            <span class="n">j2</span> <span class="o">=</span> <span class="n">isort2</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">id1</span><span class="p">[</span><span class="n">j1</span><span class="p">]</span> <span class="o">==</span> <span class="n">id2</span><span class="p">[</span><span class="n">j2</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="n">out1</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="c1"># resize arrays when needed</span>
+                    <span class="n">out1</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">out1</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">size_incr</span><span class="p">)</span>
+                    <span class="n">out2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">out2</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">size_incr</span><span class="p">)</span>
+                <span class="n">out1</span><span class="p">[</span><span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">j1</span>  <span class="c1"># register indices for matching pair</span>
+                <span class="n">out2</span><span class="p">[</span><span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">j2</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">id1</span><span class="p">[</span><span class="n">j1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">id2</span><span class="p">[</span><span class="n">j2</span><span class="p">]:</span>
+                    <span class="n">i2a</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+    <span class="n">out1</span> <span class="o">=</span> <span class="n">out1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">count</span><span class="p">]</span>
+    <span class="n">out2</span> <span class="o">=</span> <span class="n">out2</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">count</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">out1</span><span class="p">,</span> <span class="n">out2</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="printStatistics">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.printStatistics">[docs]</a>
+<span class="k">def</span> <span class="nf">printStatistics</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{label:20s}</span><span class="s2"> :  min=</span><span class="si">{min:9.3g}</span><span class="s2">   max=</span><span class="si">{max:9.3g}</span><span class="s2">   avg=</span><span class="si">{avg:9.3g}</span><span class="s2">   std=</span><span class="si">{std:9.3g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="nb">max</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">avg</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">std</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="det_neighbour">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.det_neighbour">[docs]</a>
+<span class="k">def</span> <span class="nf">det_neighbour</span><span class="p">(</span><span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">det1</span> <span class="o">==</span> <span class="n">det2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># same detector</span>
+    <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">det1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">det2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">det1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">det2</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">dd</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># non-neighbours</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+        
+
+<div class="viewcode-block" id="FPCoordsGaps">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoordsGaps">[docs]</a>
+<span class="k">def</span> <span class="nf">FPCoordsGaps</span><span class="p">(</span><span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">det_neighbour</span><span class="p">(</span><span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">)</span>
+    <span class="n">c1</span> <span class="o">=</span> <span class="n">DetCoords</span><span class="p">(</span><span class="n">det1</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">toFPCoords</span><span class="p">()</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">DetCoords</span><span class="p">(</span><span class="n">det2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">toFPCoords</span><span class="p">()</span>
+    <span class="n">edges</span> <span class="o">=</span>  <span class="n">DetCoords</span><span class="p">(</span><span class="n">det1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="o">-</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)))</span><span class="o">.</span><span class="n">toFPCoords</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">c2</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">c2</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="n">FPCoords</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="n">c1</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">c2</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">edges</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="n">FPCoords</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">edges</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="p">),</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="n">c1</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">c2</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cc</span></div>
+
+
+
+<div class="viewcode-block" id="cartesianProduct">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.cartesianProduct">[docs]</a>
+<span class="k">def</span> <span class="nf">cartesianProduct</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="gaussian">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.gaussian">[docs]</a>
+<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mu</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="n">sig</span></div>
+
+
+
+<div class="viewcode-block" id="mad">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.Utils_calib.mad">[docs]</a>
+<span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the Median Absolute Deviation of an array.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span> <span class="o">/</span> <span class="mf">1.4826</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+SIR_RFXModel package
+====================
+
+Submodules
+----------
+
+SIR_RFXModel.FPA_Geometry module
+--------------------------------
+
+.. automodule:: SIR_RFXModel.FPA_Geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.FPA_Geometry_calib module
+--------------------------------------
+
+.. automodule:: SIR_RFXModel.FPA_Geometry_calib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.Fit2D module
+-------------------------
+
+.. automodule:: SIR_RFXModel.Fit2D
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.RelFluxDq module
+-----------------------------
+
+.. automodule:: SIR_RFXModel.RelFluxDq
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.RelativeFluxCorrectionCore module
+----------------------------------------------
+
+.. automodule:: SIR_RFXModel.RelativeFluxCorrectionCore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.RelativeFluxCorrectionMain module
+----------------------------------------------
+
+.. automodule:: SIR_RFXModel.RelativeFluxCorrectionMain
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.SIR_RelFluxModelCalibration module
+-----------------------------------------------
+
+.. automodule:: SIR_RFXModel.SIR_RelFluxModelCalibration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.SelfCalib module
+-----------------------------
+
+.. automodule:: SIR_RFXModel.SelfCalib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.Utils module
+-------------------------
+
+.. automodule:: SIR_RFXModel.Utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+SIR_RFXModel.Utils_calib module
+-------------------------------
+
+.. automodule:: SIR_RFXModel.Utils_calib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: SIR_RFXModel
+   :members:
+   :undoc-members:
+   :show-inheritance:

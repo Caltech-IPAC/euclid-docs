@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_RFXModel package &mdash; SIR_RFXModel  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SIR Relative Flux Calibration Product" href="calibration_product.html" />
+    <link rel="prev" title="SIR_RFXModel Modules" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SIR_RFXModel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">SIR_RFXModel Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SIR_RFXModel package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.FPA_Geometry">SIR_RFXModel.FPA_Geometry module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.GlobalSettings"><code class="docutils literal notranslate"><span class="pre">GlobalSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.det2focalplane"><code class="docutils literal notranslate"><span class="pre">det2focalplane()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.det2pixel"><code class="docutils literal notranslate"><span class="pre">det2pixel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.detectorRotated"><code class="docutils literal notranslate"><span class="pre">detectorRotated()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.focalplane2det"><code class="docutils literal notranslate"><span class="pre">focalplane2det()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.focalplane2pixel"><code class="docutils literal notranslate"><span class="pre">focalplane2pixel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.focalplaneStructX"><code class="docutils literal notranslate"><span class="pre">focalplaneStructX()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.focalplaneStructY"><code class="docutils literal notranslate"><span class="pre">focalplaneStructY()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.idetseq2string"><code class="docutils literal notranslate"><span class="pre">idetseq2string()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.idetseq2xy"><code class="docutils literal notranslate"><span class="pre">idetseq2xy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.idetxy2seq"><code class="docutils literal notranslate"><span class="pre">idetxy2seq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.pixel2det"><code class="docutils literal notranslate"><span class="pre">pixel2det()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.pixel2focalplane"><code class="docutils literal notranslate"><span class="pre">pixel2focalplane()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeDetX"><code class="docutils literal notranslate"><span class="pre">sizeDetX()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeDetY"><code class="docutils literal notranslate"><span class="pre">sizeDetY()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeFPX"><code class="docutils literal notranslate"><span class="pre">sizeFPX()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeFPY"><code class="docutils literal notranslate"><span class="pre">sizeFPY()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeGapsX"><code class="docutils literal notranslate"><span class="pre">sizeGapsX()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry.sizeGapsY"><code class="docutils literal notranslate"><span class="pre">sizeGapsY()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.FPA_Geometry_calib">SIR_RFXModel.FPA_Geometry_calib module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.DetCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.FPCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel"><code class="docutils literal notranslate"><span class="pre">FPModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.NIRFP"><code class="docutils literal notranslate"><span class="pre">NIRFP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.PixCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.plt_pcolormesh"><code class="docutils literal notranslate"><span class="pre">plt_pcolormesh()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.plt_scatter"><code class="docutils literal notranslate"><span class="pre">plt_scatter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.plt_text"><code class="docutils literal notranslate"><span class="pre">plt_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.Fit2D">SIR_RFXModel.Fit2D module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Fit2D.Fit2DCheb"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Fit2D.Fit2DNP"><code class="docutils literal notranslate"><span class="pre">Fit2DNP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Fit2D.interpolator2D"><code class="docutils literal notranslate"><span class="pre">interpolator2D()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.RelFluxDq">SIR_RFXModel.RelFluxDq module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.RelFluxDq.RelFluxDq"><code class="docutils literal notranslate"><span class="pre">RelFluxDq</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.RelativeFluxCorrectionCore">SIR_RFXModel.RelativeFluxCorrectionCore module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.RelativeFluxCorrectionCore.normalfov"><code class="docutils literal notranslate"><span class="pre">normalfov()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.RelativeFluxCorrectionMain">SIR_RFXModel.RelativeFluxCorrectionMain module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.RelativeFluxCorrectionMain.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.RelativeFluxCorrectionMain.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.SIR_RelFluxModelCalibration">SIR_RFXModel.SIR_RelFluxModelCalibration module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.get_input_data"><code class="docutils literal notranslate"><span class="pre">get_input_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.SelfCalib">SIR_RFXModel.SelfCalib module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SelfCalib.SelfCalib"><code class="docutils literal notranslate"><span class="pre">SelfCalib</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SelfCalib.SelfCalibSirData"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SelfCalib.SelfCalibWave"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.SelfCalib.SelfDitherData"><code class="docutils literal notranslate"><span class="pre">SelfDitherData</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.Utils">SIR_RFXModel.Utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.allcombinations"><code class="docutils literal notranslate"><span class="pre">allcombinations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.cartesianProduct"><code class="docutils literal notranslate"><span class="pre">cartesianProduct()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.closestDetectors"><code class="docutils literal notranslate"><span class="pre">closestDetectors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.coordGaps"><code class="docutils literal notranslate"><span class="pre">coordGaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.coordGapsX"><code class="docutils literal notranslate"><span class="pre">coordGapsX()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.coordGapsY"><code class="docutils literal notranslate"><span class="pre">coordGapsY()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel.Utils_calib">SIR_RFXModel.Utils_calib module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.DetCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.FPCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.FPCoordsGaps"><code class="docutils literal notranslate"><span class="pre">FPCoordsGaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.FPModel"><code class="docutils literal notranslate"><span class="pre">FPModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.FitsDimensions"><code class="docutils literal notranslate"><span class="pre">FitsDimensions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.MakeCubeTess"><code class="docutils literal notranslate"><span class="pre">MakeCubeTess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.NIRFP"><code class="docutils literal notranslate"><span class="pre">NIRFP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.PixCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.cartesianProduct"><code class="docutils literal notranslate"><span class="pre">cartesianProduct()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.det_neighbour"><code class="docutils literal notranslate"><span class="pre">det_neighbour()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.findMatchingObs"><code class="docutils literal notranslate"><span class="pre">findMatchingObs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.find_bounds"><code class="docutils literal notranslate"><span class="pre">find_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.find_nearest"><code class="docutils literal notranslate"><span class="pre">find_nearest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.flux2mag"><code class="docutils literal notranslate"><span class="pre">flux2mag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.gaus"><code class="docutils literal notranslate"><span class="pre">gaus()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.get_euclid_wcs"><code class="docutils literal notranslate"><span class="pre">get_euclid_wcs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.illuminate"><code class="docutils literal notranslate"><span class="pre">illuminate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.mad"><code class="docutils literal notranslate"><span class="pre">mad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.measureChunkMagnitude1D"><code class="docutils literal notranslate"><span class="pre">measureChunkMagnitude1D()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.nan_helper"><code class="docutils literal notranslate"><span class="pre">nan_helper()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.normaldet"><code class="docutils literal notranslate"><span class="pre">normaldet()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.normaldet_r"><code class="docutils literal notranslate"><span class="pre">normaldet_r()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.normalfov"><code class="docutils literal notranslate"><span class="pre">normalfov()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.normalfov_r"><code class="docutils literal notranslate"><span class="pre">normalfov_r()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.plt_pcolormesh"><code class="docutils literal notranslate"><span class="pre">plt_pcolormesh()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.plt_scatter"><code class="docutils literal notranslate"><span class="pre">plt_scatter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.plt_text"><code class="docutils literal notranslate"><span class="pre">plt_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.printStatistics"><code class="docutils literal notranslate"><span class="pre">printStatistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.replace_nan_with_interpolation"><code class="docutils literal notranslate"><span class="pre">replace_nan_with_interpolation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.sigma_clipped_mean"><code class="docutils literal notranslate"><span class="pre">sigma_clipped_mean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.smooth_avoidgaps"><code class="docutils literal notranslate"><span class="pre">smooth_avoidgaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SIR_RFXModel.Utils_calib.sortmerge"><code class="docutils literal notranslate"><span class="pre">sortmerge()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SIR_RFXModel">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="calibration_product.html">SIR Relative Flux Calibration Product</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SIR_RFXModel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">SIR_RFXModel Modules</a></li>
+      <li class="breadcrumb-item active">SIR_RFXModel package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/SIR_RFXModel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sir-rfxmodel-package">
+<h1>SIR_RFXModel package<a class="headerlink" href="#sir-rfxmodel-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-SIR_RFXModel.FPA_Geometry">
+<span id="sir-rfxmodel-fpa-geometry-module"></span><h2>SIR_RFXModel.FPA_Geometry module<a class="headerlink" href="#module-SIR_RFXModel.FPA_Geometry" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.GlobalSettings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">GlobalSettings</span></span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#GlobalSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.GlobalSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class containing global settings.</p>
+<p>The properties are:</p>
+<ul class="simple">
+<li><p>pairCoordXY (boolean, default False): whether the coordinate pairs
+of pixel should be interpreted as first and second index in the 2D
+array (as read with astropy.io.fits);</p></li>
+<li><p>enableDetRotation (boolean, default False): set to True to enable
+rotation of detectors in the bottom part of the focal plane;</p></li>
+<li><p>binning (int, default 3): pixel binning factor to display images.
+Must be a positivie integer number smaller than 9.  Increase this
+number to improve performances;</p></li>
+<li><p>markpixels (boolean, default False): set to True to mark reference
+pixels in the image.  Note: this will erase all pixel information;</p></li>
+<li><p>markplot (boolean, default False): set to True to mark reference
+pixels in the plot.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.GlobalSettings.setDefault">
+<span class="sig-name descname"><span class="pre">setDefault</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#GlobalSettings.setDefault"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.GlobalSettings.setDefault" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.boundaries">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.boundaries" title="Link to this definition"></a></dt>
+<dd><p>Return boundaries in an array of coordinates.</p>
+<p>Given an input 1D array of sorted coordinates, returns the array
+of boundaries (or edges).  Note that output arrays has 1 extra
+element with respect to input one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.det2focalplane">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">det2focalplane</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#det2focalplane"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.det2focalplane" title="Link to this definition"></a></dt>
+<dd><p>Convert from detector to focal plane normalized coordinates.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.det2pixel">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">det2pixel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#det2pixel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.det2pixel" title="Link to this definition"></a></dt>
+<dd><p>Convert from detector normalized coordinates into pixels.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.detectorRotated">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">detectorRotated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#detectorRotated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.detectorRotated" title="Link to this definition"></a></dt>
+<dd><p>Return True if the chip of a detector is rotated by 180 degrees in the FPA.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.focalplane2det">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">focalplane2det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#focalplane2det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.focalplane2det" title="Link to this definition"></a></dt>
+<dd><p>Convert from focal plane to detector normalized coordinates.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.focalplane2pixel">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">focalplane2pixel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#focalplane2pixel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.focalplane2pixel" title="Link to this definition"></a></dt>
+<dd><p>Convert from focal plane normalized coordinates into pixels.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.focalplaneStructX">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">focalplaneStructX</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#focalplaneStructX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.focalplaneStructX" title="Link to this definition"></a></dt>
+<dd><p>Return an array with FP normalized coordinates of the gap edges along the horizontal direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.focalplaneStructY">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">focalplaneStructY</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#focalplaneStructY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.focalplaneStructY" title="Link to this definition"></a></dt>
+<dd><p>Return an array with FP normalized coordinates of the gap edges along the vertical direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.idetseq2string">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">idetseq2string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#idetseq2string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.idetseq2string" title="Link to this definition"></a></dt>
+<dd><p>Convert a sequential ID into a string (suitable to be used as ‘DET_ID’ keyword).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.idetseq2xy">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">idetseq2xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#idetseq2xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.idetseq2xy" title="Link to this definition"></a></dt>
+<dd><p>Convert a sequential ID into an X, Y pair.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.idetxy2seq">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">idetxy2seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idetx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idety</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#idetxy2seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.idetxy2seq" title="Link to this definition"></a></dt>
+<dd><p>Convert an X, Y pair into a sequential ID.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.pixel2det">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">pixel2det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#pixel2det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.pixel2det" title="Link to this definition"></a></dt>
+<dd><p>Convert from pixels into detector normalized coordinates.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.pixel2focalplane">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">pixel2focalplane</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#pixel2focalplane"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.pixel2focalplane" title="Link to this definition"></a></dt>
+<dd><p>Convert from pixel into focal plane normalized coordinates.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeDetX">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeDetX</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeDetX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeDetX" title="Link to this definition"></a></dt>
+<dd><p>Return the size of the detector along the horizontal direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeDetY">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeDetY</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeDetY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeDetY" title="Link to this definition"></a></dt>
+<dd><p>Return the size of the detector along the vertical direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeFPX">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeFPX</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeFPX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeFPX" title="Link to this definition"></a></dt>
+<dd><p>Return the total size of the focal plane along the horizontal direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeFPY">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeFPY</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeFPY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeFPY" title="Link to this definition"></a></dt>
+<dd><p>Return the total size of the focal plane along the vertical direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeGapsX">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeGapsX</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeGapsX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeGapsX" title="Link to this definition"></a></dt>
+<dd><p>Return the size of the gaps along the horizontal direction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry.sizeGapsY">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry.</span></span><span class="sig-name descname"><span class="pre">sizeGapsY</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry.html#sizeGapsY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry.sizeGapsY" title="Link to this definition"></a></dt>
+<dd><p>Return the size of the gaps along the vertical direction.</p>
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.FPA_Geometry_calib">
+<span id="sir-rfxmodel-fpa-geometry-calib-module"></span><h2>SIR_RFXModel.FPA_Geometry_calib module<a class="headerlink" href="#module-SIR_RFXModel.FPA_Geometry_calib" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.DetCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">DetCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#DetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.DetCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.DetCoords.toFPCoords">
+<span class="sig-name descname"><span class="pre">toFPCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#DetCoords.toFPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.DetCoords.toFPCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.DetCoords.toPixCoords">
+<span class="sig-name descname"><span class="pre">toPixCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#DetCoords.toPixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.DetCoords.toPixCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">FPCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPCoords.toDetCoords">
+<span class="sig-name descname"><span class="pre">toDetCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_det</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPCoords.toDetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPCoords.toDetCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPCoords.toPixCoords">
+<span class="sig-name descname"><span class="pre">toPixCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_det</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPCoords.toPixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPCoords.toPixCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">FPModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix_horiz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix_vert</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>FPModel provides routines to perform conversions of locations from focal plane to detector pixel (and vice-versa).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_horiz">
+<span class="sig-name descname"><span class="pre">det_npix_horiz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel.det_npix_horiz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_horiz" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return number of pixels along horizontal direction of each detector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_vert">
+<span class="sig-name descname"><span class="pre">det_npix_vert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel.det_npix_vert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_vert" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return number of pixels along vertical direction of each detector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel.detnames">
+<span class="sig-name descname"><span class="pre">detnames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel.detnames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel.detnames" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return names of detectors (as read from the NISPDetectorSlots.csv file)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel.fp2pix">
+<span class="sig-name descname"><span class="pre">fp2pix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel.fp2pix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel.fp2pix" title="Link to this definition"></a></dt>
+<dd><p>Convert focal-plane coordinates to detector pixel coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_fp</strong> (<em>float</em><em> or </em><em>ndarray</em>) – Normalised focal-plane X coordinate.</p></li>
+<li><p><strong>y_fp</strong> (<em>float</em><em> or </em><em>ndarray</em>) – Normalised focal-plane Y coordinate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>det_id</strong> (<em>int or ndarray</em>) – Detector index for each input position.</p></li>
+<li><p><strong>x_pix</strong> (<em>float or ndarray</em>) – Pixel coordinate along the detector X axis.</p></li>
+<li><p><strong>y_pix</strong> (<em>float or ndarray</em>) – Pixel coordinate along the detector Y axis.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.FPModel.pix2fp">
+<span class="sig-name descname"><span class="pre">pix2fp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#FPModel.pix2fp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel.pix2fp" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Convert the location of pixel(s) in a detector to
+the corresponding position(s) in the focal plane.</p>
+<p>&#64;param det: a scalar detector name (among the allowed ones, see detnames());
+&#64;param x: list or numpy array of pixel coordinates along horizontal direction;
+&#64;param y: list or numpy array of pixel coordinates along vertical direction;</p>
+<p>&#64;returns 2-element tuple of N-element lists, each containing
+the locations on the focal plane (in mm) along the horizontal
+and vertical directions respectively of the N pixel
+coordinates provided as input.</p>
+<p>Note: the pixel coordinates are supposed to be in the range
+0:det_npix_horiz-1 or 0:det_npix_vert-1.  However, it is
+possible to provide numbers outside this limit, to obtain
+positions in the focal plane corresponding to the gaps between
+detectors.</p>
+<p>Example:
+from NIR_misc_utils.FocalPlaneModel import *
+fpmodel = FPModel(‘NISPDetectorSlots.csv’, 2048, 2048)
+fp_x, fp_y = fpmodel.pix2fp(‘33’, [3, 2043], [3, 2043])
+# ([1.601895000000006, 38.160735], [2.704857000000004, 397.683697])</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.NIRFP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">NIRFP</span></span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#NIRFP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.NIRFP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SIR_RFXModel.FPA_Geometry_calib.FPModel" title="SIR_RFXModel.FPA_Geometry_calib.FPModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPModel</span></code></a></p>
+<p>&#64;brief Provides access to a static instance of FPModel representing the NIR focal plane.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.NIRFP.use_wcs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_wcs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#NIRFP.use_wcs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.NIRFP.use_wcs" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Invoke constructor for the static FPModel object.</p>
+<p>&#64;param file: path to the NISPDetectorSlots.csv file containing the WCS data;</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.PixCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">PixCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#PixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.PixCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.PixCoords.toDetCoords">
+<span class="sig-name descname"><span class="pre">toDetCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#PixCoords.toDetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.PixCoords.toDetCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.PixCoords.toFPCoords">
+<span class="sig-name descname"><span class="pre">toFPCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#PixCoords.toFPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.PixCoords.toFPCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.boundaries">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.boundaries" title="Link to this definition"></a></dt>
+<dd><p>Return boundaries in an array of coordinates.</p>
+<p>Given an input 1D array of sorted coordinates, returns the array
+of boundaries (or edges).  Note that output arrays has 1 extra
+element with respect to input one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.plt_pcolormesh">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">plt_pcolormesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#plt_pcolormesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.plt_pcolormesh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.plt_scatter">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">plt_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#plt_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.plt_scatter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.FPA_Geometry_calib.plt_text">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.FPA_Geometry_calib.</span></span><span class="sig-name descname"><span class="pre">plt_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/FPA_Geometry_calib.html#plt_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.FPA_Geometry_calib.plt_text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.Fit2D">
+<span id="sir-rfxmodel-fit2d-module"></span><h2>SIR_RFXModel.Fit2D module<a class="headerlink" href="#module-SIR_RFXModel.Fit2D" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DCheb">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Fit2D.</span></span><span class="sig-name descname"><span class="pre">Fit2DCheb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meas_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DCheb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DCheb" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SIR_RFXModel.Fit2D.Fit2DNP" title="SIR_RFXModel.Fit2D.Fit2DNP"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fit2DNP</span></code></a></p>
+<p>2D profile fitting based on Chebyshev Polynomials</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DCheb.addGlobalOffset">
+<span class="sig-name descname"><span class="pre">addGlobalOffset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DCheb.addGlobalOffset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DCheb.addGlobalOffset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DCheb.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncert</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DCheb.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DCheb.fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DCheb.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DCheb.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DCheb.predict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DCheb.predict_at">
+<span class="sig-name descname"><span class="pre">predict_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DCheb.predict_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DCheb.predict_at" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Fit2D.</span></span><span class="sig-name descname"><span class="pre">Fit2DNP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meas_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>2D profile fitting (non-parametric)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.addGlobalOffset">
+<span class="sig-name descname"><span class="pre">addGlobalOffset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.addGlobalOffset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.addGlobalOffset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.extrapolate">
+<span class="sig-name descname"><span class="pre">extrapolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.extrapolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.extrapolate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncert</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.grid">
+<span class="sig-name descname"><span class="pre">grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.grid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.midpoints">
+<span class="sig-name descname"><span class="pre">midpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.midpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.midpoints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.predict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.predict_at">
+<span class="sig-name descname"><span class="pre">predict_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.predict_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.predict_at" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.restore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.restore" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.uncert">
+<span class="sig-name descname"><span class="pre">uncert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.uncert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.uncert" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.Fit2DNP.uncert_at">
+<span class="sig-name descname"><span class="pre">uncert_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#Fit2DNP.uncert_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.Fit2DNP.uncert_at" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Fit2D.interpolator2D">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Fit2D.</span></span><span class="sig-name descname"><span class="pre">interpolator2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Fit2D.html#interpolator2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Fit2D.interpolator2D" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.RelFluxDq">
+<span id="sir-rfxmodel-relfluxdq-module"></span><h2>SIR_RFXModel.RelFluxDq module<a class="headerlink" href="#module-SIR_RFXModel.RelFluxDq" title="Link to this heading"></a></h2>
+<p>This module contains the Python class to compute Data Qualities for RelativeFluxCorrection</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelFluxDq.RelFluxDq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.RelFluxDq.</span></span><span class="sig-name descname"><span class="pre">RelFluxDq</span></span><a class="reference internal" href="_modules/SIR_RFXModel/RelFluxDq.html#RelFluxDq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelFluxDq.RelFluxDq" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to handle RelativeFluxCorrection Data Qualities</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelFluxDq.RelFluxDq.get_dict_dqc_parameters">
+<span class="sig-name descname"><span class="pre">get_dict_dqc_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/SIR_RFXModel/RelFluxDq.html#RelFluxDq.get_dict_dqc_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelFluxDq.RelFluxDq.get_dict_dqc_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelFluxDq.RelFluxDq.set_flag">
+<span class="sig-name descname"><span class="pre">set_flag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelFluxDq.html#RelFluxDq.set_flag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelFluxDq.RelFluxDq.set_flag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.RelativeFluxCorrectionCore">
+<span id="sir-rfxmodel-relativefluxcorrectioncore-module"></span><h2>SIR_RFXModel.RelativeFluxCorrectionCore module<a class="headerlink" href="#module-SIR_RFXModel.RelativeFluxCorrectionCore" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.RelativeFluxCorrectionCore.</span></span><span class="sig-name descname"><span class="pre">RelativeFluxCorrectionCore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flatcube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatquality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#RelativeFluxCorrectionCore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL">
+<span class="sig-name descname"><span class="pre">SPEC1D_RELFLUX_LABEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'1D</span> <span class="pre">REL'</span></em><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL" title="Link to this definition"></a></dt>
+<dd><p>Core of the Large Scale Flat correction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.compute_correction">
+<span class="sig-name descname"><span class="pre">compute_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LocationSpectrum</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#RelativeFluxCorrectionCore.compute_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.compute_correction" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.get_correction">
+<span class="sig-name descname"><span class="pre">get_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">H5ExtractedSpectrum</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#RelativeFluxCorrectionCore.get_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.get_correction" title="Link to this definition"></a></dt>
+<dd><p>Gets a single corrected spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spectrum</strong> (<em>H5ExtractedSpectrum</em>) – The uncorrected spectrum</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>corrected_flux, corrected_variance, magnitude_correction</em></p></li>
+<li><p><em>The corrected flux, variance, and a magnitude correction as a tuple of 1D NumPy arrays.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.invoke">
+<span class="sig-name descname"><span class="pre">invoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exspectra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#RelativeFluxCorrectionCore.invoke"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.invoke" title="Link to this definition"></a></dt>
+<dd><p>Applying the correction to all spectra in exspectra collection,
+looping over each spectrum and over wavelengths in each</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.setup_interpolators">
+<span class="sig-name descname"><span class="pre">setup_interpolators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wstart</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wend</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#RelativeFluxCorrectionCore.setup_interpolators"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.setup_interpolators" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionCore.normalfov">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.RelativeFluxCorrectionCore.</span></span><span class="sig-name descname"><span class="pre">normalfov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionCore.html#normalfov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionCore.normalfov" title="Link to this definition"></a></dt>
+<dd><p>gets
+- the detector model which has the corners of the FOV in mm
+- the fov in mm
+returns:
+- the focal plane coordinates in normalized [-1,1] range</p>
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.RelativeFluxCorrectionMain">
+<span id="sir-rfxmodel-relativefluxcorrectionmain-module"></span><h2>SIR_RFXModel.RelativeFluxCorrectionMain module<a class="headerlink" href="#module-SIR_RFXModel.RelativeFluxCorrectionMain" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionMain.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.RelativeFluxCorrectionMain.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionMain.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionMain.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><p>Defines the (command line and configuration file) options specific to this task</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An  ArgumentParser.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.RelativeFluxCorrectionMain.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.RelativeFluxCorrectionMain.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/RelativeFluxCorrectionMain.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.RelativeFluxCorrectionMain.mainMethod" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.SIR_RelFluxModelCalibration">
+<span id="sir-rfxmodel-sir-relfluxmodelcalibration-module"></span><h2>SIR_RFXModel.SIR_RelFluxModelCalibration module<a class="headerlink" href="#module-SIR_RFXModel.SIR_RelFluxModelCalibration" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.SIR_RelFluxModelCalibration.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SIR_RelFluxModelCalibration.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SIR_RelFluxModelCalibration.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Allows to define the (command line and configuration file) options
+specific to this program</p>
+<dl class="simple">
+<dt>&#64;details</dt><dd><p>See the Elements documentation for more details.</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An  ArgumentParser.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.SIR_RelFluxModelCalibration.get_input_data">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SIR_RelFluxModelCalibration.</span></span><span class="sig-name descname"><span class="pre">get_input_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extr_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SIR_RelFluxModelCalibration.html#get_input_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.get_input_data" title="Link to this definition"></a></dt>
+<dd><p>get input XML file name</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.SIR_RelFluxModelCalibration.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SIR_RelFluxModelCalibration.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SIR_RelFluxModelCalibration.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SIR_RelFluxModelCalibration.mainMethod" title="Link to this definition"></a></dt>
+<dd><p>Main entry point for the SIR relative flux calibration.</p>
+<p>This method wraps the end-to-end workflow:</p>
+<ol class="arabic simple">
+<li><p>Parse configuration and command-line options.</p></li>
+<li><p>Build the self-calibration data sets for the selected mode.</p></li>
+<li><p>Run the SelfCalibWave solver to derive the relative flux cubes.</p></li>
+<li><p>Write the Euclid-compliant calibration product to disk.</p></li>
+</ol>
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.SelfCalib">
+<span id="sir-rfxmodel-selfcalib-module"></span><h2>SIR_RFXModel.SelfCalib module<a class="headerlink" href="#module-SIR_RFXModel.SelfCalib" title="Link to this heading"></a></h2>
+<p>File: python/SIR_SelfCalib/SelfCalib.py</p>
+<p>Created on: 04/14/20
+Author: shemmati, Georgio</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SelfCalib.</span></span><span class="sig-name descname"><span class="pre">SelfCalib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grismname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optxml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to implement Self-calibration algorithms</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.OutputSir">
+<span class="sig-name descname"><span class="pre">OutputSir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_kernel_sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.OutputSir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.OutputSir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.chisquare">
+<span class="sig-name descname"><span class="pre">chisquare</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.chisquare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.chisquare" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.expectedUncertainties">
+<span class="sig-name descname"><span class="pre">expectedUncertainties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.expectedUncertainties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.expectedUncertainties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.fitFlat">
+<span class="sig-name descname"><span class="pre">fitFlat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.fitFlat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.fitFlat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.fitQE">
+<span class="sig-name descname"><span class="pre">fitQE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.fitQE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.fitQE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.fitStarMag">
+<span class="sig-name descname"><span class="pre">fitStarMag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.fitStarMag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.fitStarMag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.flattenResiduals">
+<span class="sig-name descname"><span class="pre">flattenResiduals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.flattenResiduals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.flattenResiduals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnDetector">
+<span class="sig-name descname"><span class="pre">interpolateOnDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_idet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.interpolateOnDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnDetector" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnFocal">
+<span class="sig-name descname"><span class="pre">interpolateOnFocal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.interpolateOnFocal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnFocal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.makePlots">
+<span class="sig-name descname"><span class="pre">makePlots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wave</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.makePlots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.makePlots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.model_detQE">
+<span class="sig-name descname"><span class="pre">model_detQE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.model_detQE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.model_detQE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.model_flat">
+<span class="sig-name descname"><span class="pre">model_flat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.model_flat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.model_flat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.model_starMag">
+<span class="sig-name descname"><span class="pre">model_starMag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.model_starMag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.model_starMag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.obsData">
+<span class="sig-name descname"><span class="pre">obsData</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.obsData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.obsData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.obsUncert">
+<span class="sig-name descname"><span class="pre">obsUncert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.obsUncert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.obsUncert" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.redchisquare">
+<span class="sig-name descname"><span class="pre">redchisquare</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.redchisquare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.redchisquare" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.residuals">
+<span class="sig-name descname"><span class="pre">residuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.residuals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalib.smoothbaba">
+<span class="sig-name descname"><span class="pre">smoothbaba</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalib.smoothbaba"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalib.smoothbaba" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SelfCalib.</span></span><span class="sig-name descname"><span class="pre">SelfCalibSirData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extspecnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">listallgrisms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncoeff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limmag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wcenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grism_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to store Self-calibration input and temporary data</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirData.extractStarCatalog">
+<span class="sig-name descname"><span class="pre">extractStarCatalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirData.extractStarCatalog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirData.extractStarCatalog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirData.remove_unique_object_ids">
+<span class="sig-name descname"><span class="pre">remove_unique_object_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirData.remove_unique_object_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirData.remove_unique_object_ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirData.sigmaclip">
+<span class="sig-name descname"><span class="pre">sigmaclip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirData.sigmaclip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirData.sigmaclip" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SelfCalib.</span></span><span class="sig-name descname"><span class="pre">SelfCalibSirGaiaData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extspecnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncoeff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limmag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wcenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grism_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noisefactor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndither</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirGaiaData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to store Self-calibration input and temporary data</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.dithergaia">
+<span class="sig-name descname"><span class="pre">dithergaia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">go</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numdither</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirGaiaData.dithergaia"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.dithergaia" title="Link to this definition"></a></dt>
+<dd><p>Some survey strategy over the NEP to have stars
+with nobs~ 1-16 and then change their magnitude based
+on an input flat cube</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.extractStarCatalog">
+<span class="sig-name descname"><span class="pre">extractStarCatalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirGaiaData.extractStarCatalog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.extractStarCatalog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.gaia2sir">
+<span class="sig-name descname"><span class="pre">gaia2sir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirGaiaData.gaia2sir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.gaia2sir" title="Link to this definition"></a></dt>
+<dd><p>Matching the stars in the NEP from a GAIA catalog down to a limmag
+to closest (very approximately) sir star</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.sir_starcatalog">
+<span class="sig-name descname"><span class="pre">sir_starcatalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h5file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibSirGaiaData.sir_starcatalog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.sir_starcatalog" title="Link to this definition"></a></dt>
+<dd><p>measuring flux in a wavebin for SIR spectra given an
+h5 file and a location table</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SelfCalib.</span></span><span class="sig-name descname"><span class="pre">SelfCalibWave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extspecnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">listallgrisms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncoeff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limmag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calmode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_kernel_sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noisefactor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatialres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waveres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndither</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optxml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ms_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to run self calibration over wavelength direction</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave.cross_grism">
+<span class="sig-name descname"><span class="pre">cross_grism</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave.cross_grism"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave.cross_grism" title="Link to this definition"></a></dt>
+<dd><p>To correct for the grism to grism offset before saving the flat cube</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave.fit" title="Link to this definition"></a></dt>
+<dd><p>looping over wavelengths and filling in the cube using self calib fitting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave.get_dq_parameters">
+<span class="sig-name descname"><span class="pre">get_dq_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave.get_dq_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave.get_dq_parameters" title="Link to this definition"></a></dt>
+<dd><p>Returns the current dqc parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dqc parameters dict ready to be written in XML objet</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave.quality_prod">
+<span class="sig-name descname"><span class="pre">quality_prod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmaclip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave.quality_prod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave.quality_prod" title="Link to this definition"></a></dt>
+<dd><p>To check the quality of the calculated response</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfCalibWave.writeOutputSir">
+<span class="sig-name descname"><span class="pre">writeOutputSir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msfits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterative</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfCalibWave.writeOutputSir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfCalibWave.writeOutputSir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfDitherData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.SelfCalib.</span></span><span class="sig-name descname"><span class="pre">SelfDitherData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gwapos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndithers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noisefactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfDitherData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfDitherData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>To manually dither and generate more data</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.SelfCalib.SelfDitherData.extractStarCatalog2">
+<span class="sig-name descname"><span class="pre">extractStarCatalog2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/SelfCalib.html#SelfDitherData.extractStarCatalog2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.SelfCalib.SelfDitherData.extractStarCatalog2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.Utils">
+<span id="sir-rfxmodel-utils-module"></span><h2>SIR_RFXModel.Utils module<a class="headerlink" href="#module-SIR_RFXModel.Utils" title="Link to this heading"></a></h2>
+<p>various utilities</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.allcombinations">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">allcombinations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#allcombinations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.allcombinations" title="Link to this definition"></a></dt>
+<dd><p>do alllpossible combination</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.cartesianProduct">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">cartesianProduct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#cartesianProduct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.cartesianProduct" title="Link to this definition"></a></dt>
+<dd><p>cartesian product</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.closestDetectors">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">closestDetectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#closestDetectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.closestDetectors" title="Link to this definition"></a></dt>
+<dd><p>get closest detectors</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.coordGaps">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">coordGaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#coordGaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.coordGaps" title="Link to this definition"></a></dt>
+<dd><p>get Gaps coordinates</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.coordGapsX">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">coordGapsX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#coordGapsX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.coordGapsX" title="Link to this definition"></a></dt>
+<dd><p>get coordinates of gap along X</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.coordGapsY">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">coordGapsY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#coordGapsY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.coordGapsY" title="Link to this definition"></a></dt>
+<dd><p>get coordinates of gap along Y</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils.gaussian">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils.</span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils.gaussian" title="Link to this definition"></a></dt>
+<dd><p>gaussian shape</p>
+</dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel.Utils_calib">
+<span id="sir-rfxmodel-utils-calib-module"></span><h2>SIR_RFXModel.Utils_calib module<a class="headerlink" href="#module-SIR_RFXModel.Utils_calib" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.DetCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">DetCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#DetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.DetCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.DetCoords.toFPCoords">
+<span class="sig-name descname"><span class="pre">toFPCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#DetCoords.toFPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.DetCoords.toFPCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.DetCoords.toPixCoords">
+<span class="sig-name descname"><span class="pre">toPixCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#DetCoords.toPixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.DetCoords.toPixCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">FPCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPCoords.toDetCoords">
+<span class="sig-name descname"><span class="pre">toDetCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_det</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPCoords.toDetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPCoords.toDetCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPCoords.toPixCoords">
+<span class="sig-name descname"><span class="pre">toPixCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_det</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPCoords.toPixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPCoords.toPixCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPCoordsGaps">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">FPCoordsGaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">det2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPCoordsGaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPCoordsGaps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">FPModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix_horiz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix_vert</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>FPModel provides routines to perform conversions of locations from focal plane to detector pixel (and vice-versa).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel.det_npix_horiz">
+<span class="sig-name descname"><span class="pre">det_npix_horiz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel.det_npix_horiz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel.det_npix_horiz" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return number of pixels along horizontal direction of each detector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel.det_npix_vert">
+<span class="sig-name descname"><span class="pre">det_npix_vert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel.det_npix_vert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel.det_npix_vert" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return number of pixels along vertical direction of each detector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel.detnames">
+<span class="sig-name descname"><span class="pre">detnames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel.detnames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel.detnames" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Return names of detectors (as read from the NISPDetectorSlots.csv file)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel.fp2pix">
+<span class="sig-name descname"><span class="pre">fp2pix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel.fp2pix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel.fp2pix" title="Link to this definition"></a></dt>
+<dd><p>Convert focal-plane coordinates to detector pixel coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_fp</strong> (<em>float</em><em> or </em><em>ndarray</em>) – Normalised focal-plane X coordinate.</p></li>
+<li><p><strong>y_fp</strong> (<em>float</em><em> or </em><em>ndarray</em>) – Normalised focal-plane Y coordinate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>det_id</strong> (<em>int or ndarray</em>) – Detector index for each input position.</p></li>
+<li><p><strong>x_pix</strong> (<em>float or ndarray</em>) – Pixel coordinate along the detector X axis.</p></li>
+<li><p><strong>y_pix</strong> (<em>float or ndarray</em>) – Pixel coordinate along the detector Y axis.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FPModel.pix2fp">
+<span class="sig-name descname"><span class="pre">pix2fp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FPModel.pix2fp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FPModel.pix2fp" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Convert the location of pixel(s) in a detector to
+the corresponding position(s) in the focal plane.</p>
+<p>&#64;param det: a scalar detector name (among the allowed ones, see detnames());
+&#64;param x: list or numpy array of pixel coordinates along horizontal direction;
+&#64;param y: list or numpy array of pixel coordinates along vertical direction;</p>
+<p>&#64;returns 2-element tuple of N-element lists, each containing
+the locations on the focal plane (in mm) along the horizontal
+and vertical directions respectively of the N pixel
+coordinates provided as input.</p>
+<p>Note: the pixel coordinates are supposed to be in the range
+0:det_npix_horiz-1 or 0:det_npix_vert-1.  However, it is
+possible to provide numbers outside this limit, to obtain
+positions in the focal plane corresponding to the gaps between
+detectors.</p>
+<p>Example:
+from NIR_misc_utils.FocalPlaneModel import *
+fpmodel = FPModel(‘NISPDetectorSlots.csv’, 2048, 2048)
+fp_x, fp_y = fpmodel.pix2fp(‘33’, [3, 2043], [3, 2043])
+# ([1.601895000000006, 38.160735], [2.704857000000004, 397.683697])</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.FitsDimensions">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">FitsDimensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#FitsDimensions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.FitsDimensions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.MakeCubeTess">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">MakeCubeTess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#MakeCubeTess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.MakeCubeTess" title="Link to this definition"></a></dt>
+<dd><p>writes each grism/tilt in the fourth dimension</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.NIRFP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">NIRFP</span></span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#NIRFP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.NIRFP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SIR_RFXModel.Utils_calib.FPModel" title="SIR_RFXModel.Utils_calib.FPModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FPModel</span></code></a></p>
+<p>&#64;brief Provides access to a static instance of FPModel representing the NIR focal plane.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.NIRFP.use_wcs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_wcs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#NIRFP.use_wcs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.NIRFP.use_wcs" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Invoke constructor for the static FPModel object.</p>
+<p>&#64;param file: path to the NISPDetectorSlots.csv file containing the WCS data;</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.PixCoords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">PixCoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#PixCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.PixCoords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.PixCoords.toDetCoords">
+<span class="sig-name descname"><span class="pre">toDetCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#PixCoords.toDetCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.PixCoords.toDetCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.PixCoords.toFPCoords">
+<span class="sig-name descname"><span class="pre">toFPCoords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#PixCoords.toFPCoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.PixCoords.toFPCoords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.boundaries">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.boundaries" title="Link to this definition"></a></dt>
+<dd><p>Return boundaries in an array of coordinates.</p>
+<p>Given an input 1D array of sorted coordinates, returns the array
+of boundaries (or edges).  Note that output arrays has 1 extra
+element with respect to input one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.cartesianProduct">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">cartesianProduct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#cartesianProduct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.cartesianProduct" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.det_neighbour">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">det_neighbour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">det1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">det2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#det_neighbour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.det_neighbour" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.findMatchingObs">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">findMatchingObs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#findMatchingObs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.findMatchingObs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.find_bounds">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">find_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#find_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.find_bounds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.find_nearest">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">find_nearest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#find_nearest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.find_nearest" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.flux2mag">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">flux2mag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#flux2mag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.flux2mag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.gaus">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">gaus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#gaus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.gaus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.gaussian">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.gaussian" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.get_euclid_wcs">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">get_euclid_wcs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ra_boresight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_boresight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oversample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.13104</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#get_euclid_wcs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.get_euclid_wcs" title="Link to this definition"></a></dt>
+<dd><p>A routine to generate the World Coordinate System corresponding Euclid FOV</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ra_boresight</strong> (<em>float</em>) – The boresight right ascencion in degrees.
+If ecliptic=True, this is actually the ecliptic longitude.</p></li>
+<li><p><strong>dec_boresight</strong> (<em>float</em>) – The boresight declination in degrees.
+if ecliptic=True, this is actually ecliptic latitude</p></li>
+<li><p><strong>roll</strong> (<em>float</em><em>, </em><em>optional</em>) – A roll angle around the telescope line of sight in degrees. The default is None.</p></li>
+<li><p><strong>pixel_size</strong> (<em>float</em><em>, </em><em>optional</em>) – pixel size in arcseconds. The default is 0.13104, chosen such that a pixel value of
+10,000 is the edge of the FOV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>w</strong> – An astropy WCS (world-coordinate system) object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>WCS</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.illuminate">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">illuminate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#illuminate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.illuminate" title="Link to this definition"></a></dt>
+<dd><p>Illuminating the detector with a asymmetric gaussian for dither simulation</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.mad">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">mad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#mad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.mad" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Median Absolute Deviation of an array.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.measureChunkMagnitude1D">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">measureChunkMagnitude1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wave</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_w</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#measureChunkMagnitude1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.measureChunkMagnitude1D" title="Link to this definition"></a></dt>
+<dd><p>This returns the magnitude of a wavelength chunk of a 1D spectra</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.nan_helper">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">nan_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#nan_helper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.nan_helper" title="Link to this definition"></a></dt>
+<dd><p>Apply 2D Gaussian smoothing to a 3D array (3x100x100) where each 100x100 matrix is an image.
+NaN values are handled by interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> – Input 3D array of shape (3, 100, 100).</p></li>
+<li><p><strong>sigma</strong> – Standard deviation for Gaussian kernel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Smoothed 3D array.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.normaldet">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">normaldet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2040</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2040</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#normaldet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.normaldet" title="Link to this definition"></a></dt>
+<dd><p>gets
+- the detector coordinate in pixel
+returns:
+- the detector coordinates in normalized [-1,1] range</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.normaldet_r">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">normaldet_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2040</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2040</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#normaldet_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.normaldet_r" title="Link to this definition"></a></dt>
+<dd><p>gets
+- the detector coordinate in [-1,1]
+returns:
+- the detector coordinates in pixel</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.normalfov">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">normalfov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#normalfov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.normalfov" title="Link to this definition"></a></dt>
+<dd><p>gets
+- the detector model which has the corners of the FOV in mm
+- the fov in mm
+returns:
+- the focal plane coordinates in normalized [-1,1] range</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.normalfov_r">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">normalfov_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#normalfov_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.normalfov_r" title="Link to this definition"></a></dt>
+<dd><p>gets
+- the detector model which has the corners of the FOV in normalized [-1,1]
+- the fov in mm
+returns:
+- the focal plane coordinates in mm</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.plt_pcolormesh">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">plt_pcolormesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#plt_pcolormesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.plt_pcolormesh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.plt_scatter">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">plt_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#plt_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.plt_scatter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.plt_text">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">plt_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#plt_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.plt_text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.printStatistics">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">printStatistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#printStatistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.printStatistics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.replace_nan_with_interpolation">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">replace_nan_with_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#replace_nan_with_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.replace_nan_with_interpolation" title="Link to this definition"></a></dt>
+<dd><p>Replace NaN values in an image with interpolated values from non-NaN neighbors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.sigma_clipped_mean">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">sigma_clipped_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#sigma_clipped_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.sigma_clipped_mean" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.smooth_avoidgaps">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">smooth_avoidgaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#smooth_avoidgaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.smooth_avoidgaps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SIR_RFXModel.Utils_calib.sortmerge">
+<span class="sig-prename descclassname"><span class="pre">SIR_RFXModel.Utils_calib.</span></span><span class="sig-name descname"><span class="pre">sortmerge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_RFXModel/Utils_calib.html#sortmerge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_RFXModel.Utils_calib.sortmerge" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-SIR_RFXModel">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-SIR_RFXModel" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="SIR_RFXModel Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="calibration_product.html" class="btn btn-neutral float-right" title="SIR Relative Flux Calibration Product" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

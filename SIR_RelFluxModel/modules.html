@@ -22,7 +22,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="SIR Relative Flux Calibration Product" href="calibration_product.html" />
+    <link rel="next" title="SIR_RFXModel package" href="SIR_RFXModel.html" />
     <link rel="prev" title="SIR Relative Flux Scaling (SIR_RFXModel)" href="index.html" /> 
 </head>
 
@@ -48,6 +48,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SIR_RFXModel Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html">SIR_RFXModel package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="calibration_product.html">SIR Relative Flux Calibration Product</a></li>
 </ul>
 </li>
@@ -81,6 +82,246 @@
 <h1>SIR_RFXModel Modules<a class="headerlink" href="#sir-rfxmodel-modules" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="SIR_RFXModel.html">SIR_RFXModel package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.FPA_Geometry">SIR_RFXModel.FPA_Geometry module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.GlobalSettings"><code class="docutils literal notranslate"><span class="pre">GlobalSettings</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.GlobalSettings.setDefault"><code class="docutils literal notranslate"><span class="pre">GlobalSettings.setDefault()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.det2focalplane"><code class="docutils literal notranslate"><span class="pre">det2focalplane()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.det2pixel"><code class="docutils literal notranslate"><span class="pre">det2pixel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.detectorRotated"><code class="docutils literal notranslate"><span class="pre">detectorRotated()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplane2det"><code class="docutils literal notranslate"><span class="pre">focalplane2det()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplane2pixel"><code class="docutils literal notranslate"><span class="pre">focalplane2pixel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplaneStructX"><code class="docutils literal notranslate"><span class="pre">focalplaneStructX()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplaneStructY"><code class="docutils literal notranslate"><span class="pre">focalplaneStructY()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetseq2string"><code class="docutils literal notranslate"><span class="pre">idetseq2string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetseq2xy"><code class="docutils literal notranslate"><span class="pre">idetseq2xy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetxy2seq"><code class="docutils literal notranslate"><span class="pre">idetxy2seq()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.pixel2det"><code class="docutils literal notranslate"><span class="pre">pixel2det()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.pixel2focalplane"><code class="docutils literal notranslate"><span class="pre">pixel2focalplane()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeDetX"><code class="docutils literal notranslate"><span class="pre">sizeDetX()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeDetY"><code class="docutils literal notranslate"><span class="pre">sizeDetY()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeFPX"><code class="docutils literal notranslate"><span class="pre">sizeFPX()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeFPY"><code class="docutils literal notranslate"><span class="pre">sizeFPY()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeGapsX"><code class="docutils literal notranslate"><span class="pre">sizeGapsX()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeGapsY"><code class="docutils literal notranslate"><span class="pre">sizeGapsY()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.FPA_Geometry_calib">SIR_RFXModel.FPA_Geometry_calib module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.DetCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.DetCoords.toFPCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords.toFPCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.DetCoords.toPixCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords.toPixCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPCoords.toDetCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords.toDetCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPCoords.toPixCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords.toPixCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel"><code class="docutils literal notranslate"><span class="pre">FPModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_horiz"><code class="docutils literal notranslate"><span class="pre">FPModel.det_npix_horiz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel.det_npix_vert"><code class="docutils literal notranslate"><span class="pre">FPModel.det_npix_vert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel.detnames"><code class="docutils literal notranslate"><span class="pre">FPModel.detnames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel.fp2pix"><code class="docutils literal notranslate"><span class="pre">FPModel.fp2pix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.FPModel.pix2fp"><code class="docutils literal notranslate"><span class="pre">FPModel.pix2fp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.NIRFP"><code class="docutils literal notranslate"><span class="pre">NIRFP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.NIRFP.use_wcs"><code class="docutils literal notranslate"><span class="pre">NIRFP.use_wcs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.PixCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.PixCoords.toDetCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords.toDetCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.PixCoords.toFPCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords.toFPCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.plt_pcolormesh"><code class="docutils literal notranslate"><span class="pre">plt_pcolormesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.plt_scatter"><code class="docutils literal notranslate"><span class="pre">plt_scatter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry_calib.plt_text"><code class="docutils literal notranslate"><span class="pre">plt_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.Fit2D">SIR_RFXModel.Fit2D module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DCheb"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DCheb.addGlobalOffset"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb.addGlobalOffset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DCheb.fit"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DCheb.predict"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DCheb.predict_at"><code class="docutils literal notranslate"><span class="pre">Fit2DCheb.predict_at()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP"><code class="docutils literal notranslate"><span class="pre">Fit2DNP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.addGlobalOffset"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.addGlobalOffset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.extrapolate"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.extrapolate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.fit"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.grid"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.midpoints"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.midpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.predict"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.predict_at"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.predict_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.restore"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.restore()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.uncert"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.uncert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.Fit2DNP.uncert_at"><code class="docutils literal notranslate"><span class="pre">Fit2DNP.uncert_at()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Fit2D.interpolator2D"><code class="docutils literal notranslate"><span class="pre">interpolator2D()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.RelFluxDq">SIR_RFXModel.RelFluxDq module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelFluxDq.RelFluxDq"><code class="docutils literal notranslate"><span class="pre">RelFluxDq</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelFluxDq.RelFluxDq.get_dict_dqc_parameters"><code class="docutils literal notranslate"><span class="pre">RelFluxDq.get_dict_dqc_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelFluxDq.RelFluxDq.set_flag"><code class="docutils literal notranslate"><span class="pre">RelFluxDq.set_flag()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.RelativeFluxCorrectionCore">SIR_RFXModel.RelativeFluxCorrectionCore module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.SPEC1D_RELFLUX_LABEL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.compute_correction"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.compute_correction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.get_correction"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.get_correction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.invoke"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.invoke()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.RelativeFluxCorrectionCore.setup_interpolators"><code class="docutils literal notranslate"><span class="pre">RelativeFluxCorrectionCore.setup_interpolators()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionCore.normalfov"><code class="docutils literal notranslate"><span class="pre">normalfov()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.RelativeFluxCorrectionMain">SIR_RFXModel.RelativeFluxCorrectionMain module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionMain.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.RelativeFluxCorrectionMain.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.SIR_RelFluxModelCalibration">SIR_RFXModel.SIR_RelFluxModelCalibration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.get_input_data"><code class="docutils literal notranslate"><span class="pre">get_input_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SIR_RelFluxModelCalibration.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.SelfCalib">SIR_RFXModel.SelfCalib module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib"><code class="docutils literal notranslate"><span class="pre">SelfCalib</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.OutputSir"><code class="docutils literal notranslate"><span class="pre">SelfCalib.OutputSir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.chisquare"><code class="docutils literal notranslate"><span class="pre">SelfCalib.chisquare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.expectedUncertainties"><code class="docutils literal notranslate"><span class="pre">SelfCalib.expectedUncertainties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.fit"><code class="docutils literal notranslate"><span class="pre">SelfCalib.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.fitFlat"><code class="docutils literal notranslate"><span class="pre">SelfCalib.fitFlat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.fitQE"><code class="docutils literal notranslate"><span class="pre">SelfCalib.fitQE()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.fitStarMag"><code class="docutils literal notranslate"><span class="pre">SelfCalib.fitStarMag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.flattenResiduals"><code class="docutils literal notranslate"><span class="pre">SelfCalib.flattenResiduals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnDetector"><code class="docutils literal notranslate"><span class="pre">SelfCalib.interpolateOnDetector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.interpolateOnFocal"><code class="docutils literal notranslate"><span class="pre">SelfCalib.interpolateOnFocal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.makePlots"><code class="docutils literal notranslate"><span class="pre">SelfCalib.makePlots()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.model"><code class="docutils literal notranslate"><span class="pre">SelfCalib.model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.model_detQE"><code class="docutils literal notranslate"><span class="pre">SelfCalib.model_detQE()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.model_flat"><code class="docutils literal notranslate"><span class="pre">SelfCalib.model_flat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.model_starMag"><code class="docutils literal notranslate"><span class="pre">SelfCalib.model_starMag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.obsData"><code class="docutils literal notranslate"><span class="pre">SelfCalib.obsData()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.obsUncert"><code class="docutils literal notranslate"><span class="pre">SelfCalib.obsUncert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.redchisquare"><code class="docutils literal notranslate"><span class="pre">SelfCalib.redchisquare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.residuals"><code class="docutils literal notranslate"><span class="pre">SelfCalib.residuals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalib.smoothbaba"><code class="docutils literal notranslate"><span class="pre">SelfCalib.smoothbaba()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirData"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirData.extractStarCatalog"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData.extractStarCatalog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirData.remove_unique_object_ids"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData.remove_unique_object_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirData.sigmaclip"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirData.sigmaclip()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.dithergaia"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData.dithergaia()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.extractStarCatalog"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData.extractStarCatalog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.gaia2sir"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData.gaia2sir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibSirGaiaData.sir_starcatalog"><code class="docutils literal notranslate"><span class="pre">SelfCalibSirGaiaData.sir_starcatalog()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave.cross_grism"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave.cross_grism()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave.fit"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave.get_dq_parameters"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave.get_dq_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave.quality_prod"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave.quality_prod()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfCalibWave.writeOutputSir"><code class="docutils literal notranslate"><span class="pre">SelfCalibWave.writeOutputSir()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfDitherData"><code class="docutils literal notranslate"><span class="pre">SelfDitherData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.SelfCalib.SelfDitherData.extractStarCatalog2"><code class="docutils literal notranslate"><span class="pre">SelfDitherData.extractStarCatalog2()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.Utils">SIR_RFXModel.Utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.allcombinations"><code class="docutils literal notranslate"><span class="pre">allcombinations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.cartesianProduct"><code class="docutils literal notranslate"><span class="pre">cartesianProduct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.closestDetectors"><code class="docutils literal notranslate"><span class="pre">closestDetectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.coordGaps"><code class="docutils literal notranslate"><span class="pre">coordGaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.coordGapsX"><code class="docutils literal notranslate"><span class="pre">coordGapsX()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.coordGapsY"><code class="docutils literal notranslate"><span class="pre">coordGapsY()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel.Utils_calib">SIR_RFXModel.Utils_calib module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords.toFPCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords.toFPCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.DetCoords.toPixCoords"><code class="docutils literal notranslate"><span class="pre">DetCoords.toPixCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords.toDetCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords.toDetCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoords.toPixCoords"><code class="docutils literal notranslate"><span class="pre">FPCoords.toPixCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPCoordsGaps"><code class="docutils literal notranslate"><span class="pre">FPCoordsGaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel"><code class="docutils literal notranslate"><span class="pre">FPModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.det_npix_horiz"><code class="docutils literal notranslate"><span class="pre">FPModel.det_npix_horiz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.det_npix_vert"><code class="docutils literal notranslate"><span class="pre">FPModel.det_npix_vert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.detnames"><code class="docutils literal notranslate"><span class="pre">FPModel.detnames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.fp2pix"><code class="docutils literal notranslate"><span class="pre">FPModel.fp2pix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FPModel.pix2fp"><code class="docutils literal notranslate"><span class="pre">FPModel.pix2fp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.FitsDimensions"><code class="docutils literal notranslate"><span class="pre">FitsDimensions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.MakeCubeTess"><code class="docutils literal notranslate"><span class="pre">MakeCubeTess()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.NIRFP"><code class="docutils literal notranslate"><span class="pre">NIRFP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.NIRFP.use_wcs"><code class="docutils literal notranslate"><span class="pre">NIRFP.use_wcs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords.toDetCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords.toDetCoords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.PixCoords.toFPCoords"><code class="docutils literal notranslate"><span class="pre">PixCoords.toFPCoords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.boundaries"><code class="docutils literal notranslate"><span class="pre">boundaries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.cartesianProduct"><code class="docutils literal notranslate"><span class="pre">cartesianProduct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.det_neighbour"><code class="docutils literal notranslate"><span class="pre">det_neighbour()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.findMatchingObs"><code class="docutils literal notranslate"><span class="pre">findMatchingObs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.find_bounds"><code class="docutils literal notranslate"><span class="pre">find_bounds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.find_nearest"><code class="docutils literal notranslate"><span class="pre">find_nearest()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.flux2mag"><code class="docutils literal notranslate"><span class="pre">flux2mag()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.gaus"><code class="docutils literal notranslate"><span class="pre">gaus()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.get_euclid_wcs"><code class="docutils literal notranslate"><span class="pre">get_euclid_wcs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.illuminate"><code class="docutils literal notranslate"><span class="pre">illuminate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.mad"><code class="docutils literal notranslate"><span class="pre">mad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.measureChunkMagnitude1D"><code class="docutils literal notranslate"><span class="pre">measureChunkMagnitude1D()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.nan_helper"><code class="docutils literal notranslate"><span class="pre">nan_helper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normaldet"><code class="docutils literal notranslate"><span class="pre">normaldet()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normaldet_r"><code class="docutils literal notranslate"><span class="pre">normaldet_r()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normalfov"><code class="docutils literal notranslate"><span class="pre">normalfov()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.normalfov_r"><code class="docutils literal notranslate"><span class="pre">normalfov_r()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_pcolormesh"><code class="docutils literal notranslate"><span class="pre">plt_pcolormesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_scatter"><code class="docutils literal notranslate"><span class="pre">plt_scatter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.plt_text"><code class="docutils literal notranslate"><span class="pre">plt_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.printStatistics"><code class="docutils literal notranslate"><span class="pre">printStatistics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.replace_nan_with_interpolation"><code class="docutils literal notranslate"><span class="pre">replace_nan_with_interpolation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.sigma_clipped_mean"><code class="docutils literal notranslate"><span class="pre">sigma_clipped_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.smooth_avoidgaps"><code class="docutils literal notranslate"><span class="pre">smooth_avoidgaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="SIR_RFXModel.html#SIR_RFXModel.Utils_calib.sortmerge"><code class="docutils literal notranslate"><span class="pre">sortmerge()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SIR_RFXModel.html#module-SIR_RFXModel">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="calibration_product.html">SIR Relative Flux Calibration Product</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="calibration_product.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="calibration_product.html#file-structure">File structure</a></li>
@@ -99,7 +340,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="SIR Relative Flux Scaling (SIR_RFXModel)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="calibration_product.html" class="btn btn-neutral float-right" title="SIR Relative Flux Calibration Product" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="SIR_RFXModel.html" class="btn btn-neutral float-right" title="SIR_RFXModel package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

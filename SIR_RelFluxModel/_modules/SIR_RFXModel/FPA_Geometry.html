@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIR_RFXModel.FPA_Geometry &mdash; SIR_RFXModel  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SIR_RFXModel
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SIR_RFXModel Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SIR_RFXModel</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">SIR_RFXModel.FPA_Geometry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SIR_RFXModel.FPA_Geometry</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="c1">#  ___________________________________________________________________</span>
+<span class="c1">#  NOTATION</span>
+<span class="c1">#</span>
+<span class="c1">#  Acronyms:</span>
+<span class="c1">#    FP  = Focal Plane</span>
+<span class="c1">#    FPA = Focal Plane Assembly</span>
+<span class="c1">#</span>
+<span class="c1">#  References:</span>
+<span class="c1">#    https://wiki.cosmos.esa.int/euclid/images/9/92/NISP-Detector-orient.png</span>
+<span class="c1">#</span>
+<span class="c1">#  The geometry of the FPA is as follows:</span>
+<span class="c1">#</span>
+<span class="c1">#                                               R_{NI-DS} Y direction --&gt;</span>
+<span class="c1">#                -1                                        0                                        1</span>
+<span class="c1">#               -1|---------------|-----|---------------|-----|---------------|-----|---------------|-1</span>
+<span class="c1">#                 |   DET11 ( 1)  | gap |   DET12 ( 5)  | gap |   DET13 ( 9)  | gap |   DET14 (13)  |</span>
+<span class="c1">#                 |      gap      | gap |      gap      | gap |      gap      | gap |      gap      |</span>
+<span class="c1">#   R_{NI-DS}     |   DET21 ( 2)  | gap |   DET22 ( 6)  | gap |   DET23 (10)  | gap |   DET24 (14)  |</span>
+<span class="c1">#  Z direction   0|      gap      | gap |      gap      | gap |      gap      | gap |      gap      |0</span>
+<span class="c1">#       |         |   DET31 ( 3)  | gap |   DET32 ( 7)  | gap |   DET33 (11)  | gap |   DET34 (15)  |</span>
+<span class="c1">#       |         |      gap      | gap |      gap      | gap |      gap      | gap |      gap      |</span>
+<span class="c1">#      \|/        |   DET41 ( 4)  | gap |   DET42 ( 8)  | gap |   DET43 (12)  | gap |   DET44 (16)  |</span>
+<span class="c1">#                1|---------------|-----|---------------|-----|---------------|-----|---------------|1</span>
+<span class="c1">#                -1                                        0                                        1</span>
+<span class="c1">#</span>
+<span class="c1">#  The numbers around the frame are given in FP normalized</span>
+<span class="c1">#  coordinates, spanning the range from -1 (on the left or upper edge)</span>
+<span class="c1">#  to 1 (right or lower edge).  The FP normalized coordinate (0,0)</span>
+<span class="c1">#  fall exactly in the center of the FPA.</span>
+<span class="c1">#</span>
+<span class="c1">#  Note that the vertical axis of the FPA is named &quot;Z&quot;, while the horizontal one</span>
+<span class="c1">#  is named &quot;Y&quot; in the official documentation.  For simplicity here we will assume the</span>
+<span class="c1">#  following notation:</span>
+<span class="c1">#   Python source code  |                 Meaning                |  Direction in FPA</span>
+<span class="c1">#            x          |  horizontal, first index in a 2D array |       Y</span>
+<span class="c1">#            y          |   vertical, second index in a 2D array |       Z</span>
+<span class="c1">#</span>
+<span class="c1">#  Also note that in the vertical direction the FP normalized</span>
+<span class="c1">#  coordinates increase downwards.</span>
+<span class="c1">#</span>
+<span class="c1">#  Detectors have both a row-column ID (from 11 to 44), and a</span>
+<span class="c1">#  sequential one (from 1 to 16).  Note that the XY identifier is the</span>
+<span class="c1">#  reverse of the row-column one.</span>
+<span class="c1">#</span>
+<span class="c1">#  Pixel coordinates range from 0 (upper or left edge of first pixel)</span>
+<span class="c1">#  to 2048 (lower or right edge of last pixel).  Pixel coordinates can</span>
+<span class="c1">#  be non-integers: the middle point of each pixels are 0.5, 1.5, ...,</span>
+<span class="c1">#  2047.5.</span>
+<span class="c1">#</span>
+<span class="c1">#  Pixel scheme for each detector:</span>
+<span class="c1">#  |-------------|-------------|-------------|-------------|-------------|</span>
+<span class="c1">#  | (   1,   1) | (   1,   2) | (   1, ...) | (   1,2047) | (   1,2048) |</span>
+<span class="c1">#  | (   2,   1) | (   2,   2) | (   2, ...) | (   2,2047) | (   2,2048) |</span>
+<span class="c1">#  |     ...     |     ...     |     ...     |     ...     |     ...   ) |</span>
+<span class="c1">#  | (2047,   1) | (2047,   2) | (2047, ...) | (2047,2047) | (2047,2048) |</span>
+<span class="c1">#  | (2048,   1) | (2048,   2) | (2048, ...) | (2048,2047) | (2048,2048) |</span>
+<span class="c1">#  |-------------|-------------|-------------|-------------|-------------|</span>
+<span class="c1">#</span>
+<span class="c1">#  Note that the pixel with x=1, y=2048 is located in the upper right</span>
+<span class="c1">#  corner (rather than lower left). Hence a transpose operation must</span>
+<span class="c1">#  be used when converting from pixel to detector and viceversa.</span>
+<span class="c1">#</span>
+<span class="c1">#  Also note that detectors in the bottom half of the FPA (i.e. those</span>
+<span class="c1">#  with FP normalized coordinates &gt; 0 in the vertical directions) are</span>
+<span class="c1">#  rotated by 180 degrees.</span>
+<span class="c1">#</span>
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># GLOBAL SETTINGS</span>
+
+<div class="viewcode-block" id="GlobalSettings">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.GlobalSettings">[docs]</a>
+<span class="k">class</span> <span class="nc">GlobalSettings</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class containing global settings.</span>
+
+<span class="sd">    The properties are:</span>
+
+<span class="sd">    - pairCoordXY (boolean, default False): whether the coordinate pairs</span>
+<span class="sd">      of pixel should be interpreted as first and second index in the 2D</span>
+<span class="sd">      array (as read with astropy.io.fits);</span>
+
+<span class="sd">    - enableDetRotation (boolean, default False): set to True to enable</span>
+<span class="sd">      rotation of detectors in the bottom part of the focal plane;</span>
+
+<span class="sd">    - binning (int, default 3): pixel binning factor to display images.</span>
+<span class="sd">      Must be a positivie integer number smaller than 9.  Increase this</span>
+<span class="sd">      number to improve performances;</span>
+
+<span class="sd">    - markpixels (boolean, default False): set to True to mark reference</span>
+<span class="sd">      pixels in the image.  Note: this will erase all pixel information;</span>
+
+<span class="sd">    - markplot (boolean, default False): set to True to mark reference</span>
+<span class="sd">      pixels in the plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GlobalSettings.setDefault">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.GlobalSettings.setDefault">[docs]</a>
+    <span class="k">def</span> <span class="nf">setDefault</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pairCoordXY</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableDetRotation</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binning</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">markpixels</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">markplot</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDefault</span><span class="p">()</span></div>
+
+
+<span class="n">settings</span> <span class="o">=</span> <span class="n">GlobalSettings</span><span class="p">()</span>
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># DETECTOR AND GAP SIZES</span>
+<span class="c1">#</span>
+<span class="c1"># The following routines describe the size of the detectors and gaps</span>
+<span class="c1"># in the FPA.  All lengths must be given in the same unit.  Numbers</span>
+<span class="c1"># are taken from:</span>
+<span class="c1"># https://wiki.cosmos.esa.int/euclid/images/b/b3/NISP_tech.pdf</span>
+
+<div class="viewcode-block" id="sizeDetX">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeDetX">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeDetX</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the size of the detector along the horizontal direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">36.689</span></div>
+
+
+<div class="viewcode-block" id="sizeDetY">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeDetY">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeDetY</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the size of the detector along the vertical direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">36.689</span></div>
+
+
+<div class="viewcode-block" id="sizeGapsX">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeGapsX">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeGapsX</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the size of the gaps along the horizontal direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">3.03</span><span class="p">,</span> <span class="mf">3.03</span><span class="p">,</span> <span class="mf">3.03</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="sizeGapsY">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeGapsY">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeGapsY</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the size of the gaps along the vertical direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">6.213</span><span class="p">,</span> <span class="mf">5.298</span><span class="p">,</span> <span class="mf">6.213</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># FPA STRUCTURE</span>
+<span class="c1">#</span>
+<span class="c1"># These routine describe the structure (i.e. the proper sequence of</span>
+<span class="c1"># detector and gaps) of the focal plane.</span>
+
+<div class="viewcode-block" id="sizeFPX">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeFPX">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeFPX</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the total size of the focal plane along the horizontal direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">sizeDetX</span><span class="p">()</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sizeGapsX</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="sizeFPY">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.sizeFPY">[docs]</a>
+<span class="k">def</span> <span class="nf">sizeFPY</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the total size of the focal plane along the vertical direction.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">sizeDetY</span><span class="p">()</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sizeGapsY</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="focalplaneStructX">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplaneStructX">[docs]</a>
+<span class="k">def</span> <span class="nf">focalplaneStructX</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an array with FP normalized coordinates of the gap edges along the horizontal direction.&quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span>                          \
+                  <span class="n">sizeDetX</span><span class="p">(),</span> <span class="n">sizeGapsX</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>  \
+                  <span class="n">sizeDetX</span><span class="p">(),</span> <span class="n">sizeGapsX</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span>  \
+                  <span class="n">sizeDetX</span><span class="p">(),</span> <span class="n">sizeGapsX</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span>  \
+                  <span class="n">sizeDetX</span><span class="p">()))</span> <span class="o">/</span> <span class="n">sizeFPX</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="p">;</span>  <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+
+
+<div class="viewcode-block" id="focalplaneStructY">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplaneStructY">[docs]</a>
+<span class="k">def</span> <span class="nf">focalplaneStructY</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an array with FP normalized coordinates of the gap edges along the vertical direction.&quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span>                          \
+                  <span class="n">sizeDetY</span><span class="p">(),</span> <span class="n">sizeGapsY</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>  \
+                  <span class="n">sizeDetY</span><span class="p">(),</span> <span class="n">sizeGapsY</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span>  \
+                  <span class="n">sizeDetY</span><span class="p">(),</span> <span class="n">sizeGapsY</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span>  \
+                  <span class="n">sizeDetY</span><span class="p">()))</span> <span class="o">/</span> <span class="n">sizeFPY</span><span class="p">()</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="p">;</span>  <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># DETECTOR ID UTILITIES</span>
+<span class="c1">#</span>
+<span class="c1"># These routines allows to transform the detector ID into one of the</span>
+<span class="c1"># available formats:</span>
+<span class="c1">#  - sequential ID: in the range 1:16</span>
+<span class="c1">#  - XY ID: an X, Y pair</span>
+<span class="c1">#  - string: suitable to be used as &#39;DET_ID&#39; keyword in the header</span>
+
+<div class="viewcode-block" id="idetseq2xy">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetseq2xy">[docs]</a>
+<span class="k">def</span> <span class="nf">idetseq2xy</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a sequential ID into an X, Y pair.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idet</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">);</span>  <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idet</span> <span class="o">&lt;=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">idetx</span> <span class="o">=</span>       <span class="p">(</span><span class="n">idet</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span>  <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">idety</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">idet</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>    <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">idetx</span><span class="p">,</span> <span class="n">idety</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="idetseq2string">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetseq2string">[docs]</a>
+<span class="k">def</span> <span class="nf">idetseq2string</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a sequential ID into a string (suitable to be used as &#39;DET_ID&#39; keyword).&quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">idetx</span><span class="p">,</span> <span class="n">idety</span><span class="p">)</span> <span class="o">=</span> <span class="n">idetseq2xy</span><span class="p">(</span><span class="n">idet</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">idety</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">idetx</span><span class="p">)</span>  <span class="c1"># this is correct: first Y, then X.</span></div>
+
+
+<div class="viewcode-block" id="idetxy2seq">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.idetxy2seq">[docs]</a>
+<span class="k">def</span> <span class="nf">idetxy2seq</span><span class="p">(</span><span class="n">idetx</span><span class="p">,</span> <span class="n">idety</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an X, Y pair into a sequential ID.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idetx</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">);</span>  <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idetx</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idety</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">);</span>  <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">idety</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">idetx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="n">idety</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="detectorRotated">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.detectorRotated">[docs]</a>
+<span class="k">def</span> <span class="nf">detectorRotated</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the chip of a detector is rotated by 180 degrees in the FPA.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">enableDetRotation</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">idetx</span><span class="p">,</span> <span class="n">idety</span><span class="p">)</span> <span class="o">=</span> <span class="n">idetseq2xy</span><span class="p">(</span><span class="n">idet</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">idety</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># DETECTOR TO PIXEL TRANSFORMATIONS</span>
+<span class="c1">#</span>
+<span class="c1"># These routines transform from a detector normalized coordinate (in</span>
+<span class="c1"># the range -1:1 within a detector) into corresponding pixels and</span>
+<span class="c1"># vice-versa.</span>
+
+<div class="viewcode-block" id="det2pixel">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.det2pixel">[docs]</a>
+<span class="k">def</span> <span class="nf">det2pixel</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from detector normalized coordinates into pixels.&quot;&quot;&quot;</span>
+    <span class="c1">#assert np.all(np.abs(x) &lt;= 1)</span>
+    <span class="c1">#assert np.all(np.abs(y) &lt;= 1)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2048</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2048</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">detectorRotated</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">x</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">detectorRotated</span><span class="p">(</span><span class="n">idet</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">pairCoordXY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pixel2det">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.pixel2det">[docs]</a>
+<span class="k">def</span> <span class="nf">pixel2det</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">_x</span><span class="p">,</span> <span class="n">_y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from pixels into detector normalized coordinates.&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_y</span><span class="p">)</span>
+    <span class="c1">#assert np.all(0. &lt;= x);  assert np.all(x &lt;= 2048)</span>
+    <span class="c1">#assert np.all(0. &lt;= y);  assert np.all(y &lt;= 2048)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">detectorRotated</span><span class="p">(</span><span class="n">idet</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">x</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">detectorRotated</span><span class="p">(</span><span class="n">idet</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2048</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="mi">2048</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">y</span> <span class="o">/</span> <span class="mi">2048</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">pairCoordXY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># DETECTOR TO FOCAL PLANE TRANSFORMATIONS</span>
+<span class="c1">#</span>
+<span class="c1"># These routines transform from a detector normalized coordinate (in</span>
+<span class="c1"># the range -1:1 within a detector) into the correspondind normalized</span>
+<span class="c1"># coordinates in the FPA.</span>
+
+<span class="n">CX</span> <span class="o">=</span> <span class="n">focalplaneStructX</span><span class="p">()</span>
+<span class="n">CY</span> <span class="o">=</span> <span class="n">focalplaneStructY</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="det2focalplane">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.det2focalplane">[docs]</a>
+<span class="k">def</span> <span class="nf">det2focalplane</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from detector to focal plane normalized coordinates.&quot;&quot;&quot;</span>
+    <span class="n">outx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">outy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">idetx</span><span class="p">,</span> <span class="n">idety</span> <span class="o">=</span> <span class="n">idetseq2xy</span><span class="p">(</span><span class="n">idet</span><span class="p">)</span>
+    <span class="n">idetx</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">idety</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">CX</span><span class="p">[</span><span class="n">idetx</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">CX</span><span class="p">[</span><span class="n">idetx</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">CY</span><span class="p">[</span><span class="n">idety</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">CY</span><span class="p">[</span><span class="n">idety</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">outx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">+</span> <span class="n">x0</span>
+    <span class="n">outy</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">+</span> <span class="n">y0</span>
+    <span class="k">return</span> <span class="n">outx</span><span class="p">,</span> <span class="n">outy</span></div>
+
+
+
+<div class="viewcode-block" id="focalplane2det">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplane2det">[docs]</a>
+<span class="k">def</span> <span class="nf">focalplane2det</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from focal plane to detector normalized coordinates.&quot;&quot;&quot;</span>
+    <span class="n">scalar_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">scalar_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">scalar_x</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">x</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">scalar_y</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">y</span><span class="p">,))</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="n">idet</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">outx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">outy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">idetx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">CX</span><span class="p">[</span><span class="n">idetx</span><span class="o">*</span><span class="mi">2</span>  <span class="p">]</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">CX</span><span class="p">[</span><span class="n">idetx</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">idety</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">CY</span><span class="p">[</span><span class="n">idety</span><span class="o">*</span><span class="mi">2</span>  <span class="p">]</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="n">CY</span><span class="p">[</span><span class="n">idety</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x0</span><span class="p">)</span>  <span class="o">&amp;</span>  <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="n">x1</span><span class="p">)</span>  <span class="o">&amp;</span>  \
+                         <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">y0</span><span class="p">)</span>  <span class="o">&amp;</span>  <span class="p">(</span><span class="n">y</span> <span class="o">&lt;=</span> <span class="n">y1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">outx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">outy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">idet</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idetxy2seq</span><span class="p">(</span><span class="n">idetx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">idety</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">outx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">outx</span> <span class="o">*</span> <span class="mf">1e5</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e5</span>
+    <span class="n">outy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">outy</span> <span class="o">*</span> <span class="mf">1e5</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e5</span>
+    <span class="k">if</span> <span class="n">scalar_x</span><span class="p">:</span>
+        <span class="n">outx</span> <span class="o">=</span> <span class="n">outx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">scalar_y</span><span class="p">:</span>
+        <span class="n">outy</span> <span class="o">=</span> <span class="n">outy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">scalar_x</span>  <span class="ow">and</span>  <span class="n">scalar_y</span><span class="p">:</span>
+        <span class="n">idet</span> <span class="o">=</span> <span class="n">idet</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">outx</span><span class="p">,</span> <span class="n">outy</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ____________________________________________________________________</span>
+<span class="c1"># MISCELLANEOUS UTILITIES</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="focalplane2pixel">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.focalplane2pixel">[docs]</a>
+<span class="k">def</span> <span class="nf">focalplane2pixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from focal plane normalized coordinates into pixels.&quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">focalplane2det</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">det2pixel</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pixel2focalplane">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.pixel2focalplane">[docs]</a>
+<span class="k">def</span> <span class="nf">pixel2focalplane</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert from pixel into focal plane normalized coordinates.&quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">pixel2det</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">det2focalplane</span><span class="p">(</span><span class="n">idet</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="boundaries">
+<a class="viewcode-back" href="../../SIR_RFXModel.html#SIR_RFXModel.FPA_Geometry.boundaries">[docs]</a>
+<span class="k">def</span> <span class="nf">boundaries</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return boundaries in an array of coordinates.</span>
+
+<span class="sd">    Given an input 1D array of sorted coordinates, returns the array</span>
+<span class="sd">    of boundaries (or edges).  Note that output arrays has 1 extra</span>
+<span class="sd">    element with respect to input one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Shoubaneh Hemmati.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -15,29 +15,17 @@ The module is structured into two main components:
 Scientific Background
 ---------------------
 
-Large-scale transmission variations across the NISP focal plane arise from a
-combination of optical throughput, detector response, and vignetting effects.
-These variations can reach the ~10% level in some grism/tilt configurations and
-must be corrected to ensure spatially uniform spectrophotometry.
+Large-scale transmission variations across the NISP focal plane arise from a combination of optical throughput, detector response, and vignetting effects.
+These variations can reach the ~10% level in some grism/tilt configurations and must be corrected to ensure spatially uniform spectrophotometry.
 
-Euclid measures these variations using repeated observations of bright
-self-calibration stars (typically :math:`16 < H_E < 18`) obtained at many dither
-positions, detector locations, and grism/tilt settings.  
-Because each star is observed multiple times at different focal-plane
-positions, the ensemble of observations provides strong statistical constraints
-on the large-scale flat pattern that must be corrected.
+Euclid measures these variations using repeated observations of bright self-calibration stars (typically 16 < H < 18) obtained at many dither positions, detector locations, and grism/tilt settings. Because each star is observed multiple times at different focal-plane positions, the ensemble of observations provides strong statistical constraints on the large-scale flat pattern that must be corrected.
 
-For the Q1 data release, the relative response is found to be largely
-achromatic. To maximise signal-to-noise, an achromatic solution is therefore
-derived that depends only on focal-plane coordinates for each grism/tilt
-configuration. This solution successfully flattens repeated observations of
-bright sources and shows clear signatures of the expected vignetting pattern.
+For the Q1 data release, the relative response is found to be largely achromatic. To maximise signal-to-noise, an achromatic solution is therefore derived that depends only on focal-plane coordinates for each grism/tilt configuration. This solution successfully flattens repeated observations of bright sources and shows clear signatures of the expected vignetting pattern.
 
 1. Relative Flux Calibration Module
 -----------------------------------
 
-The calibration module constructs the relative flux scaling solution for each
-combination of **grism** and **tilt**, and as a function of **wavelength** and
+The calibration module constructs the relative flux scaling solution for each combination of **grism** and **tilt**, and as a function of **wavelength** and
 focal-plane position.
 
 High-level strategy
@@ -46,7 +34,7 @@ High-level strategy
 At a high level, the calibration proceeds in three stages:
 
 1. **Extract per-star, per-visit photometric measurements**
-   from the self-calibration spectra (or simulations), in a
+   from the extracted 1D spectra (or simulations), in a
    narrow wavelength bin centred on :math:`\lambda_\mathrm{center}`.
 2. **Fit a self-calibration model** that simultaneously solves for:
 
