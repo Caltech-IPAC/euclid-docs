@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_DarkBiasSubtraction.BiasSubtraction &mdash; NIR_DarkBiasSubtraction 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_DarkBiasSubtraction
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_DarkBiasSubtraction</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_DarkBiasSubtraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_DarkBiasSubtraction.BiasSubtraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_DarkBiasSubtraction.BiasSubtraction</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file BiasSubtraction.py</span>
+<span class="sd">@date Jan. 12, 2016</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.ma</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ma</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">NispSurveyExposure</span><span class="p">,</span> <span class="n">NispDetectorExposure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageF</span><span class="p">,</span> <span class="n">MaskUI</span>
+
+<div class="viewcode-block" id="BiasSubtraction">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BiasSubtraction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class BiasSubtraction</span>
+
+<span class="sd">    @brief This class applies bias subtraction or reference pixel correction.</span>
+<span class="sd">           Please refer to &quot;Addendum to Reference Pixel Subtraction Method</span>
+<span class="sd">           for EUCLID SCS Noise Specification&quot;, EUCL-IPN-TN-7-001a.</span>
+
+<span class="sd">           This module will be required if fowler sampling or ramp is used for imaging.</span>
+<span class="sd">           In this case reference pixels around the image provide the bias level</span>
+<span class="sd">           and need to be analyzed to determine the bias level to remove. </span>
+
+<span class="sd">           If it is not in fowler or ramp mode, simply subset the data to</span>
+<span class="sd">           2040x2040 and return.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;BiasSubtraction&#39;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgfile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span> <span class="o">=</span> <span class="n">imgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">NUM_CH</span> <span class="o">=</span> <span class="mi">32</span> <span class="c1">#number of channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MPIX</span> <span class="o">=</span> <span class="mi">64</span>   <span class="c1">#number of pixels in j direction in Up/Down frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NPIX</span> <span class="o">=</span> <span class="mi">4</span>    <span class="c1">#number of pixesl in j direction in Left/Right frame</span>
+                         <span class="c1">#it&#39;s also the number of pixels in i direction in Up/Down</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NN</span> <span class="o">=</span> <span class="mi">4</span>      <span class="c1">#the 2*nn+1 average window for Left/Right correction</span>
+
+<div class="viewcode-block" id="BiasSubtraction.apply">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Method to apply the bias frame subtraction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#read in image data file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): read in input data&quot;</span><span class="p">)</span>
+        <span class="n">imgframe</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span><span class="p">)</span>
+
+        <span class="c1">#init final output</span>
+        <span class="n">outframe</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="p">(</span><span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">)</span>
+        <span class="n">outframe</span><span class="o">.</span><span class="n">setMetadata</span><span class="p">(</span><span class="n">imgframe</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">())</span>
+
+        <span class="c1">#check if it&#39;s in fowler or ramp mode</span>
+        <span class="c1">#if not, simply subset the data and write out</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">imgframe</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;READMODE&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): The input data READMODE is: &quot;</span> <span class="o">+</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="n">numDetectors</span> <span class="o">=</span> <span class="n">imgframe</span><span class="o">.</span><span class="n">getNumDetectors</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;UpTheRamp&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;FowlerSamples&quot;</span><span class="p">):</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): No correction is done. &quot;</span> \
+                            <span class="s2">&quot;Simply crop the data from 2048x2048 to 2040x2040.&quot;</span><span class="p">)</span>
+           <span class="c1">#subset the data and return</span>
+           <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDetectors</span><span class="p">):</span>
+               <span class="n">detPtr</span> <span class="o">=</span> <span class="n">imgframe</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+
+               <span class="n">newdet</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">extractSubPortion</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2040</span><span class="p">,</span><span class="mi">2040</span><span class="p">)</span>
+
+               <span class="n">pl</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+               <span class="n">pl</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">4.</span><span class="p">)</span>  <span class="c1">#update the meta</span>
+               <span class="n">pl</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">4.</span><span class="p">)</span>
+               <span class="n">newdet</span><span class="o">.</span><span class="n">setMetadata</span><span class="p">(</span><span class="n">pl</span><span class="p">)</span>
+
+               <span class="c1">#add to the final output</span>
+               <span class="n">outframe</span><span class="o">.</span><span class="n">addDetector</span><span class="p">(</span><span class="n">newdet</span><span class="p">)</span>
+
+           <span class="c1"># saving all three layers in a new FITS file</span>
+           <span class="n">outframe</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): Written to file: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+           <span class="k">return</span>
+
+        <span class="c1">#if it is in fowler or ramp mode, do the correction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): starting reference pixel correction... &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDetectors</span><span class="p">):</span>
+            <span class="n">detPtr</span> <span class="o">=</span> <span class="n">imgframe</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+            <span class="n">detId</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DET_ID&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): reference pixel correction at detector &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">detId</span><span class="p">))</span>
+
+            <span class="c1"># get the image data layer</span>
+            <span class="n">sciimg</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span>
+
+            <span class="c1"># get numpy arrays</span>
+            <span class="n">sciimgarray</span> <span class="o">=</span> <span class="n">sciimg</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+
+            <span class="c1">#Up-Down reference pixels correction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updownCorr</span><span class="p">(</span><span class="n">sciimgarray</span><span class="p">)</span>
+
+            <span class="c1">#Left-Right reference pixels correction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leftrightCorr</span><span class="p">(</span><span class="n">sciimgarray</span><span class="p">)</span>
+
+            <span class="c1">#subset the detector to the center 2040x2040</span>
+            <span class="n">newdet</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">extractSubPortion</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2040</span><span class="p">,</span><span class="mi">2040</span><span class="p">)</span>
+
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">detPtr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+            <span class="n">pl</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CRPIX1&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">4.</span><span class="p">)</span>  <span class="c1">#update the meta</span>
+            <span class="n">pl</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CRPIX2&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="mf">4.</span><span class="p">)</span>
+            <span class="n">newdet</span><span class="o">.</span><span class="n">setMetadata</span><span class="p">(</span><span class="n">pl</span><span class="p">)</span>
+
+            <span class="c1">#add to the final output</span>
+            <span class="n">outframe</span><span class="o">.</span><span class="n">addDetector</span><span class="p">(</span><span class="n">newdet</span><span class="p">)</span>
+
+        <span class="c1"># saving to a new FITS file</span>
+        <span class="n">outframe</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): Written to file: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="BiasSubtraction.updownCorr">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.updownCorr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updownCorr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sciimgarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Up and Down reference pixel correction.</span>
+<span class="sd">         </span>
+<span class="sd">         Args:</span>
+<span class="sd">             sciimgarray: 2D numpy array, containing the science data layer</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             Implicit return.  The input sciimgarray got modified in this funtion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): Up-Down reference pixel correction&quot;</span><span class="p">)</span>
+
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">num_ch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUM_CH</span>
+        <span class="n">npix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NPIX</span>
+        <span class="n">mpix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MPIX</span>
+
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_ch</span><span class="p">):</span>
+            <span class="n">punmasked</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1">#Up reference pixels</span>
+            <span class="n">pud</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">npix</span><span class="p">,</span> <span class="n">ch</span><span class="o">*</span><span class="n">mpix</span><span class="p">:(</span><span class="n">ch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">mpix</span><span class="p">]</span>
+            <span class="n">res</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">nmad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getstats</span><span class="p">(</span><span class="n">pud</span><span class="p">)</span>
+            <span class="n">punmasked</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">mask</span><span class="p">])</span>
+
+            <span class="c1">#Down reference pixels</span>
+            <span class="n">pud</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">npix</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ch</span><span class="o">*</span><span class="n">mpix</span><span class="p">:(</span><span class="n">ch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">mpix</span><span class="p">]</span>
+            <span class="n">res</span><span class="p">,</span><span class="n">med</span><span class="p">,</span><span class="n">nmad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getstats</span><span class="p">(</span><span class="n">pud</span><span class="p">)</span>
+            <span class="n">punmasked</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">mask</span><span class="p">])</span>
+            
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">punmasked</span><span class="p">))</span>
+
+            <span class="c1">#sciimgarray[npix:dims[0]-npix, ch*mpix:(ch+1)*mpix] -= x  ##Old doc</span>
+            <span class="n">sciimgarray</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ch</span><span class="o">*</span><span class="n">mpix</span><span class="p">:(</span><span class="n">ch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">mpix</span><span class="p">]</span> <span class="o">-=</span> <span class="n">x</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="BiasSubtraction.leftrightCorr">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.leftrightCorr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">leftrightCorr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sciimgarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Left-Right reference pixels correction</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">             sciimgarray: 2D numpy array, containing the science data layer</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             Implicit return.  The input sciimgarray got modified in this funtion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BiasSubtraction.apply(): Left-Right reference pixel correction&quot;</span><span class="p">)</span>
+
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">npix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NPIX</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NN</span>
+
+        <span class="c1">#Left reference pixels</span>
+        <span class="c1">#plr = sciimgarray[npix:dims[0]-npix, 0:npix] ##Old doc</span>
+        <span class="n">plr</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">:</span><span class="n">npix</span><span class="p">]</span>
+
+        <span class="n">resl</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">nmad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getstats</span><span class="p">(</span><span class="n">plr</span><span class="p">)</span>
+
+        <span class="c1">#Right reference pixels</span>
+        <span class="c1">#plr = sciimgarray[npix:dims[0]-npix, dims[1]-npix:dims[1]] ##Old doc</span>
+        <span class="n">plr</span> <span class="o">=</span> <span class="n">sciimgarray</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">npix</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="n">resr</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">nmad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getstats</span><span class="p">(</span><span class="n">plr</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">npix</span><span class="p">):</span>
+            <span class="c1">#compute the average over a 2*n+1 window of the left and right</span>
+            <span class="c1">#reference pixels</span>
+            <span class="n">punmasked</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">pll</span> <span class="o">=</span> <span class="n">resl</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">nn</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">nn</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>          
+            <span class="n">prr</span> <span class="o">=</span> <span class="n">resr</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">nn</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">nn</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>          
+            <span class="n">punmasked</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pll</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pll</span><span class="o">.</span><span class="n">mask</span><span class="p">])</span>
+            <span class="n">punmasked</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">prr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">prr</span><span class="o">.</span><span class="n">mask</span><span class="p">])</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">punmasked</span><span class="p">))</span>
+
+            <span class="n">sciimgarray</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">npix</span><span class="p">:</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">npix</span><span class="p">]</span> <span class="o">-=</span> <span class="n">y</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="BiasSubtraction.getstats">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.getstats">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getstats</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">):</span>
+        <span class="n">med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">)</span>
+        <span class="n">nmad</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">pixelarray</span><span class="o">-</span> <span class="n">med</span><span class="p">))</span>
+        <span class="n">masku</span> <span class="o">=</span> <span class="p">(</span><span class="n">pixelarray</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">med</span><span class="o">+</span><span class="mi">5</span><span class="o">*</span><span class="n">nmad</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">pixelarray</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">med</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="n">nmad</span><span class="p">))</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">,</span> <span class="n">mask</span><span class="o">=~</span><span class="n">masku</span><span class="p">)</span>
+        <span class="c1">#A True in the retrun mask means the pixel is NOT masked by the criteria!</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">nmad</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

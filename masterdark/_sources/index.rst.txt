@@ -1,0 +1,70 @@
+.. NIR_DarkBiasSubtraction documentation master file, created by
+   sphinx-quickstart on Mon Dec 15 14:28:09 2025.
+
+NIR Master Dark and Bias
+========================
+
+The component identifier is **NIR_DarkBiasSubtraction**
+The module will correct for dark current and the bias (reference pixels) in the 
+near-infrared detectors.
+
+It contains 3 PFs:
+
+1. **Dark Current Applicaiton Module** - correct for the dark current in the detector pixels.
+2. **Reference Pixel (Bias) Correction Module** - correct for bias.
+3. **Dark Current Calibration Module** determines the dark current level.
+
+Dark Curent Application Module
+------------------------------
+The purpose of this PF is to subtract the dark current from the detectors.  The subtracted dark
+current could potentially depend on the time the exposure was taken, temperature of the detector,
+and the exposure time and mode of detector operation.  The apply module will select the appropriate
+dark using the time-stamp, temperature, detector mode, and exposure time of the data frame. The
+calibration module will generate dark frames for each time-stamp, temperature, detector mode, and
+exposure time of the data frame.  Over time it may be determined that some of these parameters are
+not needed and so it should be possible to reduce these parameters over time. 
+
+This PF will subtract a dark current calibration frame from the data, add the noise from the
+calibration frame to the noise/variance layer of the data files, and update the "dark pixels"
+flag in the data flag layer if the calibration frame does not meet the 0.4% calibration requirements
+specified in R-CAL-B-NP-1420.
+
+Reference Pixel (Bias) Correction Module
+----------------------------------------
+The algorithm for the reference pixel correction is described in "Reference Pixel Subtraction
+Method for EUCLID SCS Noise Specification" document (EUCL-IPN-TN-7-001) which is also implemented
+in on-board processing.
+
+The module will apply an algorithm provided by the NISP team. At this time, it consists of taking
+medians over a range of pixels and subtracting it from the detectors.
+
+Dark Current Calibration Module
+-------------------------------
+The dark calibration module will use the dark fram taken at the end of each science sequence as
+well as dedicated dark frames to create a dark frame appropriate for each set of science data.
+This will be done by creating a medians and rms images of the dark calibration broken up by time
+stamp, tmperature, exposure time, and detector mode.  The persistence masks and cosmic ray masks
+for each dark frame will also be required as well.  These frames will be trended with time to ensure
+the expected level of stability is met.
+
+Purpose and Requirements
+------------------------
+The primary requirement is R-CAL-B-NP-1420 which states the dark shall be calibrated to 0.4%,
+which corresponds to 0.5e\ :math:`^-` based on the estimated background of 90, 97, and 117e\ :math:`^-` for the Y, J,
+and H bands respectively.
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   modules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

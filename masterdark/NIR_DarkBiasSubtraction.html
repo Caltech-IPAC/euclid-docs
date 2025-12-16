@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_DarkBiasSubtraction package &mdash; NIR_DarkBiasSubtraction 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="NIR_DarkBiasSubtraction" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> NIR_DarkBiasSubtraction
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NIR_DarkBiasSubtraction</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">NIR_DarkBiasSubtraction package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.BiasSubtraction">NIR_DarkBiasSubtraction.BiasSubtraction module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction"><code class="docutils literal notranslate"><span class="pre">BiasSubtraction</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.BiasSubtractionProgram">NIR_DarkBiasSubtraction.BiasSubtractionProgram module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.BiasSubtractionProgram.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.BiasSubtractionProgram.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.DarkSubtraction">NIR_DarkBiasSubtraction.DarkSubtraction module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction"><code class="docutils literal notranslate"><span class="pre">DarkSubtraction</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.DarkSubtractionProgram">NIR_DarkBiasSubtraction.DarkSubtractionProgram module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.DarkSubtractionProgram.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.DarkSubtractionProgram.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.MakeMasterDark">NIR_DarkBiasSubtraction.MakeMasterDark module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark"><code class="docutils literal notranslate"><span class="pre">MakeMasterDark</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMean"><code class="docutils literal notranslate"><span class="pre">calMean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMedian"><code class="docutils literal notranslate"><span class="pre">calMedian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMedianMad"><code class="docutils literal notranslate"><span class="pre">calMedianMad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.excepthook"><code class="docutils literal notranslate"><span class="pre">excepthook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.getDarkAcquistionTime"><code class="docutils literal notranslate"><span class="pre">getDarkAcquistionTime()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.load_list_from_file"><code class="docutils literal notranslate"><span class="pre">load_list_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.populateMask"><code class="docutils literal notranslate"><span class="pre">populateMask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.prepend_dir"><code class="docutils literal notranslate"><span class="pre">prepend_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDark.readParams"><code class="docutils literal notranslate"><span class="pre">readParams()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction.MakeMasterDarkProg">NIR_DarkBiasSubtraction.MakeMasterDarkProg module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDarkProg.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NIR_DarkBiasSubtraction.MakeMasterDarkProg.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-NIR_DarkBiasSubtraction">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NIR_DarkBiasSubtraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">NIR_DarkBiasSubtraction</a></li>
+      <li class="breadcrumb-item active">NIR_DarkBiasSubtraction package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/NIR_DarkBiasSubtraction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nir-darkbiassubtraction-package">
+<h1>NIR_DarkBiasSubtraction package<a class="headerlink" href="#nir-darkbiassubtraction-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-NIR_DarkBiasSubtraction.BiasSubtraction">
+<span id="nir-darkbiassubtraction-biassubtraction-module"></span><h2>NIR_DarkBiasSubtraction.BiasSubtraction module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.BiasSubtraction" title="Link to this heading"></a></h2>
+<p>&#64;file BiasSubtraction.py
+&#64;date Jan. 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.BiasSubtraction.</span></span><span class="sig-name descname"><span class="pre">BiasSubtraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtraction.html#BiasSubtraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class BiasSubtraction</p>
+<dl>
+<dt>&#64;brief This class applies bias subtraction or reference pixel correction.</dt><dd><p>Please refer to “Addendum to Reference Pixel Subtraction Method
+for EUCLID SCS Noise Specification”, EUCL-IPN-TN-7-001a.</p>
+<p>This module will be required if fowler sampling or ramp is used for imaging.
+In this case reference pixels around the image provide the bias level
+and need to be analyzed to determine the bias level to remove.</p>
+<p>If it is not in fowler or ramp mode, simply subset the data to
+2040x2040 and return.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtraction.html#BiasSubtraction.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.apply" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to apply the bias frame subtraction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.getstats">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getstats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pixelarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtraction.html#BiasSubtraction.getstats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.getstats" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.leftrightCorr">
+<span class="sig-name descname"><span class="pre">leftrightCorr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sciimgarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtraction.html#BiasSubtraction.leftrightCorr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.leftrightCorr" title="Link to this definition"></a></dt>
+<dd><p>Left-Right reference pixels correction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sciimgarray</strong> – 2D numpy array, containing the science data layer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Implicit return.  The input sciimgarray got modified in this funtion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BiasSubtraction'</span></em><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.updownCorr">
+<span class="sig-name descname"><span class="pre">updownCorr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sciimgarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtraction.html#BiasSubtraction.updownCorr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtraction.BiasSubtraction.updownCorr" title="Link to this definition"></a></dt>
+<dd><p>Up and Down reference pixel correction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sciimgarray</strong> – 2D numpy array, containing the science data layer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Implicit return.  The input sciimgarray got modified in this funtion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction.BiasSubtractionProgram">
+<span id="nir-darkbiassubtraction-biassubtractionprogram-module"></span><h2>NIR_DarkBiasSubtraction.BiasSubtractionProgram module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.BiasSubtractionProgram" title="Link to this heading"></a></h2>
+<p>&#64;file BiasSubtractionProgram.py
+&#64;date Jan. 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtractionProgram.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.BiasSubtractionProgram.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtractionProgram.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtractionProgram.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for BiasSubtractionProgram</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.BiasSubtractionProgram.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.BiasSubtractionProgram.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/BiasSubtractionProgram.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.BiasSubtractionProgram.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+<p>Example to use this script:
+./run biasSubtPyProgram –infile imgframe.fits –outfile outfile.fits –workdir workdirpath –logdir logdirpath</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction.DarkSubtraction">
+<span id="nir-darkbiassubtraction-darksubtraction-module"></span><h2>NIR_DarkBiasSubtraction.DarkSubtraction module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.DarkSubtraction" title="Link to this heading"></a></h2>
+<p>&#64;file DarkSubtraction.py
+&#64;date Jan. 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.DarkSubtraction.</span></span><span class="sig-name descname"><span class="pre">DarkSubtraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/DarkSubtraction.html#DarkSubtraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class DarkSubtraction</p>
+<dl class="simple">
+<dt>&#64;brief This class subtracts the dark current from the detectors.  The</dt><dd><p>subtracted dark current could potentially depend on the time the
+exposure was taken, temperature of the detector, and the exposure
+time and mode of detector operation.  This apply module will select
+the appropriate dark using the time-stamp, temperature, detector mode,
+and exposure time of the data frame.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/DarkSubtraction.html#DarkSubtraction.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.apply" title="Link to this definition"></a></dt>
+<dd><p>&#64;brief Method to apply the dark frame subtraction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.darkSubtract">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">darkSubtract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NDExp_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cal_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/DarkSubtraction.html#DarkSubtraction.darkSubtract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.darkSubtract" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction.DarkSubtractionProgram">
+<span id="nir-darkbiassubtraction-darksubtractionprogram-module"></span><h2>NIR_DarkBiasSubtraction.DarkSubtractionProgram module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.DarkSubtractionProgram" title="Link to this heading"></a></h2>
+<p>&#64;file DarkSubtractionProgram.py
+&#64;date Jan. 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.DarkSubtractionProgram.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.DarkSubtractionProgram.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/DarkSubtractionProgram.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.DarkSubtractionProgram.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for DarkSubtractionProgram</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.DarkSubtractionProgram.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.DarkSubtractionProgram.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/DarkSubtractionProgram.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.DarkSubtractionProgram.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+<p>Example to use this script:
+./run darkSubtPyProgram –infile=inexposure.fits</p>
+<blockquote>
+<div><p>–masterdark=calfile.xml
+–outfile=outfile.fits
+–workdir=workdir –logdir=logdir</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction.MakeMasterDark">
+<span id="nir-darkbiassubtraction-makemasterdark-module"></span><h2>NIR_DarkBiasSubtraction.MakeMasterDark module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.MakeMasterDark" title="Link to this heading"></a></h2>
+<p>&#64;file MakeMasterDark.py
+&#64;date December 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">MakeMasterDark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darklist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nirconfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdbfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>&#64;class MakeMasterDark
+&#64;brief This class creates the Master Dark file.  It uses the dark frames</p>
+<blockquote>
+<div><p>taken at end of each science sequence as well as dedicated dark
+frames.  This will be done by creating a medians and rms images
+of the dark calibration broken up by time stamp, temperature,
+exposure time, and detector mode.  The persistence masks and cosmic
+ray masks for each dark frame will also be required as input.
+These frames will be trended with time to ensure the expected level
+of stability is met.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.apply" title="Link to this definition"></a></dt>
+<dd><p>Create the Master Dark</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.clip">
+<span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numDark</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darkdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noisedata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darkmed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darkmad</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.clip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.clip" title="Link to this definition"></a></dt>
+<dd><p>Clip pixels that exceed noise thresholds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>numDark</strong> – int, the number of dark files</p></li>
+<li><p><strong>darkdata</strong> – 3D MaskedArray, the dark data with mask</p></li>
+<li><p><strong>noisedata</strong> – 3D numpy array, the noise data</p></li>
+<li><p><strong>darkmed</strong> – 2D MaskedArray, the median</p></li>
+<li><p><strong>darkmad</strong> – 2D MaskedArray, the MAD</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3D MaskedArray, the dark data after clipping pixels based on noise thresholds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.createDetFitsFile">
+<span class="sig-name descname"><span class="pre">createDetFitsFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mdark</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dark</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_darkfilled</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">darkfill</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numDark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.createDetFitsFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.createDetFitsFile" title="Link to this definition"></a></dt>
+<dd><p>Create the output FITS file for each detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mdark</strong> – a NispSurveyExposure, contain all data for the Master Dark</p></li>
+<li><p><strong>detid</strong> – the detector ID for the extension</p></li>
+<li><p><strong>scaid</strong> – the SCA ID for the extension</p></li>
+<li><p><strong>dark</strong> – numpy array containing the dark data</p></li>
+<li><p><strong>var</strong> – num[y array containing the VAR of the data</p></li>
+<li><p><strong>flags</strong> – numpy array containing the DARK mask</p></li>
+<li><p><strong>num_darkfilled</strong> – number of pixels that is filled with ‘darkfill’ value</p></li>
+<li><p><strong>darkfill</strong> – dark fill value (when num_darkfilled=0, this value=0.)</p></li>
+<li><p><strong>gain</strong> – the GAIN in the input data</p></li>
+<li><p><strong>numDark</strong> – the number of input raw dark files</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.fetch_nir_filter_name_from_config_xml">
+<span class="sig-name descname"><span class="pre">fetch_nir_filter_name_from_config_xml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.fetch_nir_filter_name_from_config_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.fetch_nir_filter_name_from_config_xml" title="Link to this definition"></a></dt>
+<dd><p>Return the filter name from the dpdNirConfigurationSet xml file
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.firstGuess">
+<span class="sig-name descname"><span class="pre">firstGuess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">darks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.firstGuess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.firstGuess" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Mask the dark data using the flags</dt><dd><p>Create the median as a first guess
+Measure the MAD as an estimate of the measured noise</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>darks</strong> – 3D numpy array, the dark data for the current chunk</p></li>
+<li><p><strong>flags</strong> – 3D numpy array, dtype=bool, the flags for the bad pixels for the current chunk</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3D MaskedArray, the dark data after masked
+darkmed: 2D MaskedArray, the median dark
+darkmad: 2D MaskedArray, the MAD</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>maskeddarks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getDarkList">
+<span class="sig-name descname"><span class="pre">getDarkList</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.getDarkList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getDarkList" title="Link to this definition"></a></dt>
+<dd><p>Get the list of dark files</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getParams">
+<span class="sig-name descname"><span class="pre">getParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.getParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getParams" title="Link to this definition"></a></dt>
+<dd><p>Get the value of the parameter ‘param’ from a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param</strong> – string, name of the parameter</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value of the parameter ‘param’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_nir_filter_string_from_MACC">
+<span class="sig-name descname"><span class="pre">get_nir_filter_string_from_MACC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_dark_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.get_nir_filter_string_from_MACC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_nir_filter_string_from_MACC" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_parameters_from_nirconfig">
+<span class="sig-name descname"><span class="pre">get_parameters_from_nirconfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.get_parameters_from_nirconfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_parameters_from_nirconfig" title="Link to this definition"></a></dt>
+<dd><p>Return a dictionary of parameters from the nirConfiguration (if present)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.readFitsByChunk">
+<span class="sig-name descname"><span class="pre">readFitsByChunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">firsthdu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.readFitsByChunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.readFitsByChunk" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Read a FITS file by chunks and return data from 3 HDUs per detector</dt><dd><p>For large FITS file and many of them, there is a need to read in
+small chunks at a time.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>filename -- the FITS file</em>)</p></li>
+<li><p><strong>index</strong> (<em>firsthdu -- the</em>)</p></li>
+<li><p><strong>[</strong><strong>m1</strong> (<em>n2</em><em>] </em><em>the index range</em>) – m2,n1:n2] in the image array</p></li>
+<li><p><strong>m2</strong> – m2,n1:n2] in the image array</p></li>
+<li><p><strong>n1</strong> – m2,n1:n2] in the image array</p></li>
+<li><p><strong>[</strong><strong>m1</strong> – m2,n1:n2] in the image array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the dark data for this chunk
+noise: the variance data for this chunk
+flags: the mask data for this chunk</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dark</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.setDefaultParams">
+<span class="sig-name descname"><span class="pre">setDefaultParams</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.setDefaultParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.setDefaultParams" title="Link to this definition"></a></dt>
+<dd><p>Set the default params in case of no user input parameter file
+We use empirical formula for MAXNOISE: 0.3 * sqrt(480/N) where
+N is the number of raw darks used.  So for 10 darks, it’s ~2.1.
+For 480 darks, it’s ~0.3.
+This number also varies depending on filters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.treatBadMeasurement">
+<span class="sig-name descname"><span class="pre">treatBadMeasurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">darkfin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsfin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nframes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#MakeMasterDark.treatBadMeasurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.treatBadMeasurement" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Find the pixels where we don’t have good measurement</dt><dd><p>because the dark value is below the RMS/sqrt(frame) AND the RMS/sqrt(nframe) is below the
+allowed noise level.  We will use these pixels to calculate
+the fill values later on.  Make sure to exclude the exisiting
+flagged pixels.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>darkfin</strong> – 2D MaskedArray, the weighted average of dark on good pixels, which has a mask determined from previous steps</p></li>
+<li><p><strong>rmsfin</strong> – 2D MaskedArray, the RMS of the dark on good pixels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D MaskedArray, pixels where dark &lt;= RMS/sqrt(nf) AND RMS/sqrt(nf) &lt; maxnoise are masked</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>avedark</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.calMean">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">calMean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#calMean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMean" title="Link to this definition"></a></dt>
+<dd><p>Calculate mean along the <em>first</em> dimension of a 3D numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – 3D numpy array</p></li>
+<li><p><strong>flag</strong> – 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D MaskedArray, the median along the first axis</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>med</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.calMedian">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">calMedian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#calMedian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMedian" title="Link to this definition"></a></dt>
+<dd><p>Calculate median along the <em>first</em> dimension of a 3D numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – 3D numpy array</p></li>
+<li><p><strong>flag</strong> – 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D MaskedArray, the median along the first axis</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>med</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.calMedianMad">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">calMedianMad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#calMedianMad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.calMedianMad" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>Calculate median and MAD along the first dimension of a 3D numpy array.</dt><dd><p>numpy.ma.median is pianfully slow.</p>
+<p>The MAD is short for the median absolute deviation.
+The MAD is defined as <code class="docutils literal notranslate"><span class="pre">median(abs(a</span> <span class="pre">-</span> <span class="pre">median(a)))/c</span></code> where c=0.6744897501960817</p>
+<p>See:://www.statsmodels.org/devel/generated/statsmodels.robust.scale.mad.html</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – 3D numpy array</p></li>
+<li><p><strong>flag</strong> – 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</p></li>
+<li><p><strong>axis</strong> – int, optional, axis along which the medians are computed. The
+default (axis=None) is to compute the median along a flattened
+version of the array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D MaskedArray, the median along the first axis
+MAD: 2D MaskedArray, the MAD along the first axis</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>med</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.excepthook">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">excepthook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#excepthook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.excepthook" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.getDarkAcquistionTime">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">getDarkAcquistionTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">darklist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#getDarkAcquistionTime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.getDarkAcquistionTime" title="Link to this definition"></a></dt>
+<dd><p>Get darks acquisition time stamp from the list of dark fits files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong> (<em>darklist -- Python</em>)</p></li>
+<li><p><strong>files</strong> (<em>a list</em><em> of </em><em>dark fits</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>– strings, darks acquisition start and end time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.load_list_from_file">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">load_list_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#load_list_from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.load_list_from_file" title="Link to this definition"></a></dt>
+<dd><p>Read in the list file which is in JSON format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> (<em>file name for the list</em><em> of </em><em>XML</em>)</p></li>
+<li><p><strong>file</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>listobject – list of XML files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.populateMask">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">populateMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amasked</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#populateMask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.populateMask" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Add a fully populated array mask to a MaskedArray</dt><dd><p>Sometimes, when ma.masked_where() is called, the returned
+masked-data has a flat mask containing just one bool value when all the
+pixels are masked by the same value (either False or True).
+Here we populate that mask which will have the same dimension as
+the data part.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>MaskedArray</strong> (<em>amasked --</em>)</p></li>
+<li><p><strong>array</strong> (<em>input masked</em>)</p></li>
+<li><p><strong>int</strong><strong>[</strong><strong>]</strong> (<em>dims    --</em>)</p></li>
+<li><p><strong>data</strong> (<em>the dimensions</em><em> of </em><em>the input masked array</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>outmasked – MaskedArray, same dimension as input but with a fully populated mask</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.prepend_dir">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">prepend_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#prepend_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.prepend_dir" title="Link to this definition"></a></dt>
+<dd><p>Prepend ddir to a list of files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong> (<em>alist -- Python</em>)</p></li>
+<li><p><strong>names</strong> (<em>a list</em><em> of </em><em>file</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>olist – Python list, a list of file names prepended with data_dir</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDark.readParams">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDark.</span></span><span class="sig-name descname"><span class="pre">readParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paramfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDark.html#readParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDark.readParams" title="Link to this definition"></a></dt>
+<dd><p>Read in parameter file in JSON format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>paramfile</strong> – string, name of the parameter file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a dictionary of (key,val)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>params</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction.MakeMasterDarkProg">
+<span id="nir-darkbiassubtraction-makemasterdarkprog-module"></span><h2>NIR_DarkBiasSubtraction.MakeMasterDarkProg module<a class="headerlink" href="#module-NIR_DarkBiasSubtraction.MakeMasterDarkProg" title="Link to this heading"></a></h2>
+<p>&#64;file MakeMasterDarkProg.py
+&#64;date Dec. 12, 2016
+&#64;author Cate Liu &lt;<a class="reference external" href="mailto:xliu&#37;&#52;&#48;ipac&#46;caltech&#46;edu">xliu<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDarkProg.defineSpecificProgramOptions">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDarkProg.</span></span><span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDarkProg.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDarkProg.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>Define the command line and configuration file options
+specific to this program</p>
+</dd>
+<dt>&#64;details</dt><dd><p>Input options definition for MakeMasterDarkProg</p>
+</dd>
+<dt>&#64;return</dt><dd><p>An ArgumentParser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="NIR_DarkBiasSubtraction.MakeMasterDarkProg.mainMethod">
+<span class="sig-prename descclassname"><span class="pre">NIR_DarkBiasSubtraction.MakeMasterDarkProg.</span></span><span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NIR_DarkBiasSubtraction/MakeMasterDarkProg.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NIR_DarkBiasSubtraction.MakeMasterDarkProg.mainMethod" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>&#64;brief</dt><dd><p>The “main” method</p>
+</dd>
+<dt>&#64;details</dt><dd><p>This method is the entry point to the program</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-NIR_DarkBiasSubtraction">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-NIR_DarkBiasSubtraction" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="NIR_DarkBiasSubtraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
