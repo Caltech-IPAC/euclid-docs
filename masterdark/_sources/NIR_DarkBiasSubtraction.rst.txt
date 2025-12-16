@@ -1,0 +1,61 @@
+NIR\_DarkBiasSubtraction package
+================================
+
+Submodules
+----------
+
+NIR\_DarkBiasSubtraction.BiasSubtraction module
+-----------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.BiasSubtraction
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_DarkBiasSubtraction.BiasSubtractionProgram module
+------------------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.BiasSubtractionProgram
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_DarkBiasSubtraction.DarkSubtraction module
+-----------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.DarkSubtraction
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_DarkBiasSubtraction.DarkSubtractionProgram module
+------------------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.DarkSubtractionProgram
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_DarkBiasSubtraction.MakeMasterDark module
+----------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.MakeMasterDark
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_DarkBiasSubtraction.MakeMasterDarkProg module
+--------------------------------------------------
+
+.. automodule:: NIR_DarkBiasSubtraction.MakeMasterDarkProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: NIR_DarkBiasSubtraction
+   :members:
+   :undoc-members:
+   :show-inheritance:

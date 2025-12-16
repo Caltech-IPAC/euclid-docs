@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_DarkBiasSubtraction.MakeMasterDark &mdash; NIR_DarkBiasSubtraction 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_DarkBiasSubtraction
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_DarkBiasSubtraction</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_DarkBiasSubtraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_DarkBiasSubtraction.MakeMasterDark</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_DarkBiasSubtraction.MakeMasterDark</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file MakeMasterDark.py</span>
+<span class="sd">@date December 12, 2016</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fitsio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.ma</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ma</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.ma</span><span class="w"> </span><span class="kn">import</span> <span class="n">masked</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">etree</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">NispSurveyExposure</span><span class="p">,</span> <span class="n">NispDetectorExposure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageF</span><span class="p">,</span> <span class="n">MaskUI</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.XmlWriter</span><span class="w"> </span><span class="kn">import</span> <span class="n">XmlWriter</span> 
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.XmlReader</span><span class="w"> </span><span class="kn">import</span> <span class="n">XmlReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.FitsManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FitsManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_misc_utils.ListUtils</span><span class="w"> </span><span class="kn">import</span> <span class="n">flattenList</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.FitsManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">NIR_module_name</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_MaskingBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+
+<div class="viewcode-block" id="excepthook">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.excepthook">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook</span>
+
+<div class="viewcode-block" id="MakeMasterDark">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MakeMasterDark</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">   </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   @class MakeMasterDark</span>
+<span class="sd">   @brief This class creates the Master Dark file.  It uses the dark frames</span>
+<span class="sd">          taken at end of each science sequence as well as dedicated dark</span>
+<span class="sd">          frames.  This will be done by creating a medians and rms images</span>
+<span class="sd">          of the dark calibration broken up by time stamp, temperature,</span>
+<span class="sd">          exposure time, and detector mode.  The persistence masks and cosmic</span>
+<span class="sd">          ray masks for each dark frame will also be required as input. </span>
+<span class="sd">          These frames will be trended with time to ensure the expected level</span>
+<span class="sd">          of stability is met.  </span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+   <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">darklist</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">nirconfig</span><span class="p">,</span> <span class="n">mdbfile</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Constructor</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;MakeMasterDark&quot;</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_darklist</span> <span class="o">=</span> <span class="n">darklist</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_nirconfig</span> <span class="o">=</span> <span class="n">nirconfig</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span> <span class="o">=</span> <span class="n">mdbfile</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_paramfile</span> <span class="o">=</span> <span class="kc">None</span>
+    
+       <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="kc">None</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">NUM_DETECTORS</span> <span class="o">=</span> <span class="mi">16</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">IMG_WIDTH</span> <span class="o">=</span> <span class="mi">2040</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">IMG_HEIGHT</span> <span class="o">=</span> <span class="mi">2040</span>
+
+<div class="viewcode-block" id="MakeMasterDark.get_parameters_from_nirconfig">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_parameters_from_nirconfig">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">get_parameters_from_nirconfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Return a dictionary of parameters from the nirConfiguration (if present)</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nirconfig</span><span class="p">:</span>
+           <span class="n">module_name</span> <span class="o">=</span> <span class="n">NIR_module_name</span><span class="o">.</span><span class="n">NIR_DarkBiasSubtraction</span>
+           <span class="n">conf_file</span> <span class="o">=</span> <span class="n">XmlReader</span><span class="p">()</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="n">xml_conf_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nirconfig</span><span class="p">,</span>
+                          <span class="n">module_name</span><span class="o">=</span><span class="n">module_name</span><span class="p">,</span> <span class="n">sub_module</span><span class="o">=</span><span class="s1">&#39;darks_parameters&#39;</span><span class="p">)</span>
+       <span class="k">else</span><span class="p">:</span>
+           <span class="n">conf_file</span> <span class="o">=</span> <span class="kc">None</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;NIR configuration set file is not specified.&#39;</span><span class="p">)</span>
+
+       <span class="k">if</span> <span class="n">conf_file</span><span class="p">:</span>
+          <span class="n">configfn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">)</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User input parameter file: &#39;</span> <span class="o">+</span> <span class="n">configfn</span><span class="p">)</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="n">configfn</span> <span class="o">=</span> <span class="kc">None</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No user parameters specified.  Using default.&#39;</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">_paramfile</span> <span class="o">=</span> <span class="n">configfn</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.fetch_nir_filter_name_from_config_xml">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.fetch_nir_filter_name_from_config_xml">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">fetch_nir_filter_name_from_config_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Return the filter name from the dpdNirConfigurationSet xml file</span>
+<span class="sd">       :return:</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="n">nirconfig_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nirconfig</span>
+
+       <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">nirconfig_path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">nirconfig_path</span><span class="p">)):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The dpdNirConfigurationSet file&#39;</span><span class="p">)</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="si">{</span><span class="n">nirconfig_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;does not exist, no NIR filter name can be retrieved&#39;</span><span class="p">)</span>
+          <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;ERROR: &#39;Filter&#39; keyword not found in the config file!&quot;</span><span class="p">)</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nirconfig_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fobj</span><span class="p">:</span>
+               <span class="n">content</span> <span class="o">=</span> <span class="n">fobj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+               <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">))</span>
+
+          <span class="n">nir_filter</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s1">&#39;//Data/Filter/text()&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span> <span class="o">=</span> <span class="n">nir_filter</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FILTER: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.get_nir_filter_string_from_MACC">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.get_nir_filter_string_from_MACC">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">get_nir_filter_string_from_MACC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_dark_file</span><span class="p">):</span>
+       <span class="k">try</span><span class="p">:</span>
+           <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">a_dark_file</span><span class="p">)</span>
+           <span class="n">ng</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NG&#39;</span><span class="p">]</span>
+           <span class="n">nr</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NR&#39;</span><span class="p">]</span>
+           <span class="n">nd</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;ND&#39;</span><span class="p">]</span>
+       <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: trouble opening file &quot;</span> <span class="o">+</span> <span class="n">darkfiles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+       <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+           <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;ERROR: &#39;NG/NR/ND&#39; keyword not found in data!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: &#39;NG/NR/ND&#39; keyword not found in data!&quot;</span><span class="p">)</span>
+       <span class="k">finally</span><span class="p">:</span>
+           <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+       <span class="k">if</span> <span class="p">(</span><span class="n">ng</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nr</span><span class="o">==</span><span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nd</span><span class="o">==</span><span class="mi">4</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_filter_str</span> <span class="o">=</span> <span class="s2">&quot;NIR_Y&quot;</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span> <span class="o">=</span> <span class="s2">&quot;NIR_Y&quot;</span>
+       <span class="k">elif</span> <span class="p">(</span><span class="n">ng</span> <span class="o">==</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nr</span><span class="o">==</span><span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nd</span><span class="o">==</span><span class="mi">11</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_filter_str</span> <span class="o">=</span> <span class="s2">&quot;SPECTRO&quot;</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span> <span class="o">=</span> <span class="s2">&quot;CLOSED&quot;</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized MACC mode! NG=</span><span class="si">{}</span><span class="s2"> NR=</span><span class="si">{}</span><span class="s2"> ND=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span><span class="n">nr</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
+          <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: Unrecognized MACC mode! NG=</span><span class="si">{}</span><span class="s2"> NR=</span><span class="si">{}</span><span class="s2"> ND=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span><span class="n">nr</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;MACC (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ng</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nd</span><span class="p">))</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Filter string to be used in output file name: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter_str</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.getDarkList">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getDarkList">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">getDarkList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Get the list of dark files</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="n">darklist</span> <span class="o">=</span> <span class="n">load_list_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_darklist</span><span class="p">)</span>
+       <span class="n">darkfiles</span> <span class="o">=</span> <span class="n">prepend_dir</span><span class="p">(</span><span class="n">darklist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">)</span>
+
+       <span class="k">return</span> <span class="n">darkfiles</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.setDefaultParams">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.setDefaultParams">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">setDefaultParams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">           </span><span class="sd">&quot;&quot;&quot; Set the default params in case of no user input parameter file</span>
+<span class="sd">               We use empirical formula for MAXNOISE: 0.3 * sqrt(480/N) where</span>
+<span class="sd">               N is the number of raw darks used.  So for 10 darks, it&#39;s ~2.1.</span>
+<span class="sd">               For 480 darks, it&#39;s ~0.3.</span>
+<span class="sd">               This number also varies depending on filters.</span>
+<span class="sd">           &quot;&quot;&quot;</span>
+
+           <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">{</span>
+                           <span class="s1">&#39;POSCLIP&#39;</span> <span class="p">:</span> <span class="mf">3.</span><span class="p">,</span>
+                           <span class="s1">&#39;NEGCLIP&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mf">3.</span><span class="p">,</span>
+                           <span class="s1">&#39;CHUNK_SIZE&#39;</span> <span class="p">:</span> <span class="mi">204</span>
+                          <span class="p">}</span>
+    
+           <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.getParams">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.getParams">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">getParams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Get the value of the parameter &#39;param&#39; from a dictionary</span>
+<span class="sd"> </span>
+<span class="sd">       Args:</span>
+<span class="sd">            param: string, name of the parameter</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">            Value of the parameter &#39;param&#39;</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="k">try</span><span class="p">:</span>
+           <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+       <span class="k">except</span><span class="p">:</span>
+           <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.readFitsByChunk">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.readFitsByChunk">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">readFitsByChunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firsthdu</span><span class="p">,</span> <span class="n">segment</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Read a FITS file by chunks and return data from 3 HDUs per detector</span>
+<span class="sd">           For large FITS file and many of them, there is a need to read in</span>
+<span class="sd">           small chunks at a time.</span>
+<span class="sd">   </span>
+<span class="sd">       Args:</span>
+<span class="sd">            filename -- the FITS file name</span>
+<span class="sd">            firsthdu -- the index (within 16x3) of the 1st hud of the 3 HDUs to read</span>
+<span class="sd">            segment -- [m1,m2,n1,n2] the index range [m1:m2,n1:n2] in the image array</span>
+<span class="sd">  </span>
+<span class="sd">       Returns:</span>
+<span class="sd">            dark: the dark data for this chunk</span>
+<span class="sd">            noise: the variance data for this chunk</span>
+<span class="sd">            flags: the mask data for this chunk</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="n">m1</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+       <span class="n">m2</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+       <span class="n">n1</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+       <span class="n">n2</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+       <span class="n">ff</span> <span class="o">=</span> <span class="n">fitsio</span><span class="o">.</span><span class="n">FITS</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+       <span class="n">dark</span>  <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">firsthdu</span>  <span class="p">][</span><span class="n">m1</span><span class="p">:</span><span class="n">m2</span><span class="p">,</span> <span class="n">n1</span><span class="p">:</span><span class="n">n2</span><span class="p">]</span>
+       <span class="n">noise</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">firsthdu</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">m1</span><span class="p">:</span><span class="n">m2</span><span class="p">,</span> <span class="n">n1</span><span class="p">:</span><span class="n">n2</span><span class="p">]</span>
+       <span class="n">flags</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">firsthdu</span><span class="o">+</span><span class="mi">2</span><span class="p">][</span><span class="n">m1</span><span class="p">:</span><span class="n">m2</span><span class="p">,</span> <span class="n">n1</span><span class="p">:</span><span class="n">n2</span><span class="p">]</span>
+       <span class="c1">#flaghdr = ff[firsthdu+2].read_header()</span>
+       <span class="n">gain</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="n">firsthdu</span><span class="p">]</span><span class="o">.</span><span class="n">read_header</span><span class="p">()[</span><span class="s1">&#39;GAIN&#39;</span><span class="p">]</span>
+
+<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       #convert unsigned integer to signed integer in DQ layer</span>
+<span class="sd">       if &#39;BZERO&#39; in flaghdr.keys():</span>
+<span class="sd">          flags = flags * flaghdr[&#39;BSCALE&#39;] + flaghdr[&#39;BZERO&#39;]</span>
+<span class="sd">       else:</span>
+<span class="sd">          flags = flags + 2 **(flaghdr[&#39;BITPIX&#39;] - 1)</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="k">return</span> <span class="n">dark</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">gain</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.firstGuess">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.firstGuess">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">firstGuess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">darks</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot;  Mask the dark data using the flags</span>
+<span class="sd">            Create the median as a first guess </span>
+<span class="sd">            Measure the MAD as an estimate of the measured noise</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           darks:  3D numpy array, the dark data for the current chunk</span>
+<span class="sd">           flags:  3D numpy array, dtype=bool, the flags for the bad pixels for the current chunk</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">           maskeddarks:  3D MaskedArray, the dark data after masked</span>
+<span class="sd">           darkmed: 2D MaskedArray, the median dark</span>
+<span class="sd">           darkmad: 2D MaskedArray, the MAD</span>
+<span class="sd">       &quot;&quot;&quot;</span>       
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Calculating mean, median and MAD as first guess&#39;</span><span class="p">)</span>
+       <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span> <span class="o">=</span> <span class="n">calMedianMad</span><span class="p">(</span><span class="n">darks</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+       <span class="c1">#darkmean = calMean(darks, flags, axis=0)</span>
+
+       <span class="c1">#self.logger.info(&quot;First guess, min,max,median,mean of the mean {} {} {} {}&quot;.format(ma.min(darkmean), ma.max(darkmean), ma.median(darkmean), ma.mean(darkmean)))</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First guess, min,max,median,mean of the median </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">darkmed</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">darkmed</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">darkmed</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">darkmed</span><span class="p">)))</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First guess, min,max,median,mean of the MAD </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">darkmad</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">darkmad</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">darkmad</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">darkmad</span><span class="p">)))</span>
+
+       <span class="c1">#mask the dark data using flags</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Masking the dark data using the flags&#39;</span><span class="p">)</span>
+       <span class="n">maskeddarks</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">darks</span><span class="p">)</span>
+       <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">maskeddarks</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+          <span class="n">maskeddarks</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">maskeddarks</span><span class="p">,</span> <span class="n">flags</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First guess, pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">maskeddarks</span><span class="p">))</span><span class="o">/</span><span class="n">maskeddarks</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First guess, number of pixels masked: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">maskeddarks</span><span class="p">)))</span>
+
+       <span class="k">return</span> <span class="n">maskeddarks</span><span class="p">,</span> <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span></div>
+
+       <span class="c1">#return maskeddarks, darkmean, darkmad   #11/19/2020 use mean (rather the median) in the clipping.</span>
+
+<div class="viewcode-block" id="MakeMasterDark.clip">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.clip">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">clip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numDark</span><span class="p">,</span> <span class="n">darkdata</span><span class="p">,</span> <span class="n">noisedata</span><span class="p">,</span> <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Clip pixels that exceed noise thresholds</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           numDark:   int, the number of dark files</span>
+<span class="sd">           darkdata:  3D MaskedArray, the dark data with mask</span>
+<span class="sd">           noisedata: 3D numpy array, the noise data</span>
+<span class="sd">           darkmed:   2D MaskedArray, the median</span>
+<span class="sd">           darkmad:   2D MaskedArray, the MAD</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">           datadata:  3D MaskedArray, the dark data after clipping pixels based on noise thresholds  </span>
+
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="n">negclip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;NEGCLIP&#39;</span><span class="p">)</span>
+       <span class="n">posclip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;POSCLIP&#39;</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Clipping pixels based on noise thresholds&#39;</span><span class="p">)</span>
+       <span class="c1">#loop over darks clipping pixels that exceed noise thesholds</span>
+       <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDark</span><span class="p">):</span>
+           <span class="c1">#first lets clip based on the measured noise</span>
+           <span class="c1">#clip negative based on measured noise</span>
+           <span class="n">clip</span> <span class="o">=</span> <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:]</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">darkmed</span> <span class="o">+</span> <span class="n">darkmad</span><span class="o">*</span><span class="n">negclip</span><span class="p">)</span>
+           <span class="n">tmp</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">clip</span><span class="p">,</span> <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:])</span>
+           <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+              <span class="n">tmp</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">clip</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+           <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">tmp</span>
+
+           <span class="c1">#clip positive based on measured noise</span>
+           <span class="n">clip</span> <span class="o">=</span> <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">darkmed</span> <span class="o">+</span> <span class="n">darkmad</span><span class="o">*</span><span class="n">posclip</span><span class="p">)</span>
+           <span class="n">tmp</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">clip</span><span class="p">,</span> <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:])</span>
+           <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+              <span class="n">tmp</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">clip</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+           <span class="n">darkdata</span><span class="p">[</span><span class="n">im</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">tmp</span>
+
+<span class="w">           </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           #since the noise is set to 0., these two steps need to be skipped!!  11/19/2020</span>
+
+<span class="sd">           #now lets clip based on the expected noise</span>
+<span class="sd">           #clip negative based on expected noise</span>
+<span class="sd">           clip = darkdata[im,:,:] &lt;= (darkmed + (noisedata[im,:,:]*negclip))</span>
+<span class="sd">           tmp = ma.masked_where(clip, darkdata[im,:,:])</span>
+<span class="sd">           if type(tmp.mask) is np.bool_:  #nothing or all is masked</span>
+<span class="sd">              tmp = populateMask(tmp, clip.shape)</span>
+<span class="sd">           darkdata[im,:,:] = tmp</span>
+
+<span class="sd">           #clip positive based on expected noise</span>
+<span class="sd">           clip = darkdata[im,:,:] &gt;= (darkmed + (noisedata[im,:,:]*posclip))</span>
+<span class="sd">           tmp = ma.masked_where(clip, darkdata[im,:,:])</span>
+<span class="sd">           if type(tmp.mask) is np.bool_:  #nothing or all is masked</span>
+<span class="sd">              tmp = populateMask(tmp, clip.shape)</span>
+<span class="sd">           darkdata[im,:,:] = tmp</span>
+<span class="sd">           &quot;&quot;&quot;</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished clipping pixels based on noise thresholds&#39;</span><span class="p">)</span>
+
+       <span class="k">return</span> <span class="n">darkdata</span></div>
+
+
+<div class="viewcode-block" id="MakeMasterDark.treatBadMeasurement">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.treatBadMeasurement">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">treatBadMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">darkfin</span><span class="p">,</span> <span class="n">rmsfin</span><span class="p">,</span> <span class="n">nframes</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Find the pixels where we don&#39;t have good measurement</span>
+<span class="sd">           because the dark value is below the RMS/sqrt(frame) AND the RMS/sqrt(nframe) is below the</span>
+<span class="sd">           allowed noise level.  We will use these pixels to calculate</span>
+<span class="sd">           the fill values later on.  Make sure to exclude the exisiting</span>
+<span class="sd">           flagged pixels.</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           darkfin:   2D MaskedArray, the weighted average of dark on good pixels, which has a mask determined from previous steps</span>
+<span class="sd">           rmsfin:    2D MaskedArray, the RMS of the dark on good pixels</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">           avedark:   2D MaskedArray, pixels where dark &lt;= RMS/sqrt(nf) AND RMS/sqrt(nf) &lt; maxnoise are masked</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="n">maxnoise</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;MAXNOISE&#39;</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Treating bad measurement&quot;</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Before masked dark&lt;=RMS/sqrt(nframe), pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">darkfin</span><span class="p">)</span><span class="o">/</span><span class="n">darkfin</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+       <span class="c1">#create a clip image below which we will average the dark</span>
+       <span class="c1">#clip = darkfin - rmsfin/nframes**0.5</span>
+       <span class="n">clip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">darkfin</span><span class="p">)</span> <span class="o">-</span> <span class="n">rmsfin</span><span class="o">/</span><span class="n">nframes</span><span class="o">**</span><span class="mf">0.5</span>   <span class="c1">#Feb. 18, 2022</span>
+
+       <span class="c1">#mask pixels where the dark is low compared to the RMS</span>
+       <span class="n">tmp</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">clip</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">,</span><span class="n">darkfin</span><span class="p">)</span>
+       <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+          <span class="n">tmp</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">clip</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;After masking dark&lt;=RMS/sqrt(nframe), pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span><span class="o">/</span><span class="n">tmp</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+       <span class="c1">#mask pixels where the RMS/sqrt(nframe) is below the max acceptable level</span>
+       <span class="n">tmp1</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">((</span><span class="n">rmsfin</span><span class="o">/</span><span class="n">nframes</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">maxnoise</span><span class="p">,</span> <span class="n">darkfin</span><span class="p">)</span>      <span class="c1">#7/18/2019</span>
+       <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tmp1</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+          <span class="n">tmp1</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;After masking RMS/sqrt(nframe)&lt;maxnoise, pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">tmp1</span><span class="p">)</span><span class="o">/</span><span class="n">tmp1</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+       <span class="c1">#join two masks by logical_and</span>
+       <span class="n">newmask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">tmp1</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+       <span class="n">avedark</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">darkfin</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">newmask</span><span class="p">)</span>
+
+       <span class="c1">#exclude the mask in the input data   7/17/2019</span>
+       <span class="n">ind</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">darkfin</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+       <span class="n">avedark</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;After masking RMS/sqrt(nframe)&lt;maxnoise, combined with dark&lt;=RMS/sqrt(nframe), pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">avedark</span><span class="p">)</span><span class="o">/</span><span class="n">avedark</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+       <span class="c1">#some statistics</span>
+       <span class="c1">#how many overlap pixels are there between the input mask and the bad-mesurement mask</span>
+       <span class="n">in_mask</span> <span class="o">=</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">mask</span>
+       <span class="n">overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">newmask</span><span class="p">,</span> <span class="n">in_mask</span><span class="p">)</span>
+       <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> overlapping pixels between the input mask and the final bad-measurement mask&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished treating bad measurement&quot;</span><span class="p">)</span>
+
+       <span class="k">return</span> <span class="n">avedark</span></div>
+
+
+   <span class="nd">@staticmethod</span>
+   <span class="k">def</span><span class="w"> </span><span class="nf">_addPrimeMeta</span><span class="p">(</span><span class="n">mdark</span><span class="p">,</span> <span class="n">darkfilelist</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">,</span> <span class="n">useMean</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Add proper metadata to the Master Dark FITS primary header</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           mdark:  a NispSurveyExposure, contain all data for the Master Dark</span>
+<span class="sd">           darkfilelist: list of filenames for the darks</span>
+<span class="sd">           filter_name: filter name</span>
+<span class="sd">           useMean: integer, whether taking the mean (1) or median (0) of the input signals</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="n">primaryMeta</span> <span class="o">=</span> <span class="n">mdark</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+       <span class="c1">#open the primary HDU of the darks and retreive its meta</span>
+       <span class="n">f0</span> <span class="o">=</span> <span class="n">darkfilelist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+       <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f0</span><span class="p">)</span>
+       <span class="n">hdr0</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+       <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+       
+       <span class="c1">#the following needs to use OU-SIM darks</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="s1">&#39;Euclid&#39;</span><span class="p">,</span> <span class="s1">&#39;Telescope name&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">,</span> <span class="s1">&#39;NISP&#39;</span><span class="p">,</span> <span class="s1">&#39;Instrument name&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;OBSTYPE&#39;</span><span class="p">,</span>  <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;OBSTYPE&#39;</span><span class="p">],</span> <span class="s1">&#39;Observation type&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;READMODE&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;READMODE&#39;</span><span class="p">],</span> <span class="s1">&#39;Readout mode method&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;OBSMODE&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;OBSMODE&#39;</span><span class="p">],</span> <span class="s1">&#39;Observation mode&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FILTER&#39;</span><span class="p">,</span>   <span class="n">filter_name</span><span class="p">,</span> <span class="s1">&#39;Filter wheel position&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FWA_POS&#39;</span><span class="p">,</span>   <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;FWA_POS&#39;</span><span class="p">],</span> <span class="s1">&#39;Filter wheel position&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;USE_MEAN&#39;</span><span class="p">,</span> <span class="n">useMean</span><span class="p">,</span> <span class="s1">&#39;1=mean 0=median of the signals as final dark values&#39;</span><span class="p">)</span>
+
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">],</span> <span class="s1">&#39;Image type&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;IMG_T1&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;IMG_T1&#39;</span><span class="p">],</span> <span class="s1">&#39;Image type&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;IMG_T2&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;IMG_T2&#39;</span><span class="p">],</span> <span class="s1">&#39;Image type&#39;</span><span class="p">)</span>
+
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;ORIGIN&#39;</span><span class="p">,</span> <span class="s1">&#39;OU-NIR&#39;</span><span class="p">,</span> <span class="s1">&#39;Euclid SGS origin&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FITS_DEF&#39;</span><span class="p">,</span> <span class="s1">&#39;nir.masterDark&#39;</span><span class="p">,</span> <span class="s1">&#39;FITS name definition&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FITS_VER&#39;</span><span class="p">,</span> <span class="s1">&#39;0.3&#39;</span><span class="p">,</span> <span class="s1">&#39;FITS version&#39;</span><span class="p">)</span>
+
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;VAL_STA&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-12-01T00:00:00.0&#39;</span><span class="p">,</span> <span class="s1">&#39;Validity Starting date. Hard-coded value!!&#39;</span><span class="p">)</span>  <span class="c1">#TODO hard-coded for now</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;VAL_END&#39;</span><span class="p">,</span> <span class="s1">&#39;2028-12-31T00:00:00.0&#39;</span><span class="p">,</span> <span class="s1">&#39;Validity Starting date. Hard-coded value!!&#39;</span><span class="p">)</span>  <span class="c1">#TODO</span>
+
+       <span class="c1">#get darks acquisition time stamp</span>
+       <span class="n">timesta</span><span class="p">,</span> <span class="n">timeend</span> <span class="o">=</span> <span class="n">getDarkAcquistionTime</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;DATE_STA&#39;</span><span class="p">,</span> <span class="n">timesta</span><span class="p">,</span> <span class="s1">&#39;The Acquistion time for the first dark&#39;</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;DATE_END&#39;</span><span class="p">,</span> <span class="n">timeend</span><span class="p">,</span> <span class="s1">&#39;The Acquistion time for the last dark&#39;</span><span class="p">)</span>
+
+       <span class="c1">#total number of dark frames, NFRAME</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NFRAME&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">),</span> <span class="s1">&#39;Number of dark frames that went into the Master Dark creation&#39;</span><span class="p">)</span>
+
+       <span class="c1">#total exposure time</span>
+       <span class="n">exptime</span> <span class="o">=</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;EXPTIME&#39;</span><span class="p">]</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;EXPTIME&#39;</span><span class="p">,</span>  <span class="n">exptime</span><span class="p">,</span> <span class="s1">&#39;Exposure time in seconds for the filter band&#39;</span><span class="p">)</span>
+
+       <span class="n">exptot</span> <span class="o">=</span> <span class="n">exptime</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">)</span>
+       <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;EXPTOT&#39;</span><span class="p">,</span> <span class="n">exptot</span><span class="p">,</span> <span class="s1">&#39;The total acquistion time for all dark frames in seconds&#39;</span><span class="p">)</span>
+
+       <span class="c1">#focal plane temperature</span>
+       <span class="k">if</span> <span class="s1">&#39;FP_TEMP&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">fptemp</span> <span class="o">=</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;FP_TEMP&#39;</span><span class="p">]</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="n">fptemp</span> <span class="o">=</span> <span class="mf">40.</span>   <span class="c1">#TODO hard-coded for now</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FP_TEMP&#39;</span><span class="p">,</span> <span class="n">fptemp</span><span class="p">,</span> <span class="s1">&#39;Focal plane temperature in ??.  Hard-coded value!!&#39;</span><span class="p">)</span>
+
+       <span class="k">if</span> <span class="s1">&#39;ELAPTIME&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;ELAPTIME&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;ELAPTIME&#39;</span><span class="p">])</span>
+       <span class="k">if</span> <span class="s1">&#39;FRTIME&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;FRTIME&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;FRTIME&#39;</span><span class="p">])</span>
+       <span class="k">if</span> <span class="s1">&#39;NG&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NG&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;NG&#39;</span><span class="p">])</span>
+       <span class="k">if</span> <span class="s1">&#39;NR&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NR&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;NR&#39;</span><span class="p">])</span>
+       <span class="k">if</span> <span class="s1">&#39;ND&#39;</span> <span class="ow">in</span> <span class="n">hdr0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+          <span class="n">primaryMeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;ND&#39;</span><span class="p">,</span> <span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;ND&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="MakeMasterDark.createDetFitsFile">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.createDetFitsFile">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">createDetFitsFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mdark</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">dark</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">num_darkfilled</span><span class="p">,</span> <span class="n">darkfill</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="n">numDark</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Create the output FITS file for each detector</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           mdark:  a NispSurveyExposure, contain all data for the Master Dark</span>
+<span class="sd">           detid:  the detector ID for the extension</span>
+<span class="sd">           scaid:  the SCA ID for the extension</span>
+<span class="sd">           dark:   numpy array containing the dark data</span>
+<span class="sd">           var:    num[y array containing the VAR of the data</span>
+<span class="sd">           flags:  numpy array containing the DARK mask</span>
+<span class="sd">           num_darkfilled: number of pixels that is filled with &#39;darkfill&#39; value</span>
+<span class="sd">           darkfill: dark fill value (when num_darkfilled=0, this value=0.)</span>
+<span class="sd">           gain:   the GAIN in the input data</span>
+<span class="sd">           numDark: the number of input raw dark files</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+       <span class="n">dark_image</span> <span class="o">=</span> <span class="n">ImageF</span><span class="p">(</span><span class="n">dark</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">))</span>
+       <span class="n">var_image</span> <span class="o">=</span> <span class="n">ImageF</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">))</span>
+       <span class="n">dq_mask</span> <span class="o">=</span> <span class="n">MaskUI</span><span class="p">(</span><span class="n">flags</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint32&quot;</span><span class="p">))</span>
+
+       <span class="n">detector</span> <span class="o">=</span> <span class="n">NispDetectorExposure</span><span class="p">(</span><span class="n">dark_image</span><span class="p">,</span> <span class="n">var_image</span><span class="p">,</span> <span class="n">dq_mask</span><span class="p">)</span>
+
+       <span class="n">meta</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="s1">&#39;Detector identifier&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="s1">&#39;SCA ID&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;BUNIT&#39;</span><span class="p">,</span> <span class="s1">&#39;ELECTRON&#39;</span><span class="p">,</span> <span class="s1">&#39;Physical units of the array values&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;GAIN&#39;</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="s1">&#39;e- to ADU conversion factor&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NUMRAW&#39;</span><span class="p">,</span> <span class="n">numDark</span><span class="p">,</span> <span class="s1">&#39;Number of input raw dark files&#39;</span><span class="p">)</span>
+
+       <span class="c1">#TODO are the following in the SCI layer only??</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;MAXNOISE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;MAXNOISE&#39;</span><span class="p">],</span> <span class="s1">&#39;Dark current max noise clipping threshold in e-&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;POSCLIP&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;POSCLIP&#39;</span><span class="p">],</span> <span class="s1">&#39;Positive clip value in e-&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NEGCLIP&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;NEGCLIP&#39;</span><span class="p">],</span> <span class="s1">&#39;Negative clip value in e-&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NDFILL&#39;</span><span class="p">,</span> <span class="n">num_darkfilled</span><span class="p">,</span> <span class="s1">&#39;Number of high noise pixels with filled dark values&#39;</span><span class="p">)</span>
+       <span class="n">meta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;DARKFILL&#39;</span><span class="p">,</span> <span class="n">darkfill</span><span class="p">,</span> <span class="s1">&#39;Dark fill value in e-&#39;</span><span class="p">)</span>
+
+       <span class="n">mdark</span><span class="o">.</span><span class="n">addDetector</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span></div>
+
+
+   <span class="k">def</span><span class="w"> </span><span class="nf">_writeFits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mdark</span><span class="p">,</span> <span class="n">filtername</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Write out the final Master Dark FITS file</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">           mdark:  a NispSurveyExposure, contains all data for the Master Dark</span>
+<span class="sd">           filtername:  String, either NIR_Y or SPECTRO, to be used in the FITS file name</span>
+
+<span class="sd">       Returns:</span>
+<span class="sd">           masterDarkPath: the Master Dark file path</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+           
+       <span class="c1"># create an instance of FitsManager </span>
+       <span class="n">fManager</span> <span class="o">=</span> <span class="n">FitsManager</span><span class="p">()</span>
+
+       <span class="c1"># get the masterDark FITS filename </span>
+       <span class="n">masterDarkName</span> <span class="o">=</span> <span class="n">fManager</span><span class="o">.</span><span class="n">get_masterdark_fitsname</span><span class="p">(</span><span class="n">nir_filter</span> <span class="o">=</span> <span class="n">filtername</span><span class="p">)</span>
+
+       <span class="c1"># Append the path to the FITS file (here in $WORKDIR/data)</span>
+       <span class="n">masterDarkPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">masterDarkName</span><span class="p">)</span>
+
+       <span class="c1">#write output</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing Master Dark FITS file &quot;</span> <span class="o">+</span> <span class="n">masterDarkPath</span><span class="p">)</span>
+       <span class="n">mdark</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="n">masterDarkPath</span><span class="p">)</span>
+
+       <span class="k">return</span> <span class="n">masterDarkPath</span>
+
+   <span class="k">def</span><span class="w"> </span><span class="nf">_writeXml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masterdarkpath</span><span class="p">,</span> <span class="n">outfilepath</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Write the MDB XML file for the Master Dark FITS file</span>
+
+<span class="sd">       Args:</span>
+<span class="sd">          masterdarkpath: the Master Dark file path</span>
+<span class="sd">          outfilepath: the MDB XML file path</span>
+
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="c1"># update the WCS header to the master dark</span>
+       <span class="n">fManager</span> <span class="o">=</span> <span class="n">FitsManager</span><span class="p">()</span>
+       <span class="n">fManager</span><span class="o">.</span><span class="n">set_rmosaic_wcs_on_header</span><span class="p">(</span><span class="n">masterdarkpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;WCS header updated to: &quot;</span> <span class="o">+</span> <span class="n">masterdarkpath</span><span class="p">)</span>
+
+       <span class="c1"># create and write out the MDB file for Master Dark</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating XML file &quot;</span> <span class="o">+</span> <span class="n">outfilepath</span><span class="p">)</span>
+
+       <span class="c1"># create an instance of XmlWriter </span>
+       <span class="n">xmlW</span> <span class="o">=</span> <span class="n">XmlWriter</span><span class="p">()</span>
+
+       <span class="c1"># Call the method to create the MasterDark class with FITS file content </span>
+       <span class="n">xmlW</span><span class="o">.</span><span class="n">create_masterdark</span><span class="p">(</span><span class="n">masterdarkpath</span><span class="p">)</span>
+
+       <span class="c1"># write the xml </span>
+       <span class="n">result</span> <span class="o">=</span> <span class="n">xmlW</span><span class="o">.</span><span class="n">write_xml</span><span class="p">(</span><span class="n">outfilepath</span><span class="p">)</span>
+
+       <span class="c1"># check the result </span>
+       <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote XML file &quot;</span> <span class="o">+</span> <span class="n">outfilepath</span><span class="p">)</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;MasterDark Xml Creation error.&#39;</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+          <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: MakeMasterDark._writeXml(): &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MakeMasterDark.apply">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.MakeMasterDark.apply">[docs]</a>
+   <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">       </span><span class="sd">&quot;&quot;&quot; Create the Master Dark</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="c1">#get the dark parameters file</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">get_parameters_from_nirconfig</span><span class="p">()</span>
+       <span class="c1">#self.fetch_nir_filter_name_from_config_xml()</span>
+
+       <span class="c1">#get the list of all dark files</span>
+       <span class="n">darkfilelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDarkList</span><span class="p">()</span>
+       <span class="n">numDark</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;There are &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">numDark</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; dark files&quot;</span><span class="p">)</span>
+
+       <span class="c1">#get the filter string (NIR_Y vs. SPECTRO)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">get_nir_filter_string_from_MACC</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+       <span class="c1">#read in parametes</span>
+       <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_paramfile</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">readParams</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_paramfile</span><span class="p">)</span>
+       <span class="k">else</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">setDefaultParams</span><span class="p">()</span>
+
+       <span class="c1">#calculate MAXNOISE</span>
+       <span class="c1">#(no longer in config file, Feb. 3, 2021; added NOISE_SCALE to the config file, 2/24/2022)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="s1">&#39;MAXNOISE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;NOISE_SCALE&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">480.</span><span class="o">/</span><span class="n">numDark</span><span class="p">)</span>
+
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parameters to be used:&quot;</span><span class="p">)</span>
+       <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">param</span> <span class="o">+</span> <span class="s2">&quot; : &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="n">param</span><span class="p">]))</span>
+
+       <span class="n">maxnoise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;MAXNOISE&#39;</span><span class="p">)</span>
+       <span class="n">chunkSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;CHUNK_SIZE&#39;</span><span class="p">)</span> 
+       <span class="n">useMean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getParams</span><span class="p">(</span><span class="s1">&#39;USE_MEAN&#39;</span><span class="p">)</span> 
+
+       <span class="n">numDect</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUM_DETECTORS</span>
+       <span class="n">imgwidth</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">IMG_WIDTH</span>
+       <span class="n">imgheight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">IMG_HEIGHT</span>
+       
+       <span class="c1">#init final FITS data structure and add some primary header</span>
+       <span class="n">mDark</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="p">(</span><span class="n">imgwidth</span><span class="p">,</span> <span class="n">imgheight</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_addPrimeMeta</span><span class="p">(</span><span class="n">mDark</span><span class="p">,</span> <span class="n">darkfilelist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_name</span><span class="p">,</span> <span class="n">useMean</span><span class="p">)</span>
+
+       <span class="c1">#use smaller chunks for reading many files</span>
+       <span class="n">numChunks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">chunkSize</span><span class="p">)</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;There are &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">numChunks</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; chunks used to read in each FITS file&quot;</span><span class="p">)</span>
+
+       <span class="c1">#the Bad pixels values (at &#39;BAD&#39;= bit 2, &#39;SATUR&#39;= bit 10, &#39;COSMIC&#39; = bit 16)</span>
+       <span class="c1">#the Bad pixels values (at &#39;INVALID&#39;= bit 0, &#39;SATUR&#39;= bit 10, &#39;COSMIC&#39; = bit 16)</span>
+       <span class="n">badpixbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>   <span class="c1">#since DM9, 4/1/2022</span>
+       <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">badpixbit</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The bad pixel value is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">badpixvalue</span><span class="p">))</span>
+       <span class="n">satpixbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SATUR&quot;</span><span class="p">]</span>
+       <span class="n">satpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">satpixbit</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The saturation pixel value is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">satpixvalue</span><span class="p">))</span>
+       <span class="n">crpixbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;COSMIC&quot;</span><span class="p">]</span>
+       <span class="n">crpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">crpixbit</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The cosmic ray pixel value is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">crpixvalue</span><span class="p">))</span>
+               
+       <span class="c1">#the DARK pixels value (at &#39;DARKNODET&#39; = bit 15)</span>
+       <span class="n">darkbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;DARKNODET&quot;</span><span class="p">]</span>
+       <span class="n">darkpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">darkbit</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The bit value for the filled dark pixels is &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">darkpixvalue</span><span class="p">))</span>
+
+       <span class="c1">#loop over all 16 detectors</span>
+       <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDect</span><span class="p">):</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Looping over detector &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">det</span><span class="p">))</span>
+
+           <span class="c1">#the frist HDU in a MEF for the current detector</span>
+           <span class="n">hdu1</span> <span class="o">=</span> <span class="n">det</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1">#in a normal NIR pipeline product</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The 1st HDU starts at extension &#39;</span>
+                            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">hdu1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; for this detector in the final MEF&#39;</span><span class="p">)</span>
+
+           <span class="c1">#get detector id</span>
+           <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+           <span class="n">detid</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="n">hdu1</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span>
+           <span class="n">scaid</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="n">hdu1</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">]</span>
+           <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+           
+           <span class="c1">#loop over all small chunks</span>
+           <span class="n">darkcomb</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">imgwidth</span><span class="p">,</span> <span class="n">imgheight</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+           <span class="n">avedarkcomb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">darkcomb</span><span class="p">)</span>
+           <span class="n">weightcomb</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">imgwidth</span><span class="p">,</span> <span class="n">imgheight</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+           <span class="n">rmscomb</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">imgwidth</span><span class="p">,</span> <span class="n">imgheight</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+           <span class="n">flagscomb</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">imgwidth</span><span class="p">,</span> <span class="n">imgheight</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">ck</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numChunks</span><span class="p">):</span>
+               <span class="c1">#self.logger.info(&#39;Looping over chunk &#39; + str(ck))</span>
+
+               <span class="c1">#row start/end index in a full image array for the current chunk</span>
+               <span class="n">r1</span> <span class="o">=</span> <span class="n">ck</span> <span class="o">*</span> <span class="n">chunkSize</span>        <span class="c1">#start row</span>
+               <span class="n">r2</span> <span class="o">=</span> <span class="p">(</span><span class="n">ck</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunkSize</span>  <span class="c1">#end row, non-inclusive</span>
+
+               <span class="c1">#column start/end index</span>
+               <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numChunks</span><span class="p">):</span>
+                   <span class="n">c1</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">chunkSize</span>       <span class="c1">#start column</span>
+                   <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunkSize</span>   <span class="c1">#end column, non-inclusive</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Row and column start:end index for current chunk [&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">c2</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39;]&#39;</span><span class="p">)</span>
+                  
+                   <span class="c1">#init for dark data, noise data, weights for averaging layer and the flags</span>
+                   <span class="n">darksdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numDark</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                   <span class="n">noisedata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numDark</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                   <span class="n">weightdata</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numDark</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                   <span class="n">flagsdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numDark</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">,</span> <span class="n">chunkSize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+                   <span class="c1">#read in all files in chunks if necessary</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Reading dark files in chunks&#39;</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">darkfilelist</span><span class="p">):</span>
+                       <span class="c1">#self.logger.info(&#39;Looping over input dark file &#39; + file)</span>
+                       <span class="c1">#self.logger.info(&#39;Reading dark file in chunks &#39; + file)</span>
+                       <span class="n">dark</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">gain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readFitsByChunk</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">hdu1</span><span class="p">,</span> <span class="p">[</span><span class="n">r1</span><span class="p">,</span><span class="n">r2</span><span class="p">,</span><span class="n">c1</span><span class="p">,</span><span class="n">c2</span><span class="p">])</span>
+
+                       <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dark</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)</span>   <span class="c1">#2/22/2022 digitization issue</span>
+                       <span class="n">dark</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span>            <span class="c1">#2/22/2022 digitization issue</span>
+
+                       <span class="n">darksdata</span><span class="p">[</span><span class="n">ifile</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">dark</span>
+                       <span class="c1">#darksdata[ifile,:,:] = dark/gain      #!!!Kludge for SC456 since we skipped the nonlinarity step!!! TODO</span>
+
+                       <span class="c1">#convert VAR to RMS</span>
+<span class="w">                       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                       ind = np.where(noise &lt; 0.)</span>
+<span class="sd">                       if len(ind[0]) &gt; 0:</span>
+<span class="sd">                          self.logger.info(&quot;!!Some VAR layer pixels have negative values!!&quot;)</span>
+<span class="sd">                          raise Exception(&quot;Some VAR layer pixels have negative values in file {}!!&quot;.format(file))</span>
+<span class="sd">                       &quot;&quot;&quot;</span>
+
+                       <span class="c1">#self.logger.info(&#39;Converting VAR to RMS&#39;)</span>
+                       <span class="c1">#noisedata[ifile,:,:] = np.sqrt(noise)</span>
+                       <span class="n">noisedata</span><span class="p">[</span><span class="n">ifile</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mf">0.</span>   <span class="c1">#11/19/2020 hack for negative VAR!!</span>
+
+                       <span class="c1">#noisedata[ifile,:,:] = np.sqrt(noise/gain/gain) #!!!Kludge for SC456 since we skipped the nonlinarity step!!! TODO</span>
+
+                       <span class="c1">#11/19/2020, it&#39;s suggested not to use weigthed average anymore</span>
+                       <span class="c1">#inverse weights for weighted average later</span>
+                       <span class="c1">#self.logger.info(&#39;Inversing weights&#39;)</span>
+<span class="w">                       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                       tmp = np.zeros(noise.shape, dtype=np.float32)</span>
+<span class="sd">                       nonzeronoise = np.where(noise != 0.)</span>
+<span class="sd">                       tmp[nonzeronoise] = np.power(np.sqrt(noise[nonzeronoise]), -2.)</span>
+<span class="sd">                       weightdata[ifile,:,:] = tmp</span>
+<span class="sd">                       &quot;&quot;&quot;</span>
+                       <span class="n">weightdata</span><span class="p">[</span><span class="n">ifile</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+                       <span class="c1">#retain only the Bad pixel flags (there may be other types of flags)</span>
+                       <span class="c1">#To check, bool(n&amp;(1&lt;&lt;b)), where n is the number being tested and b is the bit (starting from 0).</span>
+                       <span class="c1">#11/30/2020, we now retian saturation and cosmic ray flags as well</span>
+                       <span class="c1">#self.logger.info(&#39;Retaining Bad pixel flags&#39;)</span>
+                       <span class="n">maskedbadpix</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">badpixvalue</span>
+                       <span class="c1">#ind = np.where(maskedbadpix)</span>
+                       <span class="c1">#self.logger.info(&quot;Number of bad pixels in the input {}: {}&quot;.format(file, len(ind[0])))</span>
+                       <span class="n">maskedsatpix</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">satpixvalue</span>
+                       <span class="c1">#ind = np.where(maskedsatpix)</span>
+                       <span class="c1">#self.logger.info(&quot;Number of saturated pixels in the input {}: {}&quot;.format(file, len(ind[0])))</span>
+                       <span class="n">maskedcrpix</span>  <span class="o">=</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">crpixvalue</span>
+                       <span class="c1">#ind = np.where(maskedcrpix)</span>
+                       <span class="c1">#self.logger.info(&quot;Number of cosmic ray pixels in the input {}: {}&quot;.format(file, len(ind[0])))</span>
+                       <span class="n">maskedpix</span> <span class="o">=</span> <span class="n">maskedbadpix</span> <span class="o">|</span> <span class="n">maskedsatpix</span> <span class="o">|</span> <span class="n">maskedcrpix</span>
+                       <span class="c1">#ind = np.where(maskedpix)</span>
+                       <span class="c1">#self.logger.info(&quot;Number of flagged pixels in the input: {}&quot;.format(len(ind[0])))</span>
+                       <span class="n">tmp</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">maskedpix</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>  <span class="c1">#nothing or all is masked</span>
+                          <span class="n">tmp</span> <span class="o">=</span> <span class="n">populateMask</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">flags</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+                       <span class="n">flagsdata</span><span class="p">[</span><span class="n">ifile</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">mask</span>
+
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished reading dark files for current chunk&#39;</span><span class="p">)</span>
+
+                   <span class="c1">#first guess</span>
+                   <span class="n">darkdata</span><span class="p">,</span> <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstGuess</span><span class="p">(</span><span class="n">darksdata</span><span class="p">,</span> <span class="n">flagsdata</span><span class="p">)</span>
+                   <span class="k">del</span> <span class="n">darksdata</span><span class="p">,</span> <span class="n">flagsdata</span>
+
+                   <span class="c1">#clip pixels that exceed noise thesholds</span>
+                   <span class="n">darkdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">numDark</span><span class="p">,</span> <span class="n">darkdata</span><span class="p">,</span> <span class="n">noisedata</span><span class="p">,</span> <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span><span class="p">)</span>
+                   <span class="k">del</span> <span class="n">darkmed</span><span class="p">,</span> <span class="n">darkmad</span><span class="p">,</span> <span class="n">noisedata</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;After clip, pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">darkdata</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">darkdata</span><span class="o">.</span><span class="n">count</span><span class="p">())</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="n">darkdata</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;After clip, pixels masked counts: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">darkdata</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">darkdata</span><span class="o">.</span><span class="n">count</span><span class="p">())))</span>
+
+                   <span class="c1">#now that we have clipped outliers, create a weighted mean image to make the final dark</span>
+                   <span class="k">if</span> <span class="n">useMean</span><span class="p">:</span>
+                      <span class="c1">#darkfin = ma.average(darkdata, axis=0, weights=weightdata)</span>
+                      <span class="n">darkfin</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">darkdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>    <span class="c1">#11/19/2020, it&#39;s suggested not to use weigthed average anymore</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use mean for the final dark&quot;</span><span class="p">)</span>
+                   <span class="k">else</span><span class="p">:</span>
+                      <span class="n">darkfin</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">darkdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Use median for the final dark&quot;</span><span class="p">)</span>
+                   <span class="k">del</span> <span class="n">weightdata</span>
+
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;AVG on good pixs, min,max,median,mean of the median </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">darkfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">darkfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">darkfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">darkfin</span><span class="p">)))</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Weighted average, pixels masked: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">darkfin</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">count</span><span class="p">())</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="n">darkfin</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Weighted average, pixels masked counts: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">darkfin</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">count</span><span class="p">())))</span>
+
+                   <span class="c1">#meausre the RMS on the good pixels to create the final RMS image</span>
+                   <span class="n">rmsfin</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">darkdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;RMS on good pixs, min,max,median,mean of the median </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">rmsfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">rmsfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">rmsfin</span><span class="p">),</span> <span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rmsfin</span><span class="p">)))</span>
+
+                   <span class="c1">#make the weights for the final averaging</span>
+                   <span class="n">weightfin</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">rmsfin</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+                   <span class="c1">#treat bad mesurement where dark value &lt; RMS AND RMS &lt; maxnoise</span>
+                   <span class="n">avedark</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatBadMeasurement</span><span class="p">(</span><span class="n">darkfin</span><span class="p">,</span> <span class="n">rmsfin</span><span class="p">,</span> <span class="n">numDark</span><span class="p">)</span>   <span class="c1">#7/17/2019</span>
+
+                   <span class="c1">#combine all chunks to a final 2040x2040 array</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Combining chunks&quot;</span><span class="p">)</span>
+                   <span class="n">avedarkcomb</span><span class="p">[</span><span class="n">r1</span><span class="p">:</span><span class="n">r2</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">avedark</span>
+                   <span class="n">weightcomb</span><span class="p">[</span><span class="n">r1</span><span class="p">:</span><span class="n">r2</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">weightfin</span><span class="o">.</span><span class="n">data</span>
+                   <span class="n">darkcomb</span><span class="p">[</span><span class="n">r1</span><span class="p">:</span><span class="n">r2</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">data</span>    <span class="c1">#here the masked pixels now have value of 0!!</span>
+                   <span class="n">rmscomb</span><span class="p">[</span><span class="n">r1</span><span class="p">:</span><span class="n">r2</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmsfin</span><span class="o">.</span><span class="n">data</span>
+                   <span class="n">flagscomb</span><span class="p">[</span><span class="n">r1</span><span class="p">:</span><span class="n">r2</span><span class="p">,</span> <span class="n">c1</span><span class="p">:</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">darkfin</span><span class="o">.</span><span class="n">mask</span>
+ 
+           <span class="c1">#create a mask of pixels we are averaging togeter</span>
+           <span class="n">avemask</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="n">avedarkcomb</span><span class="o">.</span><span class="n">mask</span>     <span class="c1">#bad measurement @ mask=True, excluding the combined flags from darkfin</span>
+           <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">avemask</span><span class="p">)</span>
+           <span class="n">num_darkfilled</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>     <span class="c1">#number of pixels with fill value</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">%) pixels masked from bad measurement&quot;</span><span class="o">.</span> \
+                <span class="nb">format</span><span class="p">(</span><span class="n">detid</span><span class="p">,</span> <span class="n">num_darkfilled</span><span class="p">,</span>  <span class="n">num_darkfilled</span><span class="o">/</span><span class="mi">2040</span><span class="o">/</span><span class="mi">2040</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+           <span class="c1">#some statistics</span>
+           <span class="n">ind_neg_before</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">darkcomb</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)</span>   <span class="c1">#negative pixels without bad-measurment treatment</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> negative pixels before bad-measurement treatment&quot;</span><span class="o">.</span> \
+                <span class="nb">format</span><span class="p">(</span><span class="n">detid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_neg_before</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+           <span class="n">mask_neg_before</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">darkcomb</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+           <span class="n">mask_neg_before</span><span class="p">[</span><span class="n">ind_neg_before</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+           <span class="n">overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">avemask</span><span class="p">,</span> <span class="n">mask_neg_before</span><span class="p">)</span>
+           <span class="n">ind_overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> overlapping pixels between the input negative pixels </span><span class="se">\</span>
+<span class="s2">                and the final bad-measurement pixels&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind_overlaps</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+           <span class="c1">#fill those pixels that are indentified as bad measurement</span>
+           <span class="n">darkfill</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c1">#default for there are NO bad measurement</span>
+           <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>   <span class="c1">#there are bad measurement</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are bad measurement!&quot;</span><span class="p">)</span>
+
+              <span class="c1">#calucalte the average value of all the pixels we are not analyzing to get the average dark</span>
+              <span class="n">avedarkcomb</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">avedarkcomb</span><span class="o">.</span><span class="n">mask</span>   <span class="c1">#7/17/2019, we use these pixels to calc fill values!! </span>
+              <span class="n">darkfill</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">avedarkcomb</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weightcomb</span><span class="p">)</span>
+              <span class="k">if</span> <span class="n">darkfill</span> <span class="ow">is</span> <span class="n">masked</span><span class="p">:</span>   <span class="c1">#shouldn&#39;t come here</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;INFO: There is NO bad measurement, thus no fill value.&quot;</span><span class="p">)</span>
+
+              <span class="k">if</span> <span class="n">darkfill</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+                 <span class="n">darkfill</span> <span class="o">=</span> <span class="mf">0.</span>    <span class="c1">#force non-negative!  7/26/2019</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Bad measurement pixel fill value == 0 if negative.&quot;</span><span class="p">)</span>
+
+              <span class="c1">#figure out the RMS of the pixels we put into this</span>
+              <span class="n">rmsfill</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">avedarkcomb</span><span class="p">)</span>
+              <span class="k">if</span> <span class="n">rmsfill</span> <span class="ow">is</span> <span class="n">masked</span><span class="p">:</span>   <span class="c1">#shouldn&#39;t come here</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;INFO: There is NO bad measuremtn, thus no fill value.&quot;</span><span class="p">)</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;darkfill= </span><span class="si">{}</span><span class="s2">, rmsfill= </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">darkfill</span><span class="p">,</span> <span class="n">rmsfill</span><span class="p">))</span>
+
+              <span class="c1">#fill the output arrays, also comvert RMS to VAR</span>
+              <span class="c1">#don&#39;t use fill value at the flagged dark pixels, which is done in step treatBadMeasurement</span>
+              <span class="c1">#fill the pixels which are masked at bad-measuement treatment</span>
+              <span class="n">outdark</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">avemask</span><span class="p">,</span> <span class="n">darkfill</span><span class="p">,</span> <span class="n">darkcomb</span><span class="p">)</span>
+              <span class="n">outrms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">avemask</span><span class="p">,</span> <span class="n">rmsfill</span><span class="p">,</span> <span class="n">rmscomb</span><span class="p">)</span>
+              <span class="n">outvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">avemask</span><span class="p">,</span> <span class="n">rmsfill</span><span class="o">**</span><span class="mf">2.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">rmscomb</span><span class="p">,</span> <span class="mf">2.</span><span class="p">))</span>
+              <span class="n">outvar</span> <span class="o">/=</span> <span class="n">numDark</span>     <span class="c1">#7/22/2019</span>
+           <span class="k">else</span><span class="p">:</span>   <span class="c1">#there are NO bad measuremnt</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are NO bad measurement! No pixels to be filled.&quot;</span><span class="p">)</span>
+              <span class="n">outdark</span> <span class="o">=</span> <span class="n">darkcomb</span>
+              <span class="n">outrms</span> <span class="o">=</span> <span class="n">rmscomb</span>
+              <span class="n">outvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">rmscomb</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+              <span class="n">outvar</span> <span class="o">/=</span> <span class="n">numDark</span>     <span class="c1">#7/22/2019</span>
+
+           <span class="k">del</span> <span class="n">darkcomb</span><span class="p">,</span> <span class="n">rmscomb</span><span class="p">,</span> <span class="n">weightcomb</span><span class="p">,</span> <span class="n">avedarkcomb</span>
+
+           <span class="c1">#set the flags for high RMS data (from the clipping)</span>
+           <span class="c1">#outflag = np.where(outrms &lt; maxnoise, 1*flagscomb, 1)   #7/17/2019 commented out for now</span>
+           <span class="n">outflag</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="n">flagscomb</span>
+           <span class="k">del</span> <span class="n">flagscomb</span>
+
+           <span class="c1">#set outflag to the &quot;Dark&quot; bit</span>
+           <span class="n">darkind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">outflag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>     <span class="c1">#flags from the inputs after averaging (darkfin)</span>
+           <span class="n">outflag</span><span class="p">[</span><span class="n">darkind</span><span class="p">]</span> <span class="o">=</span> <span class="n">darkpixvalue</span>
+           <span class="n">num_darkfilled</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">darkind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>    <span class="c1">#Mar.1, 2022, add the combined clipped and input bad/saturated/cr pixels</span>
+
+           <span class="n">badmesind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">avemask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1">#Dec. 2, 2020, flag the bad measurement</span>
+           <span class="n">outflag</span><span class="p">[</span><span class="n">badmesind</span><span class="p">]</span> <span class="o">=</span> <span class="n">darkpixvalue</span>
+
+           <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">outflag</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;detid=</span><span class="si">{}</span><span class="s2">, final masked pixels: </span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">detid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;detid=</span><span class="si">{}</span><span class="s2">, final masked pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">detid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+           <span class="c1">#some more statistics</span>
+           <span class="n">ind_neg_after</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">outdark</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> negative pixels after bad-measurement treatment&quot;</span><span class="o">.</span> \
+                <span class="nb">format</span><span class="p">(</span><span class="n">detid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_neg_after</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+           <span class="c1">#assert( len(ind_neg_before[0]) == (len(ind_neg_after[0]) + len(ind_overlaps[0])))</span>
+
+           <span class="c1">#add one detector at a time to the final Master Dark data</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating Master Dark FITS structure&quot;</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">createDetFitsFile</span><span class="p">(</span><span class="n">mDark</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">outdark</span><span class="p">,</span> <span class="n">outvar</span><span class="p">,</span> <span class="n">outflag</span><span class="p">,</span> <span class="n">num_darkfilled</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">darkfill</span><span class="p">),</span> <span class="n">gain</span><span class="p">,</span> <span class="n">numDark</span><span class="p">)</span>
+
+       <span class="c1"># write out both the Master Dark FITS files</span>
+       <span class="n">masterDarkPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeFits</span><span class="p">(</span><span class="n">mDark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_str</span><span class="p">)</span>
+
+       <span class="c1"># write out the MDB XML file for Master Dark</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">_writeXml</span><span class="p">(</span><span class="n">masterDarkPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="calMean">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.calMean">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calMean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Calculate mean along the *first* dimension of a 3D numpy array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       data: 3D numpy array</span>
+<span class="sd">       flag: 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       med: 2D MaskedArray, the median along the first axis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="o">!=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">masked</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1">#if all are true (in time direction)</span>
+
+    <span class="k">return</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calMedian">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.calMedian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calMedian</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Calculate median along the *first* dimension of a 3D numpy array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       data: 3D numpy array</span>
+<span class="sd">       flag: 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       med: 2D MaskedArray, the median along the first axis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="o">!=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">masked</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">median</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">median</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calMedianMad">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.calMedianMad">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calMedianMad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Calculate median and MAD along the first dimension of a 3D numpy array.</span>
+<span class="sd">        numpy.ma.median is pianfully slow.</span>
+
+<span class="sd">        The MAD is short for the median absolute deviation.</span>
+<span class="sd">        The MAD is defined as ``median(abs(a - median(a)))/c`` where c=0.6744897501960817</span>
+
+<span class="sd">        See:://www.statsmodels.org/devel/generated/statsmodels.robust.scale.mad.html </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       data: 3D numpy array</span>
+<span class="sd">       flag: 3D numpy array, dtype=bool, flag to mask the data, 1=True=masked</span>
+<span class="sd">       axis : int, optional, axis along which the medians are computed. The </span>
+<span class="sd">             default (axis=None) is to compute the median along a flattened</span>
+<span class="sd">             version of the array.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       med: 2D MaskedArray, the median along the first axis</span>
+<span class="sd">       MAD: 2D MaskedArray, the MAD along the first axis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">med</span> <span class="o">=</span> <span class="n">calMedian</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">flag</span><span class="p">)</span>
+
+    <span class="c1"># re-broadcast the output median array to subtract it</span>
+    <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+       <span class="n">a_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">med</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+ 
+    <span class="c1"># calculated the median average deviation</span>
+    <span class="n">medsub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">a_median</span><span class="p">)</span>
+    <span class="n">mad</span> <span class="o">=</span> <span class="n">calMedian</span><span class="p">(</span><span class="n">medsub</span><span class="o">.</span><span class="n">data</span><span class="o">/</span><span class="mf">0.6744897501960817</span><span class="p">,</span> <span class="n">medsub</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>   <span class="c1">#7/17/2019</span>
+
+    <span class="k">return</span> <span class="n">med</span><span class="p">,</span> <span class="n">mad</span></div>
+
+
+<div class="viewcode-block" id="load_list_from_file">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.load_list_from_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_list_from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Read in the list file which is in JSON format</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         fname - JSON file, file name for the list of XML file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         listobject -- list of XML files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+         <span class="n">listobject</span> <span class="o">=</span> <span class="n">flattenList</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+         <span class="k">return</span> <span class="n">listobject</span></div>
+
+
+<div class="viewcode-block" id="populateMask">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.populateMask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">populateMask</span><span class="p">(</span><span class="n">amasked</span><span class="p">,</span> <span class="n">dims</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Add a fully populated array mask to a MaskedArray</span>
+<span class="sd">        Sometimes, when ma.masked_where() is called, the returned</span>
+<span class="sd">        masked-data has a flat mask containing just one bool value when all the</span>
+<span class="sd">        pixels are masked by the same value (either False or True).</span>
+<span class="sd">        Here we populate that mask which will have the same dimension as</span>
+<span class="sd">        the data part.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         amasked -- MaskedArray, input masked array</span>
+<span class="sd">         dims    -- int[], the dimensions of the input masked array data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         outmasked -- MaskedArray, same dimension as input but with a fully populated mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">amasked</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+       <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="n">outmasked</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">amasked</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">tmp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">outmasked</span></div>
+
+
+<div class="viewcode-block" id="prepend_dir">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.prepend_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepend_dir</span><span class="p">(</span><span class="n">alist</span><span class="p">,</span> <span class="n">ddir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Prepend ddir to a list of files</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         alist -- Python list, a list of file names</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         olist -- Python list, a list of file names prepended with data_dir</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">olist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">alist</span><span class="p">:</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ddir</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">olist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">olist</span></div>
+
+
+<div class="viewcode-block" id="getDarkAcquistionTime">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.getDarkAcquistionTime">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">getDarkAcquistionTime</span><span class="p">(</span><span class="n">darklist</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get darks acquisition time stamp from the list of dark fits files</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         darklist -- Python list, a list of dark fits files</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">                  -- strings, darks acquisition start and end time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">acqdates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fitsfile</span> <span class="ow">in</span> <span class="n">darklist</span><span class="p">:</span>
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">)</span>
+        <span class="n">hdr0</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">acqdates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdr0</span><span class="p">[</span><span class="s1">&#39;DATE&#39;</span><span class="p">])</span>
+
+    <span class="c1">#sort the dates</span>
+    <span class="n">acqdates</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">acqdates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">acqdates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="readParams">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.MakeMasterDark.readParams">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">readParams</span><span class="p">(</span><span class="n">paramfile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Read in parameter file in JSON format</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         paramfile: string, name of the parameter file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         params: a dictionary of (key,val)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+ 
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">paramfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">pf</span><span class="p">:</span>
+         <span class="n">params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pf</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

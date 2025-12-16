@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_DarkBiasSubtraction.DarkSubtraction &mdash; NIR_DarkBiasSubtraction 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_DarkBiasSubtraction
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_DarkBiasSubtraction</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_DarkBiasSubtraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_DarkBiasSubtraction.DarkSubtraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_DarkBiasSubtraction.DarkSubtraction</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file DarkSubtraction.py</span>
+<span class="sd">@date Jan. 12, 2016</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">NispSurveyExposure</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_MaskingBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<div class="viewcode-block" id="DarkSubtraction">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DarkSubtraction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class DarkSubtraction</span>
+
+<span class="sd">    @brief This class subtracts the dark current from the detectors.  The</span>
+<span class="sd">           subtracted dark current could potentially depend on the time the</span>
+<span class="sd">           exposure was taken, temperature of the detector, and the exposure</span>
+<span class="sd">           time and mode of detector operation.  This apply module will select</span>
+<span class="sd">           the appropriate dark using the time-stamp, temperature, detector mode,</span>
+<span class="sd">           and exposure time of the data frame.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgfile</span><span class="p">,</span> <span class="n">calfile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;DarkSubtraction&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span> <span class="o">=</span> <span class="n">imgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calfile</span> <span class="o">=</span> <span class="n">calfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+    
+<div class="viewcode-block" id="DarkSubtraction.apply">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Method to apply the dark frame subtraction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+  
+        <span class="c1"># Read In the input exposure and dark calibration fits file</span>
+        <span class="c1"># (file format: fits file with 3x16 extensions, wheres 3 means</span>
+        <span class="c1"># DET##.SCI, DET##.VAR, DET##.DQ; 16 is for 16 detectors; the</span>
+        <span class="c1"># primary HDU has no data but headers.)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DarkSubtraction.apply(): read in input data&quot;</span><span class="p">)</span>
+        <span class="n">calStr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calfile</span><span class="p">)</span>
+        <span class="n">cal</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="n">calStr</span><span class="p">)</span>
+        <span class="n">calmeta</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">NispSurveyExposure</span><span class="o">.</span><span class="n">readFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imgfile</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+        <span class="n">tempf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">calStr</span><span class="p">)</span>
+        <span class="n">tempf</span> <span class="o">=</span> <span class="n">tempf</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="n">tempf</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)]</span>    <span class="c1">#no long lines before astropy 4.0</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;MDARKCAL&quot;</span><span class="p">,</span> <span class="n">tempf</span><span class="p">,</span> <span class="s2">&quot;Master dark calibration file&quot;</span><span class="p">)</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ORIGIN&quot;</span><span class="p">,</span> <span class="s2">&quot;OU-NIR&quot;</span><span class="p">,</span> <span class="s2">&quot;Euclid SGS origin&quot;</span><span class="p">)</span>
+        <span class="c1">#meta.set(&quot;VERSION&quot;, calmeta.get(&quot;VERSION&quot;), &quot;Master Dark build version&quot;)</span>
+
+        <span class="c1"># make sure both input data and calibraton data have equal</span>
+        <span class="c1"># number of detectors</span>
+        <span class="n">numDect</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getNumDetectors</span><span class="p">()</span>
+        <span class="n">numDect0</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">getNumDetectors</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">numDect</span> <span class="o">!=</span> <span class="n">numDect0</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ERROR: DarkSubtraction.apply(): </span><span class="se">\</span>
+<span class="s2">                unequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+           <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: DarkSubtraction.apply(): </span><span class="se">\</span>
+<span class="s2">                unequal number of dete ctors in input data and calibration data.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># loop through all detectors</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numDect</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DarkSubtraction.apply(): </span><span class="se">\</span>
+<span class="s2">                 dark subtraction on detector &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="c1"># get detector pointer from input data</span>
+            <span class="n">NDExp_ptr</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> 
+            <span class="n">detid</span> <span class="o">=</span> <span class="p">(</span><span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DET_ID&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">cal_ptr</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">detid</span><span class="p">)</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">darkSubtract</span><span class="p">(</span><span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">cal_ptr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DarkSubtraction.apply(): </span><span class="se">\</span>
+<span class="s2">             finish dark subtraction on all detectors&quot;</span><span class="p">)</span>
+
+        <span class="c1"># saving all three layers in a new FITS file</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">writeFits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DarkSubtraction.apply(): output writen to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DarkSubtraction.darkSubtract">
+<a class="viewcode-back" href="../../NIR_DarkBiasSubtraction.html#NIR_DarkBiasSubtraction.DarkSubtraction.DarkSubtraction.darkSubtract">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">darkSubtract</span><span class="p">(</span><span class="n">NDExp_ptr</span><span class="p">,</span> <span class="n">cal_ptr</span><span class="p">):</span>
+        <span class="c1"># get the 3 layers of a exposure</span>
+        <span class="n">sciimg</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span>      <span class="c1">#type Image&lt;float&gt;</span>
+        <span class="n">scivar</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getVariance</span><span class="p">()</span>     <span class="c1">#type Image&lt;float&gt;</span>
+        <span class="n">scimsk</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMask</span><span class="p">()</span>         <span class="c1">#type Mask&lt;uint32_t&gt;</span>
+        <span class="n">scimeta</span> <span class="o">=</span> <span class="n">NDExp_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+        <span class="n">calimg</span> <span class="o">=</span> <span class="n">cal_ptr</span><span class="o">.</span><span class="n">getScience</span><span class="p">()</span>
+        <span class="n">calvar</span> <span class="o">=</span> <span class="n">cal_ptr</span><span class="o">.</span><span class="n">getVariance</span><span class="p">()</span>
+        <span class="n">calmsk</span> <span class="o">=</span> <span class="n">cal_ptr</span><span class="o">.</span><span class="n">getMask</span><span class="p">()</span>
+        <span class="n">calmeta</span> <span class="o">=</span> <span class="n">cal_ptr</span><span class="o">.</span><span class="n">getMetadata</span><span class="p">()</span>
+
+        <span class="c1">#populate some metadata from the calibration product to the image frame (SCI layer only)</span>
+        <span class="n">scimeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;NDFILL&quot;</span><span class="p">,</span> <span class="n">calmeta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NDFILL&quot;</span><span class="p">),</span> <span class="s2">&quot;Number of high noise pixels with filled dark values&quot;</span><span class="p">)</span>
+        <span class="n">scimeta</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;DARKFILL&quot;</span><span class="p">,</span> <span class="n">calmeta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DARKFILL&quot;</span><span class="p">),</span> <span class="s2">&quot;Dark fill value in e-&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get numpy arrays</span>
+        <span class="n">sciimgarray</span> <span class="o">=</span> <span class="n">sciimg</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">scivararray</span> <span class="o">=</span> <span class="n">scivar</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">scimskarray</span> <span class="o">=</span> <span class="n">scimsk</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+     
+        <span class="n">calimgarray</span> <span class="o">=</span> <span class="n">calimg</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">calvararray</span> <span class="o">=</span> <span class="n">calvar</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span>
+        <span class="n">calmskarray</span> <span class="o">=</span> <span class="n">calmsk</span><span class="o">.</span><span class="n">getArray</span><span class="p">()</span> 
+
+        <span class="c1">#from SC8 (as of January 15, 2021), the detector map are in 2048x2048</span>
+        <span class="c1">#make sure the master dark has the same dimension with the image frame</span>
+        <span class="c1">#the image frame should be 2040x2040 at this masking step in the NIR pipeline</span>
+        <span class="n">caldim</span> <span class="o">=</span> <span class="n">calimgarray</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">caldim</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+           <span class="n">calimgarray</span> <span class="o">=</span> <span class="n">calimgarray</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+           <span class="n">calvararray</span> <span class="o">=</span> <span class="n">calvararray</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+           <span class="n">calmskarray</span> <span class="o">=</span> <span class="n">calmskarray</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+        
+        <span class="c1">#sanity check, in case of NaNs, do not apply the calibration</span>
+        <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">calimgarray</span><span class="p">)</span>
+        <span class="n">calimgarray</span><span class="p">[</span><span class="n">nan_ind</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">calvararray</span><span class="p">)</span>
+        <span class="n">calvararray</span><span class="p">[</span><span class="n">nan_ind</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="c1"># subtract calibration data from the image layer</span>
+        <span class="n">sciimgarray</span> <span class="o">-=</span> <span class="n">calimgarray</span>
+
+        <span class="c1"># add dark frame var layer to the image data in quadrature</span>
+        <span class="c1">#scivararray[:] = np.sqrt(np.square(scivararray) + np.square(calvar))</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">scivararray</span> <span class="o">+</span> <span class="n">calvararray</span>
+        <span class="n">scivar</span><span class="o">.</span><span class="n">setArray</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="c1">#TODO Dec, 14m 2020, commented out for SC8 because of the large number pixels</span>
+        <span class="c1">#got flagged in the master dark, and downstream PFs can&#39;t handle it!</span>
+        <span class="c1"># propagate the master dark flag to the DQ layer in the input frame</span>
+        <span class="n">darkbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;DARKNODET&quot;</span><span class="p">]</span>
+        <span class="n">darkpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">darkbit</span>
+        <span class="n">darkpix</span> <span class="o">=</span> <span class="n">calmskarray</span> <span class="o">&amp;</span> <span class="n">darkpixvalue</span>
+        <span class="n">darkpixind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">darkpix</span><span class="p">)</span>
+        <span class="n">scimskarray</span><span class="p">[</span><span class="n">darkpixind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">darkpixvalue</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
