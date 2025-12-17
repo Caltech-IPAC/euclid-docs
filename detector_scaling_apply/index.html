@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation for SIR DetectorScaling &mdash; SIR_DetectorScaling August-2025 documentation</title>
+  <title>Science goals for SIR Detector Scaling &mdash; SIR_DetectorScaling August-2025 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -54,7 +54,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">Documentation for SIR DetectorScaling</li>
+      <li class="breadcrumb-item active">Science goals for SIR Detector Scaling</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -64,10 +64,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="documentation-for-sir-detectorscaling">
-<h1>Documentation for SIR DetectorScaling<a class="headerlink" href="#documentation-for-sir-detectorscaling" title="Link to this heading"></a></h1>
+  <section id="science-goals-for-sir-detector-scaling">
+<h1>Science goals for SIR Detector Scaling<a class="headerlink" href="#science-goals-for-sir-detector-scaling" title="Link to this heading"></a></h1>
+<p>SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
+•       pixel-to-pixel variations resulting from intrinsic QE differences across each detector,
+•       small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.
+•       large scales QE corrections (&gt; 100 px, up to detector scale), to account for detector-scale intrinsic gradients in the response of the detector to uniform light. The magnitude of these variations are generally small (&lt; 1-2%) and vary from one detector to another.</p>
+<p>This specific documentation handles only the apply module, named as SIR_DetectorScaling, where the correction is applied. For the calibration module, please visit <a class="reference external" href="https://caltech-ipac.github.io/euclid-docs/detector_scaling_calibration/">https://caltech-ipac.github.io/euclid-docs/detector_scaling_calibration/</a></p>
+</section>
+<section id="documentation-for-sir-detectorscaling-apply-module">
+<h1>Documentation for SIR DetectorScaling - apply module<a class="headerlink" href="#documentation-for-sir-detectorscaling-apply-module" title="Link to this heading"></a></h1>
 <p>In this document, you will find the documentation for Euclid’s SIR DetectorScaling module
-as well as documentation for the underlying Python classes. The detector scaling module
+as well as documentation for the underlying Python classes. It’s the “apply” module,
+where The detector scaling module
 provides two primary functions:</p>
 <ol class="arabic simple">
 <li><p>It corrects the input spectroscopic image, for each detector, by dividing it with the corresponding 2D calibration map.</p></li>
