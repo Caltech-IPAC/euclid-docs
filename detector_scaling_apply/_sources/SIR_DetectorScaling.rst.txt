@@ -20,14 +20,6 @@ SIR\_DetectorScaling.SmallScaleFlatCreator module
    :undoc-members:
    :show-inheritance:
 
-SIR\_DetectorScaling.notes module
----------------------------------
-
-.. automodule:: SIR_DetectorScaling.notes
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

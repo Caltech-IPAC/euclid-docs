@@ -93,8 +93,8 @@
 <span class="c1">#</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Computes and Applies the small-scale flat for NISP-P spectral images.</span>
-<span class="sd">Provides a command-line interface for the SmallScaleFlatCreator class.</span>
+<span class="sd">This module applies the small-scale flat for NISP-P spectral images.</span>
+<span class="sd">It provides a command-line interface for the SmallScaleFlatCreator class.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
@@ -112,12 +112,10 @@
 <a class="viewcode-back" href="../../SIR_DetectorScaling.html#SIR_DetectorScaling.SIR_ApplyDetectorScaling.defineSpecificProgramOptions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">defineSpecificProgramOptions</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    @brief Allows to define the (command line and configuration file) options</span>
+<span class="sd">    Define the (command line and configuration file) options</span>
 <span class="sd">    specific to this program</span>
 
-<span class="sd">    @details</span>
-<span class="sd">        See the Elements documentation for more details.</span>
-<span class="sd">    @return</span>
+<span class="sd">    Returns</span>
 <span class="sd">        An  ArgumentParser.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -158,15 +156,27 @@
 
 
 
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    The main method.</span>
+
+<span class="sd">    Details This method is the entry point to the program. In this sense, it is</span>
+<span class="sd">    similar to a main and hence called mainMethod().</span>
+<span class="sd">    Some of its major functionalities are,</span>
+<span class="sd">    From the ArgumentParser,</span>
+<span class="sd">    a) define input NISP exposure image FITS file path</span>
+<span class="sd">    b) define zodiacal light FITS file path, using DpdSirDetectorScaling() class.</span>
+<span class="sd">    This file provodes the weighted 2D QE maps for pixels for 16 detectors</span>
+<span class="sd">    c) define output NISP exposure image file path</span>
+<span class="sd">    Create a SmallScaleFlatCreator() object with (a) &amp; (b) above</span>
+<span class="sd">    Apply the apply_correction() method on the input image (a)</span>
+<span class="sd">    Save the output FITS file (c)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="mainMethod">
 <a class="viewcode-back" href="../../SIR_DetectorScaling.html#SIR_DetectorScaling.SIR_ApplyDetectorScaling.mainMethod">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    @brief The &quot;main&quot; method.</span>
-<span class="sd">    @details</span>
-<span class="sd">        This method is the entry point to the program. In this sense, it is</span>
-<span class="sd">        similar to a main (and it is why it is called mainMethod()).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">module_name</span> <span class="o">=</span> <span class="s1">&#39;SIR_ApplyDetectorScaling&#39;</span>
 
