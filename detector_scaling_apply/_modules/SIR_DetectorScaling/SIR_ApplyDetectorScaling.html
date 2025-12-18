@@ -155,29 +155,31 @@
     <span class="k">return</span> <span class="n">parser</span></div>
 
 
-
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    The main method.</span>
-
-<span class="sd">    Details This method is the entry point to the program. In this sense, it is</span>
-<span class="sd">    similar to a main and hence called mainMethod().</span>
-<span class="sd">    Some of its major functionalities are,</span>
-<span class="sd">    From the ArgumentParser,</span>
-<span class="sd">    a) define input NISP exposure image FITS file path</span>
-<span class="sd">    b) define zodiacal light FITS file path, using DpdSirDetectorScaling() class.</span>
-<span class="sd">    This file provodes the weighted 2D QE maps for pixels for 16 detectors</span>
-<span class="sd">    c) define output NISP exposure image file path</span>
-<span class="sd">    Create a SmallScaleFlatCreator() object with (a) &amp; (b) above</span>
-<span class="sd">    Apply the apply_correction() method on the input image (a)</span>
-<span class="sd">    Save the output FITS file (c)</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-
 <div class="viewcode-block" id="mainMethod">
 <a class="viewcode-back" href="../../SIR_DetectorScaling.html#SIR_DetectorScaling.SIR_ApplyDetectorScaling.mainMethod">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The main method.</span>
 
+<span class="sd">    Details: </span>
+<span class="sd">    This method is the entry point to the program. In this sense, it is</span>
+<span class="sd">    similar to a main and hence called mainMethod().</span>
+
+<span class="sd">    Some of its major functionalities are,</span>
+<span class="sd">    </span>
+<span class="sd">    From the ArgumentParser,</span>
+<span class="sd">    a) Define input NISP exposure image FITS file path.</span>
+<span class="sd">    b) Define zodiacal light FITS file path, using DpdSirDetectorScaling() class.</span>
+<span class="sd">    This file provides the weighted 2D QE maps for pixels for 16 detectors.</span>
+<span class="sd">    c) Define output NISP exposure image file path.</span>
+<span class="sd">    </span>
+<span class="sd">    Create a SmallScaleFlatCreator() object with (a) &amp; (b) above.</span>
+
+<span class="sd">    Apply the apply_correction() method on the input image (a).</span>
+
+<span class="sd">    Save the output FITS file (c).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">module_name</span> <span class="o">=</span> <span class="s1">&#39;SIR_ApplyDetectorScaling&#39;</span>
 
     <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>

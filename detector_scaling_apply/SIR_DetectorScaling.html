@@ -104,7 +104,20 @@ specific to this program</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="SIR_DetectorScaling.SIR_ApplyDetectorScaling.mainMethod">
 <span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScaling/SIR_ApplyDetectorScaling.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScaling.SIR_ApplyDetectorScaling.mainMethod" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>The main method.</p>
+<p>Details:
+This method is the entry point to the program. In this sense, it is
+similar to a main and hence called mainMethod().</p>
+<p>Some of its major functionalities are,</p>
+<p>From the ArgumentParser,
+a) Define input NISP exposure image FITS file path.
+b) Define zodiacal light FITS file path, using DpdSirDetectorScaling() class.
+This file provides the weighted 2D QE maps for pixels for 16 detectors.
+c) Define output NISP exposure image file path.</p>
+<p>Create a SmallScaleFlatCreator() object with (a) &amp; (b) above.</p>
+<p>Apply the apply_correction() method on the input image (a).</p>
+<p>Save the output FITS file (c).</p>
+</dd></dl>
 
 </section>
 <section id="module-SIR_DetectorScaling.SmallScaleFlatCreator">
