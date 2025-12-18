@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIR_DetectorScalingCalibration package &mdash; SIR_DetectorScaling August-2025 documentation</title>
+  <title>SIR_DetectorScalingCalibration package &mdash; SIR_DetectorScalingCalibration August-2025 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -25,7 +25,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> SIR_DetectorScaling
+            <a href="index.html" class="icon icon-home"> SIR_DetectorScalingCalibration
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -40,16 +40,9 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">SIR_DetectorScalingCalibration</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">SIR_DetectorScalingCalibration package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-SIR_DetectorScalingCalibration.CreateDetectorScalingFile">CreateDetectorScalingFile module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.defineSpecificProgramOptions"><code class="docutils literal notranslate"><span class="pre">defineSpecificProgramOptions()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.mainMethod"><code class="docutils literal notranslate"><span class="pre">mainMethod()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-SIR_DetectorScalingCalibration.FlatMaker">FlatMaker module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker"><code class="docutils literal notranslate"><span class="pre">FlatMaker</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-SIR_DetectorScalingCalibration">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#createdetectorscalingfile-module">CreateDetectorScalingFile module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flatmaker-module">FlatMaker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -62,7 +55,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">SIR_DetectorScaling</a>
+          <a href="index.html">SIR_DetectorScalingCalibration</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -86,97 +79,14 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="module-SIR_DetectorScalingCalibration.CreateDetectorScalingFile">
-<span id="createdetectorscalingfile-module"></span><h2>CreateDetectorScalingFile module<a class="headerlink" href="#module-SIR_DetectorScalingCalibration.CreateDetectorScalingFile" title="Link to this heading"></a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">file<span class="colon">:</span></dt>
-<dd class="field-odd"><p>python/SIR_DetectorScalingCalibration/CreateDetectorScalingFile.py</p>
-</dd>
-<dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>12/14/22</p>
-</dd>
-<dt class="field-odd">author<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Indrajit Das &lt;<a class="reference external" href="mailto:idas&#37;&#52;&#48;ipac&#46;caltech&#46;edu">idas<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
-</dd>
-</dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.CreateDetectorScalingFile.defineSpecificProgramOptions">
-<span class="sig-name descname"><span class="pre">defineSpecificProgramOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/CreateDetectorScalingFile.html#defineSpecificProgramOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.defineSpecificProgramOptions" title="Link to this definition"></a></dt>
-<dd><p>&#64;brief Allows to define the (command line and configuration file) options
-specific to this program</p>
-<p>&#64;details See the Elements documentation for more details.
-&#64;return An  ArgumentParser.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.CreateDetectorScalingFile.mainMethod">
-<span class="sig-name descname"><span class="pre">mainMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/CreateDetectorScalingFile.html#mainMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.mainMethod" title="Link to this definition"></a></dt>
-<dd><p>&#64;brief The “main” method.</p>
-<p>&#64;details This method is the entry point to the program. In this sense, it is
-similar to a main (and it is why it is called mainMethod()).</p>
-</dd></dl>
-
+<section id="createdetectorscalingfile-module">
+<h2>CreateDetectorScalingFile module<a class="headerlink" href="#createdetectorscalingfile-module" title="Link to this heading"></a></h2>
 </section>
-<section id="module-SIR_DetectorScalingCalibration.FlatMaker">
-<span id="flatmaker-module"></span><h2>FlatMaker module<a class="headerlink" href="#module-SIR_DetectorScalingCalibration.FlatMaker" title="Link to this heading"></a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">file<span class="colon">:</span></dt>
-<dd class="field-odd"><p>python/SIR_DetectorScalingCalibration/FlatMaker.py</p>
-</dd>
-<dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>12/14/22</p>
-</dd>
-<dt class="field-odd">author<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Indrajit Das &lt;<a class="reference external" href="mailto:idas&#37;&#52;&#48;ipac&#46;caltech&#46;edu">idas<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
-</dd>
-</dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FlatMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grism_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qe_files_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qe_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Creates flat fields from input QE maps</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">
-<span class="sig-name descname"><span class="pre">load_grism_transmission_curves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grism_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker.load_grism_transmission_curves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves" title="Link to this definition"></a></dt>
-<dd><p>Interpolates transmission values from input grism curves</p>
-<p>Reads in NISP grism transmission data for various wavelengths
-from input FITS file. Subsequently, interpolates that data
-for <cite>self.wavelengths</cite> points, Ends by passing the transmission
-values to <cite>_calculate_weights()</cite></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grism_file_path</strong> (<em>str</em>) – full path for NISP Grism Curve FITS file</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.write_fits">
-<span class="sig-name descname"><span class="pre">write_fits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fits_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_history</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker.write_fits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.write_fits" title="Link to this definition"></a></dt>
-<dd><p>Writes flat-fielded QE maps into grism-specific FITS files</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_dir</strong> (<em>str</em>) – Directory for Input QE maps FITS files</p></li>
-<li><p><strong>output_fits_filepath</strong> (<em>str</em>) – output FITS filepath</p></li>
-<li><p><strong>text_history</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – line-by-line text, as List, to describe the history</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="flatmaker-module">
+<h2>FlatMaker module<a class="headerlink" href="#flatmaker-module" title="Link to this heading"></a></h2>
 </section>
-<section id="module-SIR_DetectorScalingCalibration">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-SIR_DetectorScalingCalibration" title="Link to this heading"></a></h2>
-<p>Module Overview &lt;—————– TO BE WRITTEN ————————&gt;</p>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
 </section>
 </section>
 
