@@ -14,13 +14,12 @@ SIR Detector Scaling has two components - a calibration module and an apply modu
 This specific documentation handles only the apply module, named as SIR_DetectorScaling, where the correction is applied. For the calibration module, please visit https://caltech-ipac.github.io/euclid-docs/detector_scaling_calibration/
 
 
-Documentation for SIR DetectorScaling - apply module
+Documentation for SIR DetectorScaling (apply module)
 ====================================================
 
 In this document, you will find the documentation for Euclid's SIR DetectorScaling module 
 as well as documentation for the underlying Python classes. It's the "apply" module,
-where The detector scaling module 
-provides two primary functions:
+which provides two primary functions:
 
 1. It corrects the input spectroscopic image, for each detector, by dividing it with the corresponding 2D calibration map. 
 2. Sets all the pixels with inf values with NaNs, flags them as invalid and updates the mask layer.
