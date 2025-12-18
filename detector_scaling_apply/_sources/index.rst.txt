@@ -47,13 +47,13 @@ Inputs and Outputs
 ``--sci_frame_fits FRAME``   
     The name of a FITS file containing exposures from all 16 detectors, relative to the ``workdir``.
 
-``----zodiacal_light ZODI``
+``--zodiacal_light ZODI``
     A FITS file with the zodiacal light model, relative to the ``workdir``.
 
 ``--mdb MDB``
     The Mission Database XML file, containing all key instrument and mission parameters, relative to the ``workdir``.
 
-``----output_frame_fits OUTPUT``
+``--output_frame_fits OUTPUT``
     The name of the flat-fielded output FITS file which will contain corrected images for all 16 detectors, relative to 
     the ``workdir``.
 
@@ -72,7 +72,7 @@ One example run could be submitted with the following command,
 
 E-Run SIR_Pipeline SIR_ApplyDetectorScaling ``--workdir`` /euclid/staff/idas/dev-SIR/Ranga-project-data/data_all ``--mdb`` input/EUC_MDB_MISSIONCONFIGURATION_DEV_2023-12-15-1.xml ``--sci_frame_fits`` EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.cosmic_rejection/crgrism.fits ``--zodiacal_light`` test_single_fits_output_pipeline5.1 ``--output_frame_fits`` flatfielded_on_EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.detector_scaling_test_single_fitsfile/detscaled.fits
 
-There are also several example scripts (named run_script*) available under SIR_Pipeline project directory.
+There are also several example scripts (named ``run_script*``) available under SIR_Pipeline project directory.
 
 
 UML Diagrams

@@ -100,11 +100,11 @@ which provides two primary functions:</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--sci_frame_fits</span> <span class="pre">FRAME</span></code></dt><dd><p>The name of a FITS file containing exposures from all 16 detectors, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">----zodiacal_light</span> <span class="pre">ZODI</span></code></dt><dd><p>A FITS file with the zodiacal light model, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">--zodiacal_light</span> <span class="pre">ZODI</span></code></dt><dd><p>A FITS file with the zodiacal light model, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--mdb</span> <span class="pre">MDB</span></code></dt><dd><p>The Mission Database XML file, containing all key instrument and mission parameters, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">----output_frame_fits</span> <span class="pre">OUTPUT</span></code></dt><dd><p>The name of the flat-fielded output FITS file which will contain corrected images for all 16 detectors, relative to
+<dt><code class="docutils literal notranslate"><span class="pre">--output_frame_fits</span> <span class="pre">OUTPUT</span></code></dt><dd><p>The name of the flat-fielded output FITS file which will contain corrected images for all 16 detectors, relative to
 the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
 </dl>
@@ -123,7 +123,7 @@ the <code class="docutils literal notranslate"><span class="pre">workdir</span><
 <h1>Example Run<a class="headerlink" href="#example-run" title="Link to this heading"></a></h1>
 <p>One example run could be submitted with the following command,</p>
 <p>E-Run SIR_Pipeline SIR_ApplyDetectorScaling <code class="docutils literal notranslate"><span class="pre">--workdir</span></code> /euclid/staff/idas/dev-SIR/Ranga-project-data/data_all <code class="docutils literal notranslate"><span class="pre">--mdb</span></code> input/EUC_MDB_MISSIONCONFIGURATION_DEV_2023-12-15-1.xml <code class="docutils literal notranslate"><span class="pre">--sci_frame_fits</span></code> EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.cosmic_rejection/crgrism.fits <code class="docutils literal notranslate"><span class="pre">--zodiacal_light</span></code> test_single_fits_output_pipeline5.1 <code class="docutils literal notranslate"><span class="pre">--output_frame_fits</span></code> flatfielded_on_EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.detector_scaling_test_single_fitsfile/detscaled.fits</p>
-<p>There are also several example scripts (named run_script*) available under SIR_Pipeline project directory.</p>
+<p>There are also several example scripts (named <code class="docutils literal notranslate"><span class="pre">run_script*</span></code>) available under SIR_Pipeline project directory.</p>
 </section>
 <section id="uml-diagrams">
 <h1>UML Diagrams<a class="headerlink" href="#uml-diagrams" title="Link to this heading"></a></h1>
