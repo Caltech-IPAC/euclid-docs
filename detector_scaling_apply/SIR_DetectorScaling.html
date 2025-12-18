@@ -130,6 +130,11 @@ Author: nrstickley</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SmallScaleFlatCreator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_exposure_fits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zodi_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScaling/SmallScaleFlatCreator.html#SmallScaleFlatCreator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScaling.SmallScaleFlatCreator.SmallScaleFlatCreator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to handle application of small scale flat</p>
+<p>Details:</p>
+<p>Correcs the input spectroscopic image, for each de
+tector, by dividing it with the corresponding 2D calibration map</p>
+<p>Sets all the pixels, with numpy inf values, with NaNs, flags them
+as INVALID and updates the mask layer accordingly.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="SIR_DetectorScaling.SmallScaleFlatCreator.SmallScaleFlatCreator.sir_invalid_bitmask">
 <span class="sig-name descname"><span class="pre">sir_invalid_bitmask</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#SIR_DetectorScaling.SmallScaleFlatCreator.SmallScaleFlatCreator.sir_invalid_bitmask" title="Link to this definition"></a></dt>
