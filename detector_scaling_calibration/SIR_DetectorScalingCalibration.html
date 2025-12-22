@@ -130,22 +130,12 @@ similar to a main and hence called mainMethod().</p>
 </section>
 <section id="module-SIR_DetectorScalingCalibration.FlatMaker">
 <span id="sir-detectorscalingcalibration-flatmaker-module"></span><h2>SIR_DetectorScalingCalibration.FlatMaker module<a class="headerlink" href="#module-SIR_DetectorScalingCalibration.FlatMaker" title="Link to this heading"></a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">file<span class="colon">:</span></dt>
-<dd class="field-odd"><p>python/SIR_DetectorScalingCalibration/FlatMaker.py</p>
-</dd>
-<dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>12/14/22</p>
-</dd>
-<dt class="field-odd">author<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Indrajit Das &lt;<a class="reference external" href="mailto:idas&#37;&#52;&#48;ipac&#46;caltech&#46;edu">idas<span>&#64;</span>ipac<span>&#46;</span>caltech<span>&#46;</span>edu</a>&gt;</p>
-</dd>
-</dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FlatMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grism_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qe_files_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qe_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Creates flat fields from input QE maps</p>
+<p>Creates weighted 2D QE maps, per detetor, from 3D
+(wavelength dependent) input QE maps</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">
 <span class="sig-name descname"><span class="pre">load_grism_transmission_curves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grism_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker.load_grism_transmission_curves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves" title="Link to this definition"></a></dt>

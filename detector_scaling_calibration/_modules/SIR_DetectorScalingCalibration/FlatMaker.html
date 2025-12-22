@@ -82,14 +82,6 @@
 <span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
 <span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">:file: python/SIR_DetectorScalingCalibration/FlatMaker.py</span>
-
-<span class="sd">:date: 12/14/22</span>
-<span class="sd">:author: Indrajit Das &lt;idas@ipac.caltech.edu&gt;</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
@@ -103,7 +95,8 @@
 <div class="viewcode-block" id="FlatMaker">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlatMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates flat fields from input QE maps&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates weighted 2D QE maps, per detetor, from 3D </span>
+<span class="sd">    (wavelength dependent) input QE maps &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">grism_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
@@ -133,8 +126,8 @@
 <span class="sd">        qe_range : Tuple[float, float]</span>
 <span class="sd">            A tuple of (max_qe, min_qe) cutoff values</span>
 
-<span class="sd">        logger: ElementsKernel.Logging</span>
-<span class="sd">            logs various messages and actions</span>
+<span class="sd">        logger: logs various messages and actions</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
