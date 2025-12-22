@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIR_DetectorScalingCalibration.CreateDetectorScalingFile &mdash; SIR_DetectorScaling August-2025 documentation</title>
+  <title>SIR_DetectorScalingCalibration.CreateDetectorScalingFile &mdash; SIR_DetectorScalingCalibration August-2025 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -23,7 +23,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> SIR_DetectorScaling
+            <a href="../../index.html" class="icon icon-home"> SIR_DetectorScalingCalibration
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">SIR_DetectorScaling</a>
+          <a href="../../index.html">SIR_DetectorScalingCalibration</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -81,13 +81,12 @@
 <span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
 <span class="c1">#</span>
 
-
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">:file: python/SIR_DetectorScalingCalibration/CreateDetectorScalingFile.py</span>
-
-<span class="sd">:date: 12/14/22</span>
-<span class="sd">:author: Indrajit Das &lt;idas@ipac.caltech.edu&gt;</span>
-
+<span class="sd">This module derives a pixel-wise multiplication correction factor to the</span>
+<span class="sd">detector response to a uniform illumination and is tailored to each detector.</span>
+<span class="sd">This multiplication factor, generated as 2D map, is needed as input by the </span>
+<span class="sd">apply module under SIR Pipeline. It provides a command-line interface for </span>
+<span class="sd">FlatMaker class.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -106,11 +105,12 @@
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.defineSpecificProgramOptions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">defineSpecificProgramOptions</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    @brief Allows to define the (command line and configuration file) options</span>
+<span class="sd">    Define the (command line and configuration file) options</span>
 <span class="sd">    specific to this program</span>
 
-<span class="sd">    @details See the Elements documentation for more details.</span>
-<span class="sd">    @return An  ArgumentParser.</span>
+<span class="sd">    Rreturns</span>
+<span class="sd">        An  ArgumentParser.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
 
@@ -142,11 +142,26 @@
 <div class="viewcode-block" id="mainMethod">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.CreateDetectorScalingFile.mainMethod">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    @brief The &quot;main&quot; method.</span>
-<span class="sd">    </span>
-<span class="sd">    @details This method is the entry point to the program. In this sense, it is</span>
-<span class="sd">    similar to a main (and it is why it is called mainMethod()).</span>
+
+<span class="sd">    The main method.</span>
+
+<span class="sd">    Details:</span>
+<span class="sd">    This method is the entry point to the program. In this sense, it is</span>
+<span class="sd">    similar to a main and hence called mainMethod().</span>
+
+<span class="sd">    Some of its major functionalities are,</span>
+
+<span class="sd">    From the ArgumentParser,</span>
+<span class="sd">    1. Define mission database (MDB) XML file. From MDB file,</span>
+<span class="sd">    a) Define NISP grism tranmission curve file path.</span>
+<span class="sd">    b) Define quantum efficiency (QE) files list and their paths.</span>
+
+<span class="sd">    2. Define RGS and BGS grism-specific parameters.</span>
+<span class="sd">    3. Create FlatMaker object.</span>
+<span class="sd">    4. Define calibration output FITS &amp; XML file paths, and subsequently write them.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">module_name</span> <span class="o">=</span> <span class="s2">&quot;CreateDetectorScalingFile&quot;</span>
