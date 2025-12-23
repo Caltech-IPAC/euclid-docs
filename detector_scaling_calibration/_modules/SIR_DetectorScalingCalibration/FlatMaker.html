@@ -90,6 +90,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.constants</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">consts</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
 
 
 <div class="viewcode-block" id="FlatMaker">
@@ -126,7 +128,8 @@
 <span class="sd">        qe_range : Tuple[float, float]</span>
 <span class="sd">            A tuple of (max_qe, min_qe) cutoff values</span>
 
-<span class="sd">        logger: logs various messages and actions</span>
+<span class="sd">        logger: &#39;ElementsKernel.Logging&#39; </span>
+<span class="sd">            logs various messages and actions</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
