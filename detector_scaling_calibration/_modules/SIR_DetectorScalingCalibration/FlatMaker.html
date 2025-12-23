@@ -102,35 +102,28 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">grism_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-                 <span class="n">qe_files_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-                 <span class="n">qe_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">qe_files_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">qe_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="s1">&#39;ElementsKernel.Logging&#39;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;         </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a FlatMaker instance.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">            </span>
 <span class="sd">        data_dir : str</span>
-<span class="sd">            full paths for the input QE maps FITS files</span>
-
-<span class="sd">        grism_parameters: dict</span>
-<span class="sd">             nested dictionary having grism (blue/red specific entries </span>
-<span class="sd">             { &#39;RGS&#39; : {&#39;alpha&#39;      : -0.9,</span>
-<span class="sd">                        &#39;hdu_extn&#39;   : &#39;RGS000_ORDER_1&#39;</span>
-<span class="sd">                       },</span>
-<span class="sd">               &#39;BGS&#39;: {&#39;alpha&#39;      : -0.75,</span>
-<span class="sd">                        &#39;hdu_extn&#39;   : &#39;BGS000_ORDER_1&#39;</span>
-<span class="sd">                       }</span>
-<span class="sd">             }</span>
-
-<span class="sd">        qe_files_list : List[str]</span>
-<span class="sd">            A list of input QE FITS files</span>
-
-<span class="sd">        qe_range : Tuple[float, float]</span>
-<span class="sd">            A tuple of (max_qe, min_qe) cutoff values</span>
-
-<span class="sd">        logger: &#39;ElementsKernel.Logging&#39; </span>
-<span class="sd">            logs various messages and actions</span>
-
+<span class="sd">            Directory containing the QE FITS files.</span>
+<span class="sd">        grism_parameters : dict</span>
+<span class="sd">            Per-grism configuration with required keys &#39;alpha&#39; and &#39;hdu_extn&#39;, e.g.:</span>
+<span class="sd">            { &#39;RGS&#39;: {&#39;alpha&#39;: -0.9, &#39;hdu_extn&#39;: &#39;RGS000_ORDER_1&#39;},</span>
+<span class="sd">              &#39;BGS&#39;: {&#39;alpha&#39;: -0.75, &#39;hdu_extn&#39;: &#39;BGS000_ORDER_1&#39;} }</span>
+<span class="sd">        qe_files_list : list[str]</span>
+<span class="sd">            Filenames of QE FITS cubes located under `data_dir`.</span>
+<span class="sd">            The first entry is used to load the wavelength grid.</span>
+<span class="sd">        qe_range : tuple[float, float]</span>
+<span class="sd">            QE cutoff bounds provided as (max_qe, min_qe) in this order.</span>
+<span class="sd">            Pixels with QE outside [min_qe, max_qe] at any wavelength are masked.</span>
+<span class="sd">        logger : ElementsKernel.Logging</span>
+<span class="sd">            Logger used to report messages and progress.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
