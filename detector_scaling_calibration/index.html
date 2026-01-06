@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation for SIR DetectorScalingCalibration &mdash; SIR_DetectorScaling August-2025 documentation</title>
+  <title>Science goals for SIR Detector Scaling &mdash; SIR_DetectorScalingCalibration August-2025 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -25,7 +25,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> SIR_DetectorScaling
+            <a href="#" class="icon icon-home"> SIR_DetectorScalingCalibration
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -46,7 +46,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">SIR_DetectorScaling</a>
+          <a href="#">SIR_DetectorScalingCalibration</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -54,7 +54,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">Documentation for SIR DetectorScalingCalibration</li>
+      <li class="breadcrumb-item active">Science goals for SIR Detector Scaling</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -64,8 +64,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="documentation-for-sir-detectorscalingcalibration">
-<h1>Documentation for SIR DetectorScalingCalibration<a class="headerlink" href="#documentation-for-sir-detectorscalingcalibration" title="Link to this heading"></a></h1>
+  <section id="science-goals-for-sir-detector-scaling">
+<h1>Science goals for SIR Detector Scaling<a class="headerlink" href="#science-goals-for-sir-detector-scaling" title="Link to this heading"></a></h1>
+<p>SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:</p>
+<ol class="loweralpha simple">
+<li><p>Pixel-to-pixel variations resulting from intrinsic QE differences across each detector</p></li>
+<li><p>Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.</p></li>
+<li><p>Large scales QE corrections (&gt; 100 px, up to detector scale), to account for detector-scale intrinsic gradients in the response of the detector to uniform light. The magnitude of these variations are generally small (&lt; 1-2%) and vary from one detector to another.</p></li>
+</ol>
+<p>This specific documentation handles only the calibration module, appropriately named as SIR_DetectorScalingCalibration, where the calibration product is generated. In the apply module, this calibration product is applied. For the apply module, please visit <a class="reference external" href="https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/">https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/</a></p>
+</section>
+<section id="documentation-for-sir-detectorscalingcalibration-calibration-module">
+<h1>Documentation for SIR DetectorScalingCalibration (calibration module)<a class="headerlink" href="#documentation-for-sir-detectorscalingcalibration-calibration-module" title="Link to this heading"></a></h1>
 <p>In this document, you will find the documentation for Euclid’s SIR DetectorScalingCalibration module
 as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication correction factor to the detector response to a uniform illumination and is tailored to each detector. This multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module under SIR Pipeline.</p>
 </section>
@@ -87,7 +97,7 @@ as well as documentation for the underlying Python classes. This module derives 
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">--mdb</span> <span class="pre">MDB</span></code></dt><dd><p>The Mission Database XML file, containing all key instrument and mission parameters, relative to the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">----outfile</span> <span class="pre">OUTPUT</span></code></dt><dd><p>The name of the output FITS file, containing 2D weighted QE maps, for all 16 detectors, for both RGS and BGS grisms, relative to
+<dt><code class="docutils literal notranslate"><span class="pre">--outfile</span> <span class="pre">OUTPUT</span></code></dt><dd><p>The name of the output FITS file, containing 2D weighted QE maps, for all 16 detectors, for both RGS and BGS grisms, relative to
 the <code class="docutils literal notranslate"><span class="pre">workdir</span></code>.</p>
 </dd>
 </dl>
@@ -101,6 +111,13 @@ the <code class="docutils literal notranslate"><span class="pre">workdir</span><
 </ul>
 </div>
 </section>
+</section>
+<section id="example-run">
+<h1>Example Run<a class="headerlink" href="#example-run" title="Link to this heading"></a></h1>
+<p>An example run can be submitted with the following command,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>E-Run<span class="w"> </span>SIR_Calibration<span class="w"> </span>CreateDetectorScalingFile<span class="w"> </span>--workdir<span class="w"> </span>/stage/euclid-staff-idas/dev-SIR/Ranga-project-data/data_all<span class="w"> </span>--outfile<span class="w"> </span>test_resources<span class="w"> </span>--mdb<span class="w"> </span>input/EUC_MDB_MISSIONCONFIGURATION_DEV_2023-12-15-1.xml
+</pre></div>
+</div>
 </section>
 <section id="uml-diagrams">
 <h1>UML Diagrams<a class="headerlink" href="#uml-diagrams" title="Link to this heading"></a></h1>

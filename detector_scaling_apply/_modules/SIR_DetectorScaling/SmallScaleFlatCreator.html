@@ -100,7 +100,18 @@
 <div class="viewcode-block" id="SmallScaleFlatCreator">
 <a class="viewcode-back" href="../../SIR_DetectorScaling.html#SIR_DetectorScaling.SmallScaleFlatCreator.SmallScaleFlatCreator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SmallScaleFlatCreator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Class to handle application of small scale flat &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Class to handle application of small scale flat </span>
+
+<span class="sd">    Details:</span>
+
+<span class="sd">    Corrects the input spectroscopic image, for each detector, </span>
+<span class="sd">    by dividing it with the corresponding 2D calibration map.</span>
+
+<span class="sd">    Sets all the pixels, with numpy inf values, with NaNs, flags them </span>
+<span class="sd">    as INVALID and updates the mask layer accordingly. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="n">sir_invalid_bitmask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">EUC_SIR_MASK_DICT</span><span class="p">[</span><span class="s1">&#39;INVALID&#39;</span><span class="p">])</span>
 
 
@@ -186,7 +197,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Indrajit Das, Phil Appleton, Ranga-Ram Chary.</p>
+    <p>&#169; Copyright 2025, Indrajit Das, Phil Appleton, Nathaniel R. Stickley, Ranga-Ram Chary.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

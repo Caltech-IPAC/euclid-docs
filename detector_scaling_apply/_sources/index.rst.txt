@@ -3,17 +3,26 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Documentation for SIR DetectorScaling
-============================================
+Science goals for SIR Detector Scaling
+========================================
+SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
+
+(a) Pixel-to-pixel variations resulting from intrinsic QE differences across each detector
+(b) Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.  
+(c) Large scales QE corrections (> 100 px, up to detector scale), to account for detector-scale intrinsic gradients in the response of the detector to uniform light. The magnitude of these variations are generally small (< 1-2%) and vary from one detector to another. 
+
+This specific documentation handles only the apply module, named as SIR_DetectorScaling, where the correction is applied. For the calibration module, please visit https://caltech-ipac.github.io/euclid-docs/detector_scaling_calibration/
+
+
+Documentation for SIR DetectorScaling (apply module)
+====================================================
 
 In this document, you will find the documentation for Euclid's SIR DetectorScaling module 
-as well as documentation for the underlying Python classes. The detector scaling module 
-provides two primary functions:
+as well as documentation for the underlying Python classes. It's the "apply" module,
+which provides two primary functions:
 
 1. It corrects the input spectroscopic image, for each detector, by dividing it with the corresponding 2D calibration map. 
-
 2. Sets all the pixels with inf values with NaNs, flags them as invalid and updates the mask layer.
-
 
 Module Usage
 ============
@@ -38,13 +47,13 @@ Inputs and Outputs
 ``--sci_frame_fits FRAME``   
     The name of a FITS file containing exposures from all 16 detectors, relative to the ``workdir``.
 
-``----zodiacal_light ZODI``
+``--zodiacal_light ZODI``
     A FITS file with the zodiacal light model, relative to the ``workdir``.
 
 ``--mdb MDB``
     The Mission Database XML file, containing all key instrument and mission parameters, relative to the ``workdir``.
 
-``----output_frame_fits OUTPUT``
+``--output_frame_fits OUTPUT``
     The name of the flat-fielded output FITS file which will contain corrected images for all 16 detectors, relative to 
     the ``workdir``.
 
@@ -54,6 +63,18 @@ Inputs and Outputs
    :caption: Code Documentation:
 
    modules
+
+
+
+Example Run
+===========
+One example run could be submitted with the following command,
+
+.. code-block:: bash
+
+   E-Run SIR_Pipeline SIR_ApplyDetectorScaling --workdir /euclid/staff/idas/dev-SIR/Ranga-project-data/data_all --mdb input/EUC_MDB_MISSIONCONFIGURATION_DEV_2023-12-15-1.xml --sci_frame_fits EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.cosmic_rejection/crgrism.fits --zodiacal_light test_single_fits_output_pipeline5.1 --output_frame_fits flatfielded_on_EUC_PPO_SIR_Extract_Spectra_5.3.0_65879_COSMOS-21_RGS_REFERENCE_01_SDC-US_20250129/sir_preprocessing.iterations.1.detector_scaling_test_single_fitsfile/detscaled.fits
+
+There are also several example scripts (named ``run_script*``) available under SIR_Pipeline project directory.
 
 
 UML Diagrams
