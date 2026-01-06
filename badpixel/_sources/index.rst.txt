@@ -1,0 +1,58 @@
+.. NIR_BadPixelMasking documentation master file, created by
+   sphinx-quickstart on Mon Jan  5 15:19:27 2026.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+NIR Bad Pixel Masking
+=====================
+
+The component identifier is **NIR_BadPixelMasking**
+The module will apply a mask of bad and unreliable pixels to each data frame in the near-infrared detectors.
+
+It contains 9 processing functions (PFs):
+
+1. **Bad Pixel Mask Module** - apply bad pixel mask to data frames.
+2. **Bad Pixel Mask Creation Module** - create the bad pixel mask.
+3. **Find the Dead Pixel Module** - identify the dead (dis-connected) pixels.
+4. **Find the Hot Pixel Module** - identify the hot pixels.
+5. **Find the Zero QE Pixel Module** - identify the zero QE pixels.
+6. **Find the Low QE Pixel Module** - identify the low QE pixels.
+7. **Find the Super QE Pixel Module** - identify the super QE pixels.
+8. **Find the High and Low Baseline Pixel Module** - identify pixels that are outside the baseline.
+9. **Find the Saturation Pixel Module** - identify the saturated pixels.
+
+Bad Pixels Maksing Module
+-------------------------
+This PF applies a mask of bad and unreliable pixels in the near-infrared detectors.
+It applies the mask to each data frame. This PF only masks pixels that are identified
+as bad by the bad pixel calibration modules.  This PF does not mask pixels with low transmittance,
+high dark current, non-linear pixels or pixels that are affected by persistence from pervious exposures.
+These will be flagged by other PFs if they violat their calibration margins.  The 
+image combination PF will determine if a pixel is usable for a given science product.  
+
+Create Bad Pixels Mask Module
+-----------------------------
+This PF is part of the bad pixel calibration module.  It creates a mask for the bad pixels 
+in the near-infrared detectors.  It makes a list of bad pixels based on the 
+detector data obtained from flight, which consists of data with dis-connected pixels,
+zero-fluence pixels, hot pixels, zero QE pixles, saturated pixels and pixels outside the baseline.
+From here, it then creats a Fits file with binary tables.
+
+Requirements
+------------
+The primary requirements are R-NIR-PRD-F-001, R-NIR-PRD-F-002, R-NIR-PRC-F-002 and R-NIR-MSK-F-001.
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   modules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

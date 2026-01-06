@@ -1,0 +1,205 @@
+NIR\_BadPixelMasking package
+============================
+
+Submodules
+----------
+
+NIR\_BadPixelMasking.ApplyBadPixels module
+------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.ApplyBadPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.ApplyBadPixelsProgram module
+-------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.ApplyBadPixelsProgram
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.CreateBadPixelsMask module
+-----------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.CreateBadPixelsMask
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.CreateBadPixelsMaskProg module
+---------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.CreateBadPixelsMaskProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.CreateXML4Cds module
+-----------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.CreateXML4Cds
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.Detector module
+------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.Detector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindDeadPixels module
+------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindDeadPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindDeadPixels\-240724 module
+--------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindDeadPixels-240724
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindDeadPixelsProg module
+----------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindDeadPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindHiLoBaselinePixels module
+--------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindHiLoBaselinePixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindHiLoBaselinePixelsProg module
+------------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindHiLoBaselinePixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindHotPixels module
+-----------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindHotPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindHotPixelsProg module
+---------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindHotPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindLowQEPixels module
+-------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindLowQEPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindLowQEPixelsProg module
+-----------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindLowQEPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindSatPixels module
+-----------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindSatPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindSatPixelsProg module
+---------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindSatPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindSuperQEPixels module
+---------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindSuperQEPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindSuperQEPixelsProg module
+-------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindSuperQEPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindZeroQEPixels module
+--------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindZeroQEPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.FindZeroQEPixelsProg module
+------------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.FindZeroQEPixelsProg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.findHotPixels module
+-----------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.findHotPixels
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.satPixPV012\_240806 module
+-----------------------------------------------
+
+.. automodule:: NIR_BadPixelMasking.satPixPV012_240806
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+NIR\_BadPixelMasking.utils module
+---------------------------------
+
+.. automodule:: NIR_BadPixelMasking.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: NIR_BadPixelMasking
+   :members:
+   :undoc-members:
+   :show-inheritance:

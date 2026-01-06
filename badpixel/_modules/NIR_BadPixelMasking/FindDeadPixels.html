@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_BadPixelMasking.FindDeadPixels &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_BadPixelMasking.FindDeadPixels</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_BadPixelMasking.FindDeadPixels</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file FindDeadPixels.py</span>
+<span class="sd">@date March 19, 2020</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.utils</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ST_DM_FilenameProvider.FilenameProvider</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileNameProvider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ST_DM_MDBTools.Mdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mdb</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+
+<span class="c1"># bad pixel flag</span>
+<span class="c1">#BAD_REASON = 1</span>
+<span class="c1"># minimum number of input exposures to apply threshold percentage</span>
+<span class="c1">#MIN_NUM_EXPOSURES = 5</span>
+
+
+<div class="viewcode-block" id="FindDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FindDeadPixels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class FindDeadPixels</span>
+<span class="sd">    This class identifies pixels which are measured to have zero signal in a</span>
+<span class="sd">    set of Level 1 SCIENCE exposures.</span>
+
+<span class="sd">    The algorithm can process either MDB, RAW (full ramp) or SCI (fitted ramps) exposures:</span>
+
+<span class="sd">    * In RAW data, the first and last groups are averaged and differenced. A</span>
+<span class="sd">    pixel is disconnected if the difference is exactly 0, and flagged dead in</span>
+<span class="sd">    the final mask if it is dead to a threshold repeatability across N input</span>
+<span class="sd">    exposures.  If N is less than the threshold, the repeatability must be 100%.</span>
+
+<span class="sd">    * In SCI data, a pixel is disconnected if the standard deviation of the</span>
+<span class="sd">    estimated flux is exactly zero across all N input exposures.  </span>
+
+<span class="sd">    * In MDB mode, the disconnected pixel maps from the MDB is used directly.</span>
+
+<span class="sd">    The output for a single detector is a 2D dead pixel mask stored as FITS,</span>
+<span class="sd">    named dpix_SCAID_[timestamp].fits, including a table extension listing the</span>
+<span class="sd">    input data.  In the case of RAW input data, a FITS cube [N,2040,2040]</span>
+<span class="sd">    containing N image masks, and corresponding ascii lists of the flagged pixels</span>
+<span class="sd">    are also created.</span>
+
+<span class="sd">    The output of this class is to match what&#39;s in the DCL data that are in the</span>
+<span class="sd">    Euclid MDB.  This is the not the final dead pixel mask.  The otuput of this</span>
+<span class="sd">    class is part of the inputs to CreateBadPixelsMask class.</span>
+
+<span class="sd">    This class works on a detector basis, since: (a) this allows each</span>
+<span class="sd">    to be monitored on their own timescales; (b) it is easier to define a smaller</span>
+<span class="sd">    homogenous set of ground or on orbit observations to be processed; (c) runs</span>
+<span class="sd">    faster with simpler I/O.</span>
+
+<span class="sd">    Bad Pixel flavors:</span>
+<span class="sd">    1 = Disconnected</span>
+<span class="sd">    2 = Zero QE (formerly Zero Full Well)</span>
+<span class="sd">    3 = High CDS noise (stand-in for RTN)</span>
+<span class="sd">    4 = Snowball</span>
+<span class="sd">    5 = Hot (formerly &#39;Halo&#39;)</span>
+<span class="sd">    6 = High Low Baseline</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">mdbfile</span><span class="p">,</span> <span class="n">configfn</span><span class="p">,</span> <span class="n">exp_list_fn</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;FindDeadPixels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span> <span class="o">=</span> <span class="n">mdbfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span> <span class="o">=</span> <span class="n">configfn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_explistfn</span> <span class="o">=</span> <span class="n">exp_list_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="n">scaid</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParams</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+<div class="viewcode-block" id="FindDeadPixels.setVerbose">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.setVerbose">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setVerbose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.setParams">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.setParams">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setParams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Logic in parameter setting:</span>
+<span class="sd">         * If a config file is not given, then EXPMODE is assumed to be &#39;MDB&#39;, a SCA_ID must be spcified.</span>
+<span class="sd">         * If a config file is given, all parameters are read in from the config file except the SCA_ID </span>
+<span class="sd">           if it&#39;s specified on the command line.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span> <span class="o">=</span> <span class="s2">&quot;MDB&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold</span> <span class="o">=</span> <span class="mf">0.8</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_num_exposures</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parameters to be used:&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exposure mode : &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data origin: MDB&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Bad reason: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SCA ID: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Threshold percentage for the combined bad pixel mask: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Minimum number of input exposures to apply threshold percentage: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_min_num_exposures</span><span class="p">))</span>
+
+<span class="w">            </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">          self._expmode = &quot;SCI&quot;</span>
+<span class="sd">          if not self._scaid:   #if scaid not given as well</span>
+<span class="sd">             self._scaid = 18221</span>
+<span class="sd">          self._bad_threshold = 1.</span>
+<span class="sd">          self._bad_reason = 1</span>
+<span class="sd">          self._dataorig = &quot;TV1&quot;</span>
+<span class="sd">          &#39;&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;EXPMODE&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">:</span>  <span class="c1"># if scaid is not specified on the cmd line, get it from the config file</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;SCAID&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bad_threshold</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;BAD_THRESHOLD&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;COM_THRESHOLD&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_num_exposures</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;MIN_NUM_EXPOSURES&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;BAD_REASON&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dataorig</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;DATA_ORIG&quot;</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parameters to be used:&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data origin: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataorig</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Bad reason: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exposure mode : &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SCA ID: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Threshold bad pixel: &quot;</span> <span class="o">+</span>
+                             <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bad_threshold</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Threshold percentage for the combined bad pixel mask: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Minimum number of input exposures to apply threshold percentage: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_min_num_exposures</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.getExposureList">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.getExposureList">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getExposureList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the list of exposure files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read in the list of files (either a list of XML or FITS files)</span>
+        <span class="n">explist</span> <span class="o">=</span> <span class="n">load_list_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_explistfn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Total </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">explist</span><span class="p">)</span><span class="si">}</span><span class="s1"> input exposures&#39;</span><span class="p">)</span>
+
+        <span class="c1"># the next line assumes the input files are under workdir</span>
+        <span class="n">expfiles</span> <span class="o">=</span> <span class="n">prepend_dir</span><span class="p">(</span><span class="n">explist</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_exposures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expfiles</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">expfiles</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.get_scaid">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.get_scaid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scaid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_expfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve the SCA_ID from one input exposure FITS file a_expfile</span>
+<span class="sd">        The SCA_ID should be in the input exposure FITS header!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ff</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">a_expfile</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;ERROR: the data is missing header key SCA_ID!&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.get_detid">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.get_detid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_detid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_expfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the detector id from either the input file or the detector slot table.</span>
+<span class="sd">        The DET_ID will be in the input exposure FITS header.</span>
+<span class="sd">        If the exposure is not specified or if the DET_ID is not in the input exposure data file, </span>
+<span class="sd">        retrieve the detector id from the detector slots table given the SCA_ID.</span>
+
+<span class="sd">        :return: string, detector id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a_expfile</span><span class="p">:</span>
+            <span class="n">ff</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">a_expfile</span><span class="p">)</span>
+            <span class="n">hdr</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+            <span class="k">if</span> <span class="s1">&#39;DET_ID&#39;</span> <span class="ow">in</span> <span class="n">hdr</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span> <span class="o">=</span> <span class="n">ff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span>
+                <span class="n">ff</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span>
+
+        <span class="c1"># read in the detector slots table</span>
+        <span class="n">detslots</span> <span class="o">=</span> <span class="n">readDetectorLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+
+        <span class="c1"># find the detector id corresponding to the scaid</span>
+        <span class="n">detid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">detslots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">):</span>
+                <span class="n">detid</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">if</span> <span class="n">detid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span> <span class="o">=</span> <span class="n">detid</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Can not find the corresponding detector ID for SCA_ID </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">detid</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.get_thresh_pcnt">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.get_thresh_pcnt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_thresh_pcnt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_exposures</span><span class="p">,</span> <span class="n">in_percent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the threshold percentage for merging the bad pixel masks from all exposures</span>
+<span class="sd">        based on number of available exposures.</span>
+
+<span class="sd">        The criteria is as following:</span>
+<span class="sd">         X=threshhold_percent  for N &gt;= MIN_NUM_EXPOSURES</span>
+<span class="sd">         X=100%=1.             for N &lt;  MIN_NUM_EXPOSURES</span>
+<span class="sd">         N is the number of total number of exposures</span>
+
+<span class="sd">        :param in_percent: (float) percentage of the threshold</span>
+<span class="sd">        :param num_exposures: (int) number of exposures</span>
+
+<span class="sd">        :return: float, the threshold for dead pixel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">num_exposures</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_num_exposures</span><span class="p">:</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">in_percent</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold_used</span> <span class="o">=</span> <span class="n">threshold</span>
+
+        <span class="k">return</span> <span class="n">threshold</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.set_numbdpix">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.set_numbdpix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_numbdpix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numbdpix</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span> <span class="o">=</span> <span class="n">numbdpix</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.merge_masks">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.merge_masks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_exposures</span><span class="p">,</span> <span class="n">sum_deadpix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for threshold and determine if the pixel is indeed dead. Make the final mask for this SCA_ID.</span>
+
+<span class="sd">        The criteria is as following:</span>
+<span class="sd">        For each pixel, if the total number of dead pixels identified from all the exposures (sum_deadpix)</span>
+<span class="sd">        is larger than threshold X, then it is a dead pixel.</span>
+<span class="sd">        Where:</span>
+<span class="sd">         X=80% of N  for N &gt;= MIN_NUM_EXPOSURES</span>
+<span class="sd">         X=100% of N for N &lt;  MIN_NUM_EXPOSURES</span>
+<span class="sd">         N is the number of total number of exposures</span>
+
+<span class="sd">        :param num_exposures: (int) number of exposures used</span>
+<span class="sd">        :param sum_deadpix:  (2D numpy array) sum of bad pixels at each pixel</span>
+
+<span class="sd">        :return: (2D int number array) the dead pixel mask for this SCA_ID       </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">threshold_pcnt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_thresh_pcnt</span><span class="p">(</span>
+            <span class="n">num_exposures</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold</span><span class="p">)</span>
+
+        <span class="c1"># check for threshold</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sum_deadpix</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">threshold_pcnt</span> <span class="o">*</span> <span class="n">num_exposures</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_numbdpix</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Final merged mask has </span><span class="si">{}</span><span class="s2"> dead pixels in </span><span class="si">{}</span><span class="s2"> exposures at &gt;= </span><span class="si">{}% r</span><span class="s2">epeatability&quot;</span><span class="o">.</span>
+                         <span class="nb">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span> <span class="n">num_exposures</span><span class="p">,</span> <span class="n">threshold_pcnt</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sum_deadpix</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.find_per_exposure">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.find_per_exposure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_per_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ramps</span><span class="p">,</span> <span class="n">fnum</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the bad pixels for each exposure file which contains n_ramps. </span>
+
+<span class="sd">        :param ramps: 2D numpy array, ramp data for this exposure</span>
+<span class="sd">        :param fnum: int, the fnum-th exposure in the input exposure list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nz</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">ramps</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># number of up-the-ramp reads, rows, columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input ramps dimension: </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">ramps</span> <span class="o">=</span> <span class="n">ramps</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Remove the border if present</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">ramps</span> <span class="o">=</span> <span class="n">ramps</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>  <span class="c1"># Remove the border if present</span>
+
+        <span class="c1"># chenck for NaN in the data.  These NaN are from faulty readouts or data</span>
+        <span class="c1"># analysis or other reasons that do not necessairly mean the pixel is</span>
+        <span class="c1"># physically bad</span>
+        <span class="n">ramps_nan_masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">ramps</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ramps</span><span class="p">))</span>
+        <span class="c1"># average first 16 frames</span>
+        <span class="n">pedestal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">ramps_nan_masked</span><span class="p">[:</span><span class="mi">16</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">totalsignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
+            <span class="n">ramps_nan_masked</span><span class="p">[</span><span class="n">nz</span><span class="o">-</span><span class="mi">16</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># average last 16 frames</span>
+        <span class="n">netsignal</span> <span class="o">=</span> <span class="n">totalsignal</span> <span class="o">-</span> <span class="n">pedestal</span>  <span class="c1"># difference to find dead pixels</span>
+        <span class="n">ind_nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">netsignal</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>  <span class="c1"># pixels where NaN occurs</span>
+        <span class="n">num_nans</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_nan</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> NaN pixels in this exposure&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_nans</span><span class="p">))</span>
+
+        <span class="c1"># find zero signal pixels.  Some are negative, these have</span>
+        <span class="c1"># problems e.g. zero full well, but not defined as disconnected.</span>
+        <span class="n">goodpixs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">greater</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">netsignal</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_threshold</span><span class="p">,</span>
+                              <span class="n">where</span><span class="o">=~</span><span class="p">(</span><span class="n">netsignal</span><span class="o">.</span><span class="n">mask</span><span class="p">))</span>
+        <span class="c1"># pixels where NaN occurs are not dead pixels, thus set to True</span>
+        <span class="n">goodpixs</span><span class="p">[</span><span class="n">ind_nan</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">deadpixs</span> <span class="o">=</span> <span class="o">~</span><span class="n">goodpixs</span>
+        <span class="n">ind_deadpixs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">deadpixs</span><span class="p">)</span>  <span class="c1"># where the deak pixels are</span>
+        <span class="n">total_num_deadpixels_det</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_deadpixs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> dead pixels in this exposure&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">total_num_deadpixels_det</span><span class="p">))</span>
+
+        <span class="c1"># boolean --&gt; int</span>
+        <span class="n">deadpixs_int</span> <span class="o">=</span> <span class="n">deadpixs</span> <span class="o">*</span> <span class="mi">1</span>
+
+        <span class="c1"># Write out a list of dead pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">outlisttxtfile</span> <span class="o">=</span> <span class="s1">&#39;./deadpixels_list_SCA&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span>
+            <span class="n">outlisttxtfile</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fnum</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
+            <span class="n">outlisttxtfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">outlisttxtfile</span><span class="p">)</span>
+            <span class="n">xpixs</span><span class="p">,</span> <span class="n">ypixs</span> <span class="o">=</span> <span class="n">ind_deadpixs</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outlisttxtfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">of</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SCA_ID   X    Y   Bad-reason&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">of</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xpixs</span><span class="p">,</span> <span class="n">ypixs</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
+                          <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">of</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Written dead pixels list to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outlisttxtfile</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">deadpixs_int</span><span class="p">,</span> <span class="n">total_num_deadpixels_det</span><span class="p">,</span> <span class="n">num_nans</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.findthem_raw">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.findthem_raw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">findthem_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to find dead pixels using full ramps (RAW mode)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read the list of exposures</span>
+        <span class="n">expfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getExposureList</span><span class="p">()</span>
+
+        <span class="c1"># get detector id</span>
+        <span class="c1">#detid = self.get_detid(expfiles[0])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_detid</span><span class="p">()</span>
+
+        <span class="c1"># init the sum array for checking if the pixel are indeed dead given the threshold</span>
+        <span class="n">deadpixsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># init the FITS data structure</span>
+        <span class="c1"># this FITS file contains len(expfiles) extensions, each for one exposure</span>
+        <span class="n">hdulist</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()])</span>
+
+        <span class="c1"># get the signal ramps for each pixel</span>
+        <span class="n">fnum</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">expfiles</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Process exposure file: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+            <span class="n">exphdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">ramps</span> <span class="o">=</span> <span class="n">exphdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">exphdu</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="c1"># find the bad pixels in the ramps of this exposure file</span>
+            <span class="n">deadpixs_int</span><span class="p">,</span> <span class="n">total_num_deadpixels_det</span><span class="p">,</span> <span class="n">num_nans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_per_exposure</span><span class="p">(</span>
+                <span class="n">ramps</span><span class="p">,</span> <span class="n">fnum</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">{}</span><span class="s2">, SCA </span><span class="si">{}</span><span class="s2">, there are total </span><span class="si">{}</span><span class="s2"> dead pixels, </span><span class="si">{}</span><span class="s2"> NaNs&quot;</span><span class="o">.</span>
+                             <span class="nb">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="n">total_num_deadpixels_det</span><span class="p">,</span> <span class="n">num_nans</span><span class="p">))</span>
+
+            <span class="c1"># since the value is either 1 or 0 for bad pixels, we can add them up to get</span>
+            <span class="c1"># the total number of found bad ones at each pixel grid from all of the exposures</span>
+            <span class="n">deadpixsum</span> <span class="o">+=</span> <span class="n">deadpixs_int</span>
+
+            <span class="c1"># append dead pixel array to FITS HDU</span>
+            <span class="n">newhdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">deadpixs_int</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+            <span class="n">newhdu</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DQ_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fnum</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">hdr</span> <span class="o">=</span> <span class="n">newhdu</span><span class="o">.</span><span class="n">header</span>
+            <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+            <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;INDATA&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s1">&#39;Data source&#39;</span><span class="p">)</span>
+            <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX&#39;</span><span class="p">,</span> <span class="n">total_num_deadpixels_det</span><span class="p">,</span>
+                    <span class="s1">&#39;Number of bad pixels of type BADTYPE&#39;</span><span class="p">)</span>
+            <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NUMNAN&#39;</span><span class="p">,</span> <span class="n">num_nans</span><span class="p">,</span>
+                    <span class="s1">&#39;Number of NaNs, not counted with NBADPIX&#39;</span><span class="p">)</span>
+            <span class="n">hdulist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newhdu</span><span class="p">)</span>
+
+            <span class="n">fnum</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># merge all the masks from each exposure and make the final mask for this DET_ID/SCA_ID</span>
+        <span class="n">deadmask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_masks</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">expfiles</span><span class="p">),</span> <span class="n">deadpixsum</span><span class="p">)</span>
+
+        <span class="c1"># make a table HDU containing the list of input exposure file names</span>
+        <span class="n">t_hdu</span> <span class="o">=</span> <span class="n">make_files_hdu</span><span class="p">(</span><span class="n">expfiles</span><span class="p">)</span>
+
+        <span class="c1"># append the list of input files as a table to FITS HDU</span>
+        <span class="n">hdulist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_hdu</span><span class="p">)</span>
+
+        <span class="c1"># update primary header of both hdulist</span>
+        <span class="n">prihdr</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="s1">&#39;Euclid&#39;</span><span class="p">,</span> <span class="s1">&#39;Telescope name&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">,</span> <span class="s1">&#39;NISP&#39;</span><span class="p">,</span> <span class="s1">&#39;Instrument name&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ORIGIN&#39;</span><span class="p">,</span> <span class="s1">&#39;OU-NIR&#39;</span><span class="p">,</span> <span class="s1">&#39;SGS-OU origin&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADTYPE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">,</span> <span class="s1">&#39;See COMMENT&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;COMMENT&#39;</span><span class="p">,</span> <span class="s1">&#39;Badtypes: 1=Disconnected, 2=ZeroQE, 3=HighNoise/RTN, &#39;</span> <span class="o">+</span>
+                   <span class="s1">&#39;4=Snowball, 5=Hot, 6=BaselineOOL, 7=LowQE, 8=SuperQE&#39;</span><span class="p">)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DATEUTC&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">(</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;File creation date&#39;</span><span class="p">)</span>
+        <span class="c1">#prihdr.set(&#39;BADTHRES&#39;, self._bad_threshold, &#39;Thrshold for the dead pixels&#39;)</span>
+        <span class="n">prihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADVAL&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Bad pixel value&#39;</span><span class="p">)</span>
+
+        <span class="c1"># write the FITS file for each exposure</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="n">utcnow</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span>
+                                                                    <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">aoutfile</span> <span class="o">=</span> <span class="s1">&#39;dpix_SCA&#39;</span> <span class="o">+</span> \
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_maskcube_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">utcnow</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.fits&#39;</span>
+            <span class="n">aoutfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">aoutfile</span><span class="p">)</span>
+            <span class="n">hdulist</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">aoutfile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mask cube written to file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aoutfile</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">deadmask</span><span class="p">,</span> <span class="n">t_hdu</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.findthem_macc">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.findthem_macc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">findthem_macc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to find dead pixels using fitted ramps (SCI mode)</span>
+
+<span class="sd">        :return: int, 2D numpy array, the dead pixel mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read the list of exposures</span>
+        <span class="n">expfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getExposureList</span><span class="p">()</span>
+        <span class="n">num_exposures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expfiles</span><span class="p">)</span>
+
+        <span class="c1"># get detector id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_detid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Detector ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># get the threshold, though not used but it sets self._com_threshold_used which is need in the header of final product</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_thresh_pcnt</span><span class="p">(</span><span class="n">num_exposures</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PM 7/23/24.</span>
+<span class="sd">       The new condition for a dead pixel is lack of photometric response over a range of</span>
+<span class="sd">       exposures, and selected over a low-level flux range determined from</span>
+<span class="sd">       the signal properties of previously known disconnected pixels.  The list of disconnected</span>
+<span class="sd">       pixels is extracted from MDB reference (ground-based) mask EUC_NISP_DISCONNECTED-TV1_01.00.fits.</span>
+<span class="sd">       The signal properties of the known disconnected pixels are measured in the median of a</span>
+<span class="sd">       stack of input LE1 frames listed in &#39;expfiles&#39;, then a flux range (in ADU) is set</span>
+<span class="sd">       based on the median of the disconnected pixels at x-sigma below the most probable value of</span>
+<span class="sd">       the signal in the bulk of the detector, excluding saturated pixels.  Pixels falling in the</span>
+<span class="sd">       low flux range, and not previously flagged as DISCONNECTED, are declared dead, and effectively </span>
+<span class="sd">       in the same category as DISCONNECTED.</span>
+
+<span class="sd">       Similar to the &quot;MDB&quot; option below, the ground-based reference</span>
+<span class="sd">       EUC_NISP_DISCONNECTED-TV1_01.00.fits must be read in.  The final mask will be a</span>
+<span class="sd">       union of the pixels flagged in that mask (&quot;True&quot; boolean) and the unresponsive pixels</span>
+<span class="sd">       selected here.</span>
+
+<span class="sd">       Input data in &#39;expfiles&#39; must be LE1 slope images, i.e., without signal processing</span>
+<span class="sd">       except for datatype conversion, subtraction of the bias offset, and trimming the</span>
+<span class="sd">       reference border pixels.  The ideal observatations are LED flatfield exposures from</span>
+<span class="sd">       PV-010 and/or F-007, and ideally at maximum fluence 730 e/sec with LED configurations</span>
+<span class="sd">       given in calibration.pages.euclid-sgs.uk/CalTQ-Framework/calobs/calobs-block-f-visNL-nispLED.html,</span>
+<span class="sd">       Table 56.</span>
+<span class="sd">       </span>
+<span class="sd">       For the LED flatfield data, use self._dataorig == &quot;SIM&quot;.</span>
+
+<span class="sd">       HERE IS HOW TO DO IT:</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+        <span class="c1">#read in data</span>
+        <span class="n">allimgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">expfiles</span><span class="p">)</span>
+
+        <span class="c1"># subtract the bias offset</span>
+        <span class="n">allimgs</span> <span class="o">-=</span> <span class="mi">1024</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Subtracted the bias offset 1024&#39;</span><span class="p">)</span>
+
+        <span class="c1"># calculate median and std deviation, check for negative pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Checking for negative pixels...&#39;</span><span class="p">)</span>
+        <span class="n">imgs_med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">allimgs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">imgs_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">allimgs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">imgs_med</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">num_negative</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># get the reference map of known (pre-launch) disconnected pixels from MDB (16 extensions, dead pixel=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Retrieving the pre-launch disconnected pixels...&#39;</span><span class="p">)</span>
+        <span class="n">mdb</span> <span class="o">=</span> <span class="n">Mdb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+        <span class="n">disctfile</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span>
+            <span class="s2">&quot;SpaceSegment.Instrument.NISP.NISPDisconectedPixelsFile&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;The pre-launch disconnected pixle map from MDB: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">disctfile</span><span class="p">))</span>
+
+        <span class="c1"># make a table HDU containing the list of input exposure file names</span>
+        <span class="n">t_hdu</span> <span class="o">=</span> <span class="n">make_files_hdu</span><span class="p">(</span><span class="n">expfiles</span> <span class="o">+</span> <span class="p">[</span><span class="n">disctfile</span><span class="p">])</span>
+
+        <span class="c1"># read in the disconnected pixle map data for the current scaid</span>
+        <span class="n">disctfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">disctfile</span><span class="p">)</span>
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">disctfile</span><span class="p">)</span>
+
+        <span class="c1"># find the hdu for the corresponding scaid</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># there should be only 1 extension (SCI) containing the SCA_ID</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;No extension found for SCA_ID=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span><span class="si">}</span><span class="s1"> in the pre-launch disconnected pixel file: </span><span class="si">{</span><span class="n">disctfile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">discopix</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">discopix</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">discopix</span> <span class="o">=</span> <span class="n">discopix</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">discopix</span> <span class="o">=</span> <span class="n">discopix</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Read in the pre-launch disconnected pixels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;There are </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">discopix</span><span class="p">)</span><span class="si">}</span><span class="s1"> pre-launch disconnected pixels&#39;</span><span class="p">)</span>
+
+        <span class="c1"># determine the median signal of all pixels except disconnected</span>
+        <span class="n">sigmed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">sigstd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># make a copy of the median array to manipulate according to the flux range found</span>
+        <span class="c1"># where the dicosnnected pixels show lowest signal (non-zero due to charge in the readout</span>
+        <span class="c1"># integrated circuit)</span>
+        <span class="n">imgs_med1</span> <span class="o">=</span> <span class="n">imgs_med</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">imgs_med</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">)</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">))))</span>
+
+        <span class="c1"># nullify all pixels with signal outside of rng</span>
+        <span class="n">imgs_med1</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="c1"># nullify all remaining pixels that are not disconnected</span>
+        <span class="n">imgs_med1</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="c1"># now find the median (MPV) and std deviation of the pixels that have not been nullified.</span>
+        <span class="c1"># these are the disconnected pixels at lowest signal on the array</span>
+        <span class="n">discoMPV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">imgs_med1</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">imgs_med1</span><span class="p">)])</span>
+        <span class="n">discoStd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">imgs_med1</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">imgs_med1</span><span class="p">)])</span>
+
+        <span class="c1"># set a factor for how many sigma above the discoMPV to find dead pixels</span>
+        <span class="n">discoScale</span> <span class="o">=</span> <span class="mf">3.</span>
+
+        <span class="c1"># make the dead pixel mask</span>
+        <span class="n">imgs_deadmask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">imgs_med</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">imgs_med</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">discoMPV</span> <span class="o">+</span> <span class="n">discoScale</span><span class="o">*</span><span class="n">discoStd</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># imgs_deadmask[imgs_med &gt; (discoMPV + discoScale*sigStd)] = 0   #alread zeroed-out</span>
+
+        <span class="c1"># include the previously known disconnected pixels to keep track of.  The final mask will</span>
+        <span class="c1"># be a union of dead and disconnected. &quot;&quot;&quot;</span>
+        <span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">goodpixs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">imgs_deadmask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># All = previously known disconnected + new dead pixels</span>
+        <span class="n">deadpixs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">imgs_deadmask</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_numbdpix</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">deadpixs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Final mask has </span><span class="si">{}</span><span class="s2"> dead pixels in </span><span class="si">{}</span><span class="s2"> exposures&quot;</span><span class="o">.</span>
+                         <span class="nb">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span> <span class="n">num_exposures</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Median frame </span><span class="si">{}</span><span class="s1"> pixels &lt; 0 ADU&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_negative</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Lower MPV, STD DEV of known DISCONNECTED pixels: </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">discoMPV</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">discoStd</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s1">&#39;Num known (ground-based) DISCONNECTED pixels: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">discopix</span><span class="p">[</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;DISCONNECTED pixel MEDIAN, MIN, MAX in the median image: </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+                             <span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]),</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;DETECTOR MEDIAN, STD DEV, MIN, MAX excl. DISCONNECTED pixels: </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span>
+                             <span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]),</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">[</span><span class="n">discopix</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Num DISCONNECTED pixels in median image in the selected range: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">discopix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">imgs_med</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">discoMPV</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">discoStd</span><span class="p">)))]</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Num DEAD pixels in median image in the selected range: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">imgs_deadmask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="n">hdu1</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Euclid  &#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;NISP    &#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">(</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="s1">&#39;UT date when this file was created&#39;</span><span class="p">)</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;INDATA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_explistfn</span><span class="p">,</span> <span class="s1">&#39;Input FITS exposure list&#39;</span><span class="p">)</span>
+            <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">num_exposures</span><span class="p">,</span> <span class="s1">&#39;Number of input exposures&#39;</span><span class="p">)</span>
+
+            <span class="n">hdu2</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">imgs_med</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;DET&#39;</span> <span class="o">+</span>
+                                 <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.MEDIAN&#39;</span><span class="p">)</span>
+            <span class="n">hdu2</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">],</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+            <span class="n">hdu2</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;IMAGETYP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;Image data type, e.g., median, mean, ...&#39;</span><span class="p">)</span>
+            <span class="n">hdu2</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;BUNIT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;ADU&#39;</span><span class="p">,</span> <span class="s1">&#39;Pixel data unit&#39;</span><span class="p">)</span>
+            <span class="n">hdu2</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">],</span> <span class="s1">&#39;Number of input exposures&#39;</span><span class="p">)</span>
+
+            <span class="n">hdu3</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">imgs_std</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;DET&#39;</span> <span class="o">+</span>
+                                 <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.STDEV&#39;</span><span class="p">)</span>
+            <span class="n">hdu3</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">],</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+            <span class="n">hdu3</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;IMAGETYP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;stdev&#39;</span><span class="p">,</span> <span class="s1">&#39;Image data type, e.g., median, mean, ...&#39;</span><span class="p">)</span>
+            <span class="n">hdu3</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;BUNIT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;ADU&#39;</span><span class="p">,</span> <span class="s1">&#39;Pixel data unit&#39;</span><span class="p">)</span>
+            <span class="n">hdu3</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">],</span> <span class="s1">&#39;Number of input exposures&#39;</span><span class="p">)</span>
+
+            <span class="n">hdu4</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span>
+                <span class="n">imgs_deadmask</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;DET&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.DEAD&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdu1</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">],</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DISCOVAL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;-1&#39;</span><span class="p">,</span> <span class="s1">&#39;Value assigned to Disconnected pixels&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DEADVAL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;Value assigned to Dead pixels&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DISCOMPV&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">discoMPV</span><span class="p">,</span> <span class="s1">&#39;Disconnected pixel range MPV&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DISCOSTD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">discoStd</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;Disconnected pixel range STD&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;DISCOSCL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">discoScale</span><span class="p">,</span> <span class="s1">&#39;Disconnected pixel STD scale factor&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMDEAD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">imgs_deadmask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                                      <span class="s1">&#39;Number of dead pixels in selected range&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;NUMDISCO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">discopix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">discopix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">imgs_med</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">discoMPV</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">discoStd</span><span class="p">)))]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                                       <span class="s1">&#39;Number of disconnected pixels in selected range&#39;</span><span class="p">)</span>
+            <span class="n">hdu4</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;TOTDISCO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">imgs_deadmask</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                                       <span class="s1">&#39;Total number of disconnected+dead pixels&#39;</span><span class="p">)</span>
+
+            <span class="n">new_hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">hdu1</span><span class="p">,</span> <span class="n">hdu2</span><span class="p">,</span> <span class="n">hdu3</span><span class="p">,</span> <span class="n">hdu4</span><span class="p">])</span>
+            <span class="n">new_hdu</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="s1">&#39;DEADPIX_&#39;</span><span class="o">+</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_explistfn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="o">+</span><span class="s1">&#39;_Det&#39;</span> <span class="o">+</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># TODO filename</span>
+
+        <span class="c1"># final dead pixel mask using 1=dead</span>
+        <span class="n">imgs_deadmask</span><span class="p">[</span><span class="n">deadpixs</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">imgs_deadmask</span><span class="p">,</span> <span class="n">t_hdu</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.findthem_mdb">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.findthem_mdb">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">findthem_mdb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to find dead pixels using the disconnected pixel map in the MDB</span>
+
+<span class="sd">        :return: int, 2D numpy array, the dead pixel mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the corresponding detector id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_detid</span><span class="p">()</span>
+
+        <span class="c1"># get the DISCONNECTED pixel map file from MDB  (16 extensions, dead pixel=1)</span>
+        <span class="n">mdb</span> <span class="o">=</span> <span class="n">Mdb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+        <span class="n">disctfile</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span>
+            <span class="s2">&quot;SpaceSegment.Instrument.NISP.NISPDisconectedPixelsFile&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;The disconnected pixle map from MDB: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">disctfile</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_exposures</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold_used</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c1"># not used in this mode but for the output header</span>
+
+        <span class="c1"># make a table HDU containing the list of input exposure file names</span>
+        <span class="n">t_hdu</span> <span class="o">=</span> <span class="n">make_files_hdu</span><span class="p">([</span><span class="n">disctfile</span><span class="p">])</span>
+
+        <span class="c1"># read in the disconnected pixle map data for the current scaid</span>
+        <span class="n">disctfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">disctfile</span><span class="p">)</span>
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">disctfile</span><span class="p">)</span>
+
+        <span class="c1"># find the hdu for the corresponding scaid</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># there should be only 1 extension (SCI) containing the SCA_ID</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No extension found for SCA_ID=&quot;</span> <span class="o">+</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; in expousre file: &quot;</span> <span class="o">+</span> <span class="n">disctfile</span><span class="p">)</span>
+
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Remove the border if present</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>  <span class="c1"># Remove the border if present</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_numbdpix</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">dat</span> <span class="o">*</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t_hdu</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.load_data">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.load_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expfiles</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the data based on the data origin for SCI mode.</span>
+<span class="sd">        The data origin is one of the lab test, simulated and operation data: &quot;TV1&quot;, &quot;SIM&quot;, &quot;OPS&quot;.</span>
+
+<span class="sd">        :param expfiles: list, the list of exposure file names</span>
+<span class="sd">        :return: int, 3D numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1">#allimgs = np.zeros((len(expfiles), 2040, 2040), dtype=np.int32)</span>
+        <span class="n">allimgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">expfiles</span><span class="p">),</span> <span class="mi">2040</span><span class="p">,</span> <span class="mi">2040</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">expfiles</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="c1"># TV1 test data (one file per scaid, 5 hdus)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataorig</span> <span class="o">==</span> <span class="s2">&quot;TV1&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Read in exposure file </span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+                <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="s2">&quot;SCIENCE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">hdu</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1"># simulated or in-flight data (32 hdus, each detector has SCI &amp; DQ layers)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataorig</span> <span class="o">==</span> <span class="s2">&quot;SIM&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataorig</span> <span class="o">==</span> <span class="s2">&quot;OPS&quot;</span><span class="p">:</span>
+                <span class="c1"># parse the exposure list containing XML files</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+                    <span class="c1"># if el.tag == &quot;NirFrameFitsFile&quot;:</span>
+                    <span class="k">if</span> <span class="n">el</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;NispFrameFitsFile&quot;</span><span class="p">:</span>  <span class="c1"># 7/29/2024</span>
+                        <span class="n">fn</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//FileName&#39;</span><span class="p">)</span>
+                        <span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Read in exposure file </span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">fn</span><span class="p">))</span>
+                <span class="c1"># open exposure file</span>
+                <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">fn</span><span class="p">))</span>
+
+                <span class="c1"># find the hdu for the corresponding scaid</span>
+                <span class="n">hdu</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span>
+                    <span class="n">h</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># there should be only 1 extension (SCI) containing the SCA_ID</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No extension found for SCA_ID=&quot;</span> <span class="o">+</span>
+                                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; in expousre file: &quot;</span> <span class="o">+</span> <span class="n">fn</span><span class="p">)</span>
+
+                <span class="n">hdu</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># read in the hdu data</span>
+                <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span>
+
+            <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+                <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Remove the border if present</span>
+            <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+                <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>  <span class="c1"># Remove the border if present</span>
+
+            <span class="n">allimgs</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dat</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">allimgs</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.findthem">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.findthem">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">findthem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span> <span class="o">==</span> <span class="s2">&quot;MDB&quot;</span><span class="p">:</span>
+            <span class="n">deadmask</span><span class="p">,</span> <span class="n">t_hdu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findthem_mdb</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span> <span class="o">==</span> <span class="s2">&quot;RAW&quot;</span><span class="p">:</span>
+            <span class="n">deadmask</span><span class="p">,</span> <span class="n">t_hdu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findthem_raw</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span> <span class="o">==</span> <span class="s2">&quot;SCI&quot;</span><span class="p">:</span>
+            <span class="n">deadmask</span><span class="p">,</span> <span class="n">t_hdu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findthem_macc</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unsupported exposure mode: </span><span class="si">{}</span><span class="s2">!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_expmode</span><span class="p">))</span>
+
+        <span class="c1">#!!Note: in the DCL data, 1=True=good pixel, 0=False=bad pixel,</span>
+        <span class="c1"># we need to flip the mask since we are producing a mask that emulates what is in DCL data!!</span>
+        <span class="c1"># deadmask = 1 - deadmask    #June 29, 2021, no longer needed</span>
+
+        <span class="c1"># write out the final output</span>
+        <span class="n">badpixpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">deadmask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">t_hdu</span><span class="p">)</span>
+
+        <span class="c1"># write out the XML file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating XML file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">writeXml</span><span class="p">(</span><span class="n">badpixpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+        <span class="c1"># check the result</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote XML file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;FindDeadPixels Xml Creation error.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: FindDeadPixels.writeXml(): &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FindDeadPixels.write">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindDeadPixels.FindDeadPixels.write">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deadpixmask</span><span class="p">,</span> <span class="n">files_hdu</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write out the final output</span>
+
+<span class="sd">        :param deadpixmask: 2D numpy array, the dead pixel mask, according to DCL convention (1=good, 0=bad)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># init the FITS data structure</span>
+        <span class="c1"># this FITS file contains one extension, for the combined maks for this DET_ID/SCA_ID</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()])</span>
+
+        <span class="c1"># update primary header of hdu</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="s1">&#39;Euclid&#39;</span><span class="p">,</span> <span class="s1">&#39;Telescope name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">,</span> <span class="s1">&#39;NISP&#39;</span><span class="p">,</span> <span class="s1">&#39;Instrument name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ORIGIN&#39;</span><span class="p">,</span> <span class="s1">&#39;OU-NIR&#39;</span><span class="p">,</span> <span class="s1">&#39;SGS-OU origin&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">,</span> <span class="s1">&#39;CALIB&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADTYPE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">,</span> <span class="s1">&#39;See COMMENT&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;COMMENT&#39;</span><span class="p">,</span> <span class="s1">&#39;Badtypes: 1=Disconnected, 2=ZeroQE, 3=HighNoise/RTN, &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;4=Snowball, 5=Hot, 6=BaselineOOL, 7=LowQE, 8=SuperQE&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADVAL&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Bad pixel value&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NUMEXP&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_exposures</span><span class="p">,</span> <span class="s1">&#39;Number of input exposures&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;EXPTHRES&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_com_threshold_used</span><span class="p">,</span>
+                <span class="s1">&#39;Percent exposure threshold for flagging&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NUMBAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span>
+                <span class="s1">&#39;Number of flagged pixels of BADTYPE&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DATEUTC&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">(</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;File creation date&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_DEF&#39;</span><span class="p">,</span> <span class="s1">&#39;nir.logicBadPixelFlavorMask&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;FITS name definition&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_VER&#39;</span><span class="p">,</span> <span class="s1">&#39;0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;FITS version&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_STA&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-12-01T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid start time for this product(UTC)&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_END&#39;</span><span class="p">,</span> <span class="s1">&#39;2028-12-31T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid end time for this product(UTC)&#39;</span><span class="p">)</span>
+
+        <span class="n">imghdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">deadpixmask</span><span class="p">)</span>
+        <span class="c1">#imghdu.name = &#39;DQ_&#39; + str(self._detid)</span>
+        <span class="n">imghdu</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Disconnected Pixels&#39;</span>
+        <span class="n">ihdr</span> <span class="o">=</span> <span class="n">imghdu</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NUMBAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span>
+                 <span class="s1">&#39;Number of flagged pixels of BADTYPE&#39;</span><span class="p">)</span>
+        <span class="c1">#ihdr.set(&#39;BADTHRES&#39;, self._bad_threshold, &#39;Threshold for the dead pixels&#39;)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imghdu</span><span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">files_hdu</span><span class="p">)</span>
+
+        <span class="c1"># write the FITS file for the mask for this SCA_ID</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">FileNameProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_allowed_filename</span><span class="p">(</span><span class="n">type_name</span><span class="o">=</span><span class="s2">&quot;C-BadPixelFlavor&quot;</span><span class="p">,</span>
+                                                          <span class="n">instance_id</span><span class="o">=</span><span class="s1">&#39;MASK&#39;</span><span class="p">,</span>
+                                                          <span class="n">processing_function</span><span class="o">=</span><span class="s1">&#39;NIR&#39;</span><span class="p">,</span>
+                                                          <span class="n">release</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Written to file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outfile</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">outfile</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

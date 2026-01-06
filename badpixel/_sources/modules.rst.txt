@@ -1,0 +1,7 @@
+NIR_BadPixelMasking
+===================
+
+.. toctree::
+   :maxdepth: 4
+
+   NIR_BadPixelMasking

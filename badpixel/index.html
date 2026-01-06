@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR Bad Pixel Masking &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="NIR_BadPixelMasking" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">NIR Bad Pixel Masking</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nir-bad-pixel-masking">
+<h1>NIR Bad Pixel Masking<a class="headerlink" href="#nir-bad-pixel-masking" title="Link to this heading"></a></h1>
+<p>The component identifier is <strong>NIR_BadPixelMasking</strong>
+The module will apply a mask of bad and unreliable pixels to each data frame in the near-infrared detectors.</p>
+<p>It contains 9 processing functions (PFs):</p>
+<ol class="arabic simple">
+<li><p><strong>Bad Pixel Mask Module</strong> - apply bad pixel mask to data frames.</p></li>
+<li><p><strong>Bad Pixel Mask Creation Module</strong> - create the bad pixel mask.</p></li>
+<li><p><strong>Find the Dead Pixel Module</strong> - identify the dead (dis-connected) pixels.</p></li>
+<li><p><strong>Find the Hot Pixel Module</strong> - identify the hot pixels.</p></li>
+<li><p><strong>Find the Zero QE Pixel Module</strong> - identify the zero QE pixels.</p></li>
+<li><p><strong>Find the Low QE Pixel Module</strong> - identify the low QE pixels.</p></li>
+<li><p><strong>Find the Super QE Pixel Module</strong> - identify the super QE pixels.</p></li>
+<li><p><strong>Find the High and Low Baseline Pixel Module</strong> - identify pixels that are outside the baseline.</p></li>
+<li><p><strong>Find the Saturation Pixel Module</strong> - identify the saturated pixels.</p></li>
+</ol>
+<section id="bad-pixels-maksing-module">
+<h2>Bad Pixels Maksing Module<a class="headerlink" href="#bad-pixels-maksing-module" title="Link to this heading"></a></h2>
+<p>This PF applies a mask of bad and unreliable pixels in the near-infrared detectors.
+It applies the mask to each data frame. This PF only masks pixels that are identified
+as bad by the bad pixel calibration modules.  This PF does not mask pixels with low transmittance,
+high dark current, non-linear pixels or pixels that are affected by persistence from pervious exposures.
+These will be flagged by other PFs if they violat their calibration margins.  The
+image combination PF will determine if a pixel is usable for a given science product.</p>
+</section>
+<section id="create-bad-pixels-mask-module">
+<h2>Create Bad Pixels Mask Module<a class="headerlink" href="#create-bad-pixels-mask-module" title="Link to this heading"></a></h2>
+<p>This PF is part of the bad pixel calibration module.  It creates a mask for the bad pixels
+in the near-infrared detectors.  It makes a list of bad pixels based on the
+detector data obtained from flight, which consists of data with dis-connected pixels,
+zero-fluence pixels, hot pixels, zero QE pixles, saturated pixels and pixels outside the baseline.
+From here, it then creats a Fits file with binary tables.</p>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The primary requirements are R-NIR-PRD-F-001, R-NIR-PRD-F-002, R-NIR-PRC-F-002 and R-NIR-MSK-F-001.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">NIR_BadPixelMasking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="NIR_BadPixelMasking.html">NIR_BadPixelMasking package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="NIR_BadPixelMasking" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

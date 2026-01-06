@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_BadPixelMasking.CreateBadPixelsMask &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_BadPixelMasking.CreateBadPixelsMask</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_BadPixelMasking.CreateBadPixelsMask</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file CreateBadPixelsMask.py</span>
+<span class="sd">@date January 18, 2018</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="c1">#import matplotlib.pyplot as plt</span>
+<span class="c1">#from matplotlib import cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="c1">#from scipy.stats import lognorm, norm</span>
+<span class="c1">#from sklearn.mixture import GaussianMixture</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+
+<span class="c1">#from EL_ImageBinding import EUC_MASK_DICT, MaskPlaneDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageF</span><span class="p">,</span> <span class="n">MaskUI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">EL_ImageBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">NispSurveyExposure</span><span class="p">,</span> <span class="n">NispDetectorExposure</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.FitsManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FitsManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.XmlReader</span><span class="w"> </span><span class="kn">import</span> <span class="n">XmlReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.XmlWriter</span><span class="w"> </span><span class="kn">import</span> <span class="n">XmlWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_MaskingBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.Detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_list_from_file</span>
+
+<span class="c1"># bad pixel types: T1=Disconnected,T2=ZeroQE,T3=HighNoise,T4=SnowBall,T5=Hot, T6=LoHiBaseline</span>
+<span class="c1">#                 T7=LowQE, T8=SuperQE, T9=Saturated</span>
+<span class="n">thresholds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;T1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;T3&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CreateBadPixelsMask</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @class CreateBadPixelsMask</span>
+<span class="sd">    @brief This class creates the bad pixels mask.  </span>
+<span class="sd">           It is part of the bad pixel calibration pipeline.</span>
+<span class="sd">           ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">mdbfile</span><span class="p">,</span> <span class="n">inlistfiles</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;CreateBadPixelsMask&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span> <span class="o">=</span> <span class="n">mdbfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inlistfiles</span> <span class="o">=</span> <span class="n">inlistfiles</span>  <span class="c1"># list of bad pixel flavors XML lists</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detslots</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CreateBadPixelsMask.create_master_mask">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.create_master_mask">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_master_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the final master bad pixels mask.</span>
+
+<span class="sd">        Given a list of Detectors, create the FITS HDUS, add proper headers,</span>
+<span class="sd">        write out the XML and FITS products.</span>
+<span class="sd">        The master bad pixels mask is a FITS file containing 16 extensions, each</span>
+<span class="sd">        of which is a table. Inside the table, the bad pixel locations are in</span>
+<span class="sd">        image dimention 2048x2048 index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get detector slots information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_detectorslots</span><span class="p">()</span>
+
+        <span class="c1"># detector id to array index</span>
+        <span class="n">detids</span> <span class="o">=</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span>
+                  <span class="mi">42</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">44</span><span class="p">]</span>
+
+        <span class="c1"># read in the input XML list, parse for BPFlavorType and FileName</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_xmllist</span><span class="p">()</span>
+
+        <span class="c1"># initialize 16 Detectors</span>
+        <span class="k">for</span> <span class="n">detid</span> <span class="ow">in</span> <span class="n">detids</span><span class="p">:</span>
+            <span class="n">detobj</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setDetId</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detobj</span><span class="p">)</span>
+
+        <span class="c1"># find bad pixels for the disconnected, high cds noise</span>
+        <span class="c1"># for badpixeltype in [&quot;T1&quot;, &quot;T2&quot;, &quot;T3&quot;]:   #SC8-cycle3</span>
+        <span class="c1"># for badpixeltype in [&quot;T1&quot;, &quot;T3&quot;]:         #SC8-cycle4</span>
+        <span class="c1"># for badpixeltype in [&quot;T3&quot;]:                #since June 29, 2021</span>
+        <span class="c1"># self.find_badpixels(badpixeltype)</span>
+
+        <span class="c1"># find the flavors in the input xml list</span>
+        <span class="n">flavors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bpflavortypes</span><span class="p">))</span>
+
+        <span class="c1"># loop through the flavors in the input list and read in the masks</span>
+        <span class="n">flavornum</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;T1&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;T2&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;T3&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;T4&quot;</span><span class="p">,</span>
+                     <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;T5&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;T6&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;T7&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;T8&quot;</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span> <span class="s2">&quot;T9&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="s2">&quot;T10&quot;</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">fv</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_flavormask</span><span class="p">(</span><span class="n">flavornum</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">fv</span><span class="p">)])</span>
+
+        <span class="c1"># init final FITS data structure and add some primary header</span>
+        <span class="n">hdul</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()])</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdul</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="c1"># hdr.set(&#39;VERSION&#39;, &#39;0.9&#39;)   #TODO</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_DEF&#39;</span><span class="p">,</span> <span class="s1">&#39;nir.badPixelMask&#39;</span><span class="p">,</span> <span class="s1">&#39;FITS name definition&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_VER&#39;</span><span class="p">,</span> <span class="s2">&quot;0.2&quot;</span><span class="p">,</span> <span class="s1">&#39;FITS version&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="s2">&quot;Euclid&quot;</span><span class="p">,</span> <span class="s1">&#39;Telescope name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">,</span> <span class="s1">&#39;NISP&#39;</span><span class="p">,</span> <span class="s1">&#39;Instrument name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">,</span> <span class="s1">&#39;CALIB&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_T1&#39;</span><span class="p">,</span> <span class="s1">&#39;BADPIXELS&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_T2&#39;</span><span class="p">,</span> <span class="s1">&#39;SKY&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;OBSMODE&#39;</span><span class="p">,</span> <span class="s1">&#39;CALIBRATION&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;OBSTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;IMAGE&#39;</span><span class="p">,</span> <span class="s1">&#39;Observation type&#39;</span><span class="p">)</span>  <span class="c1"># hard-coded  TODO</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CALTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;BADPIXELS&#39;</span><span class="p">,</span> <span class="s1">&#39;Calibration type&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_STA&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-12-01T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid start time for this product(UTC)&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_END&#39;</span><span class="p">,</span> <span class="s1">&#39;2028-12-31T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid end time for this product(UTC)&#39;</span><span class="p">)</span>
+
+        <span class="c1">#hdr.set(&#39;BADTHRES&#39;, thresholds[&quot;T1&quot;], &quot;Threshold for the dead pixels&quot;)</span>
+        <span class="c1">#hdr.set(&#39;CDSTHRES&#39;, thresholds[&quot;T3&quot;], &quot;Threshold for the high CDS noise pixels, e-/read&quot;)</span>
+
+        <span class="c1"># loop over all 16 detectors for its bad pixel mask</span>
+        <span class="k">for</span> <span class="n">detid</span> <span class="ow">in</span> <span class="n">detids</span><span class="p">:</span>
+            <span class="c1"># find the corresponding detector</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+
+            <span class="c1"># get table hdu for this detector with combined mask</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">makeTableHDU1</span><span class="p">()</span>
+
+            <span class="n">hdul</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span>
+
+        <span class="c1"># figure out the time when the file is created</span>
+        <span class="n">utc_offset</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">local_datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">result_utc_datetime</span> <span class="o">=</span> <span class="n">local_datetime</span> <span class="o">+</span> <span class="n">utc_offset</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DATE_UTC&#39;</span><span class="p">,</span> <span class="n">result_utc_datetime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                <span class="s1">&#39;Product creation time&#39;</span><span class="p">)</span>
+
+        <span class="c1"># output both Fits and associated XML files</span>
+        <span class="n">badpixelspath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeFits</span><span class="p">(</span><span class="n">hdul</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_writeXml</span><span class="p">(</span><span class="n">badpixelspath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hdul</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.read_xmllist">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.read_xmllist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_xmllist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># read in the input XML lists, parse for BPFlavorType and FileName</span>
+        <span class="n">xmllist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">alist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inlistfiles</span><span class="p">:</span>
+            <span class="n">axmllist</span> <span class="o">=</span> <span class="n">load_list_from_file</span><span class="p">(</span><span class="n">alist</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">axml</span> <span class="ow">in</span> <span class="n">axmllist</span><span class="p">:</span>
+                <span class="c1"># xmllist.append(axml)</span>
+                <span class="n">xmllist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="n">axml</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bpflavortypes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indatafiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detectorids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">xmlf</span> <span class="ow">in</span> <span class="n">xmllist</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xmlf</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;BPFlavorType&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bpflavortypes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;FileName&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indatafiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;DetectorId&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_detectorids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.set_detectorslots">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.set_detectorslots">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_detectorslots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function either gets a list of detector slots info from MDB,</span>
+<span class="sd">        or from input dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ------</span>
+<span class="sd">        indict: Dictionary</span>
+<span class="sd">        A dictionary, {FPAslot : SCA_ID}</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ------</span>
+<span class="sd">        badpixel_filelist: List</span>
+<span class="sd">        A list of bad pixel masks file names</span>
+
+<span class="sd">        detslots: Dictionary</span>
+<span class="sd">        A dictionary, {FPAslot : SCA_ID} or {DET_ID : SCA_ID}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xmlR</span> <span class="o">=</span> <span class="n">XmlReader</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">indict</span><span class="p">:</span>
+            <span class="n">detslots</span> <span class="o">=</span> <span class="n">indict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">detslots</span> <span class="o">=</span> <span class="n">xmlR</span><span class="o">.</span><span class="n">get_mdb_detector_slots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+
+        <span class="c1"># For SC8 Cycle 4, we will use the new detector slots layout</span>
+        <span class="c1"># scaid 18282 is swapped to 18628 since that detector is replace</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       if indict:</span>
+<span class="sd">          detslots = indict</span>
+<span class="sd">       else:</span>
+<span class="sd">          detslots ={&quot;11&quot;: &quot;18453&quot;, &quot;12&quot;: &quot;18272&quot;, &quot;13&quot;: &quot;18632&quot;, &quot;14&quot;: &quot;18267&quot;,</span>
+<span class="sd">                     &quot;21&quot;: &quot;18268&quot;, &quot;22&quot;: &quot;18285&quot;, &quot;23&quot;: &quot;18548&quot;, &quot;24&quot;: &quot;18452&quot;,</span>
+<span class="sd">                     &quot;31&quot;: &quot;18280&quot;, &quot;32&quot;: &quot;18284&quot;, &quot;33&quot;: &quot;18278&quot;, &quot;34&quot;: &quot;18269&quot;,</span>
+<span class="sd">                     &quot;41&quot;: &quot;18458&quot;, &quot;42&quot;: &quot;18249&quot;, &quot;43&quot;: &quot;18221&quot;, &quot;44&quot;: &quot;18628&quot;</span>
+<span class="sd">                    }</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detslots</span> <span class="o">=</span> <span class="n">detslots</span>
+        <span class="k">return</span> <span class="n">detslots</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.find_badpixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.find_badpixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_badpixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">badpixel_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find bad pixels per bad pixel type.</span>
+<span class="sd">        GFSC&#39;s DCL formatted detector data are used. This function only works on GFSC&#39;s data for the 3</span>
+<span class="sd">        bad pixel types: dis-connected, zero fluence (full well), high cds noise pixels.</span>
+
+<span class="sd">        As of January 2021 in SC8-cycle6, the type zero fluence/full well pixels are replaced</span>
+<span class="sd">        by the zero QE pixels.  Type T2 is not called in this function.</span>
+
+<span class="sd">        As of June 29 2021, type T1 is not called in this function since we no longer mimic the DCL</span>
+<span class="sd">        format for dead pixels mask.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ------</span>
+<span class="sd">        badpixel_type: String</span>
+<span class="sd">        Bad pixel type, one of [&quot;T3&quot;] </span>
+<span class="sd">        where T3=high CDS noise pixels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># threshold</span>
+        <span class="n">bad_threshold</span> <span class="o">=</span> <span class="n">thresholds</span><span class="p">[</span><span class="n">badpixel_type</span><span class="p">]</span>
+
+        <span class="c1"># get all fits file names and corresponding detector ids for this bad pixel flavor</span>
+        <span class="n">allfiles</span><span class="p">,</span> <span class="n">alldetectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bpflavorfitsfiles</span><span class="p">(</span><span class="n">badpixel_type</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="c1"># loop through all detectors in the detector slots list</span>
+        <span class="k">for</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detslots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">detobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">detid</span><span class="p">)</span>
+
+            <span class="c1"># read in the data based on their bad pixel type and file name prefix</span>
+            <span class="n">xfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fitsfile</span><span class="p">(</span><span class="n">allfiles</span><span class="p">,</span> <span class="n">alldetectors</span><span class="p">,</span> <span class="n">detid</span><span class="p">)</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">hdu</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="c1"># check for NaN in the data.  These NaN are from faulty readouts or data</span>
+            <span class="c1"># analysis or other reasons that do not necessairly mean the pixel is physically bad</span>
+            <span class="c1"># where it is NaN, dimension num_nan x 2</span>
+            <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dat</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> NaNs in data file </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">),</span> <span class="n">xfile</span><span class="p">))</span>
+
+            <span class="c1"># check for threshold for T1/T2/T3</span>
+            <span class="k">if</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T3&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">greater</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">bad_threshold</span><span class="p">,</span> <span class="n">where</span><span class="o">=~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dat</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T1&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T2&quot;</span><span class="p">):</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">bad_threshold</span><span class="p">,</span> <span class="n">where</span><span class="o">=~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dat</span><span class="p">))</span>
+
+            <span class="c1"># pixels where NaN occurs are not dead pixels, thus set to False</span>
+            <span class="n">mask</span><span class="p">[</span><span class="n">nan_ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># find the number of bad pixels in this detector</span>
+            <span class="c1"># only those bad pixels within the center 2040x2040 are counted</span>
+            <span class="n">num_badpixels_det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_badpixels</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, there are total </span><span class="si">{}</span><span class="s2"> bad pixles in data file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">,</span> <span class="n">xfile</span><span class="p">))</span>
+
+            <span class="c1"># if inputs are in 2040x2040, then patch it to 2048x2048 because the output master mask is in 2048x2048</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">if</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2040</span><span class="p">:</span>
+                <span class="n">mask_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+                <span class="n">mask_int</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask_int</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="mi">1</span>
+                <span class="c1"># set values to be 0 around the 4 pixel boundary</span>
+                <span class="n">mask_int</span><span class="p">[:</span><span class="mi">4</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[</span><span class="mi">2044</span><span class="p">:</span><span class="mi">2048</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[:,</span> <span class="mi">2044</span><span class="p">:</span><span class="mi">2048</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_detector_info</span><span class="p">(</span><span class="n">badpixel_type</span><span class="p">,</span> <span class="n">detobj</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">,</span> <span class="p">[</span>
+                                   <span class="n">xfile</span><span class="p">],</span> <span class="n">mask_int</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setDetector</span><span class="p">(</span><span class="n">detobj</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.load_flavormask">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.load_flavormask">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_flavormask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">badpixel_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the flavor masks such as hot pixel, zero QE and bad baseline masks.</span>
+<span class="sd">        These masks are the outputs from FindHotPixels, FindZeroQEPixels, and</span>
+<span class="sd">        FindHiLoBaselinePixels modules.</span>
+<span class="sd">        We just need to read them in and combine them with other types of bad pixels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         badpixel_type: String, [&quot;T1&quot;,T2&quot;,&quot;T5&quot;,&quot;T6&quot;,&quot;T7&quot;,&quot;T8&quot;,&quot;T9&quot;,&quot;T10&quot;] for [disconnected,zeroQE,hot,bad-baseline,lowQE,supeQE,saturated,flower]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get all fits file names and corresponding detector ids for this bad pixel flavor</span>
+        <span class="n">allfiles</span><span class="p">,</span> <span class="n">alldetectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bpflavorfitsfiles</span><span class="p">(</span><span class="n">badpixel_type</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="c1"># loop through all detectors in the detector slots list</span>
+        <span class="k">for</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detslots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">detobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDetector</span><span class="p">(</span><span class="n">detid</span><span class="p">)</span>
+
+            <span class="c1"># read in the corresponding data</span>
+            <span class="n">xfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fitsfile</span><span class="p">(</span><span class="n">allfiles</span><span class="p">,</span> <span class="n">alldetectors</span><span class="p">,</span> <span class="n">detid</span><span class="p">)</span>
+
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>  <span class="c1"># the actual mask for the bad pixels</span>
+            <span class="c1"># input files that went in to make the mask</span>
+            <span class="n">rawfiles</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">hdu</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="c1"># where it is NaN, dimension num_nan x 2</span>
+            <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span>
+
+            <span class="c1"># find the number of bad pixels in this detector</span>
+            <span class="c1"># only those bad pixels within the center 2040x2040 are counted</span>
+            <span class="n">num_badpixels_det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_badpixels</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+
+            <span class="c1"># if inputs are in 2040x2040, then patch it to 2048x2048 because the output master mask is in 2048x2048</span>
+            <span class="c1"># if inputs are in 2048x2048, then set values to be 0 around the 4 pixel boundary</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">if</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2040</span><span class="p">:</span>
+                <span class="n">mask_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+                <span class="n">mask_int</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask_int</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="mi">1</span>
+                <span class="c1"># set values to be 0 around the 4 pixel boundary</span>
+                <span class="n">mask_int</span><span class="p">[:</span><span class="mi">4</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[</span><span class="mi">2044</span><span class="p">:</span><span class="mi">2048</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">mask_int</span><span class="p">[:,</span> <span class="mi">2044</span><span class="p">:</span><span class="mi">2048</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_detector_info</span><span class="p">(</span><span class="n">badpixel_type</span><span class="p">,</span> <span class="n">detobj</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span>
+                                   <span class="n">num_badpixels_det</span><span class="p">,</span> <span class="n">rawfiles</span><span class="p">,</span> <span class="n">mask_int</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setDetector</span><span class="p">(</span><span class="n">detobj</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.get_fitsfile">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.get_fitsfile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fitsfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allfitsfiles</span><span class="p">,</span> <span class="n">alldetectors</span><span class="p">,</span> <span class="n">detid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the FITS file name for a detid given the list of detector ids and the list</span>
+<span class="sd">         of FITS files for a particular bad pixel flavor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alldetectors</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">detid</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">allfitsfiles</span><span class="p">[</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.get_bpflavorfitsfiles">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.get_bpflavorfitsfiles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bpflavorfitsfiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpflavortype</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the list of bad pixel mask fits files  and a list of corresponding detector ids</span>
+<span class="sd">         given a bad pixel flavor type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bpflavortypes</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span> <span class="o">==</span> <span class="n">bpflavortype</span><span class="p">]</span>
+        <span class="n">fitsfiles</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_indatafiles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ind</span><span class="p">]</span>
+        <span class="n">detectorids_flavor</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_detectorids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ind</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">fitsfiles</span><span class="p">,</span> <span class="n">detectorids_flavor</span></div>
+
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">   def get_inputdatalist(self):</span>
+<span class="sd">       &quot;&quot;&quot;Retreive the file list from the Eulclid archive&quot;&quot;&quot;</span>
+<span class="sd">       xmlR = XmlReader()</span>
+<span class="sd">       badpixel_filelist = xmlR.get_mdb_bad_pixel_mask_files(self._mdbfile)</span>
+<span class="sd">       self._indatafiles = badpixel_filelist</span>
+<span class="sd">       return badpixel_filelist</span>
+<span class="sd">   &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="CreateBadPixelsMask.getDetector">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.getDetector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getDetector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the Dector based on detid</span>
+<span class="sd">        Args:</span>
+<span class="sd">         detid - String, Detector ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">detobj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detectors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">detobj</span><span class="o">.</span><span class="n">getDetId</span><span class="p">()</span> <span class="o">==</span> <span class="n">detid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">detobj</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.setDetector">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.setDetector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setDetector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detobj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the Detector obj in the list self._detectors.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ------</span>
+<span class="sd">        detobj: Detector object</span>
+<span class="sd">        An object of Detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">detid</span> <span class="o">=</span> <span class="n">detobj</span><span class="o">.</span><span class="n">getDetId</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detectors</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">det</span><span class="o">.</span><span class="n">getDetId</span><span class="p">()</span> <span class="o">==</span> <span class="n">detid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_detectors</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">detobj</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.get_num_badpixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.get_num_badpixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_num_badpixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bkmask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the total number of bad pixels given a bad pixel mask.</span>
+<span class="sd">        Only the pixels in the center 2040x2040 are counted.  The 4 pixel boundary is discarded.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        bkmask: Boolean 2D number array</span>
+<span class="sd">         Bad pixel mask</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        num_badpixels: Integer</span>
+<span class="sd">         Total number of bad pixels in the center 2040x2040</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">bkmask</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2048</span><span class="p">:</span>
+            <span class="n">newmask</span> <span class="o">=</span> <span class="n">bkmask</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">newmask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bkmask</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.set_detector_info">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.set_detector_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_detector_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">badpixel_type</span><span class="p">,</span> <span class="n">detobj</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">,</span> <span class="n">infiles</span><span class="p">,</span> <span class="n">inarr</span><span class="p">,</span> <span class="n">num_nans</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a Detector&#39;s attrubutes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ------</span>
+<span class="sd">        badpixel_type: String</span>
+<span class="sd">         Bad pixel type, one of [&quot;T1&quot;, &quot;T2&quot;, &quot;T3&quot;, &quot;T4&quot;, &quot;T5&quot;, &quot;T6&quot;], </span>
+<span class="sd">         where T1=dis-connected, T2= zero-qe, T3=high CDS noise, T4=snowball, T5=hot, T6=bad baseline</span>
+
+<span class="sd">        detobj: Detector</span>
+<span class="sd">         Detector object</span>
+
+<span class="sd">        detid: Integer</span>
+<span class="sd">         Detector ID</span>
+
+<span class="sd">        scaid: Integer</span>
+<span class="sd">         SCA ID</span>
+
+<span class="sd">        num_badpixels_det: Integer</span>
+<span class="sd">         Number of bad pixels of type &#39;badpixel_type&#39;</span>
+
+<span class="sd">        infiles: List of strings</span>
+<span class="sd">         Input files that went in for bad pixel type &#39;badpixel_type&#39;</span>
+
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Bad pixel mask for bad pixel type &#39;badpixel_type&#39;</span>
+
+<span class="sd">        num_nana: Integer</span>
+<span class="sd">         Number of NaNs, not counted as bad pixels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># detobj.setDetId(detid)</span>
+        <span class="n">detobj</span><span class="o">.</span><span class="n">setScaId</span><span class="p">(</span><span class="n">scaid</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T1&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumDeadPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsDeadPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setDeadPixelsArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsDeadPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of disconnected pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T2&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumZeroQEPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsZeroQEPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setZeroQEArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsZeroQEPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of zero qe pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T3&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumHighCDSNoisePixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsHighCDSNoisePixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setHighCDSNoiseArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsHighCDSNoisePixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of high cds noise pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T5&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumHotPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsHotPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setHotArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsHotPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of hot pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T6&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumBadBLPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsBadBLPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setBadBLArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsBadBLPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of bad baseline pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T7&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumLowQEPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsLowQEPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setLowQEArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsLowQEPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of low qe pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T8&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumSuperQEPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsSuperQEPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setSuperQEArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsSuperQEPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of super qe pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T9&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumSatPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsSatPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setSatArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsSatPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of saturated pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">badpixel_type</span> <span class="o">==</span> <span class="s2">&quot;T10&quot;</span><span class="p">:</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumFlowerPixels</span><span class="p">(</span><span class="n">num_badpixels_det</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setInputsFlowerPixels</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setFlowerArray</span><span class="p">(</span><span class="n">inarr</span><span class="p">)</span>
+            <span class="n">detobj</span><span class="o">.</span><span class="n">setNumNaNsFlowerPixels</span><span class="p">(</span><span class="n">num_nans</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of flower pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">num_badpixels_det</span><span class="p">))</span>
+
+        <span class="k">return</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_writeFits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdul</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write out the final bad pixelsFITS file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hdul: HDU list</span>
+<span class="sd">            mbadpixels:  a NispSurveyExposure, contains all data for the bad pixels</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            badpixelspath: the bad pixel file path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create an instance of FitsManager</span>
+        <span class="n">fManager</span> <span class="o">=</span> <span class="n">FitsManager</span><span class="p">()</span>
+
+        <span class="c1"># get the bad pixels FITS filename</span>
+        <span class="n">badpixelsname</span> <span class="o">=</span> <span class="n">fManager</span><span class="o">.</span><span class="n">get_bad_pixel_mask_fitsname</span><span class="p">()</span>
+
+        <span class="c1"># Append the path to the FITS file (here in $WORKDIR/data)</span>
+        <span class="n">badpixelspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">badpixelsname</span><span class="p">)</span>
+
+        <span class="c1"># write output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing bad pixel mask FITS file &quot;</span> <span class="o">+</span> <span class="n">badpixelspath</span><span class="p">)</span>
+        <span class="n">hdul</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">badpixelspath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">badpixelspath</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_writeXml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">badpixelspath</span><span class="p">,</span> <span class="n">outfilepath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write the MDB XML file for the Bad Pixel Mask FITS file</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">           badpixelspath: the bad pixel mask file path</span>
+<span class="sd">           outfilepath: the MDB XML file path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating XML file &quot;</span> <span class="o">+</span> <span class="n">outfilepath</span><span class="p">)</span>
+        <span class="n">xmlW</span> <span class="o">=</span> <span class="n">XmlWriter</span><span class="p">()</span>
+        <span class="n">xmlW</span><span class="o">.</span><span class="n">create_bad_pixel_mask</span><span class="p">(</span><span class="n">badpixelspath</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">xmlW</span><span class="o">.</span><span class="n">write_xml</span><span class="p">(</span><span class="n">outfilepath</span><span class="p">)</span>
+
+        <span class="c1"># check the result</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote XML file &quot;</span> <span class="o">+</span> <span class="n">outfilepath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;BadPixelMask Xml Creation error.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: CreateBadPixelsMask._writeXml(): &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1">##########################################################################################################</span>
+    <span class="c1"># Back up functions</span>
+    <span class="c1">##########################################################################################################</span>
+<div class="viewcode-block" id="CreateBadPixelsMask.create_mask_from_badpixlist">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.create_mask_from_badpixlist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_mask_from_badpixlist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">badpixellist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Based on a given list of bad pixels (disconnected pixels, zero fluence pixels </span>
+<span class="sd">           and noisy pixels), create a mask.</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">             badpixellist -- numpy array, dimension of [n_badpix, 4]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#</span>
+        <span class="n">imgwidth</span> <span class="o">=</span> <span class="mi">2048</span>
+        <span class="n">imgheight</span> <span class="o">=</span> <span class="mi">2048</span>
+
+        <span class="c1"># get the bad pixels list</span>
+        <span class="k">if</span> <span class="n">badpixellist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bp_detid</span><span class="p">,</span> <span class="n">bp_x</span><span class="p">,</span> <span class="n">bp_y</span><span class="p">,</span> <span class="n">bp_flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hsplit</span><span class="p">(</span>
+                <span class="n">badpixellist</span><span class="p">,</span> <span class="n">badpixellist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_detectorslots</span><span class="p">()</span>
+            <span class="n">bp_detid</span><span class="p">,</span> <span class="n">bp_x</span><span class="p">,</span> <span class="n">bp_y</span><span class="p">,</span> <span class="n">bp_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_badpixel_list</span><span class="p">()</span>
+
+        <span class="c1"># change 2048x2048 to 2040x2040</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">subset</span><span class="p">:</span>
+            <span class="n">bp_detid</span><span class="p">,</span> <span class="n">bp_x</span><span class="p">,</span> <span class="n">bp_y</span><span class="p">,</span> <span class="n">bp_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">from2048to2040</span><span class="p">(</span>
+                <span class="n">bp_detid</span><span class="p">,</span> <span class="n">bp_x</span><span class="p">,</span> <span class="n">bp_y</span><span class="p">,</span> <span class="n">bp_flag</span><span class="p">)</span>
+            <span class="n">imgwidth</span> <span class="o">=</span> <span class="mi">2040</span>
+            <span class="n">imgheight</span> <span class="o">=</span> <span class="mi">2040</span>
+
+        <span class="c1"># detector id to array index</span>
+        <span class="n">detids</span> <span class="o">=</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span>
+                  <span class="mi">42</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">44</span><span class="p">]</span>
+
+        <span class="c1"># init final FITS data structure and add some primary header</span>
+        <span class="n">hdul</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()])</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdul</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;EUCLID&#39;</span>
+        <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NISP&#39;</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;1.&#39;</span><span class="p">)</span>  <span class="c1"># TODO</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">,</span> <span class="s1">&#39;CALIB&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_T1&#39;</span><span class="p">,</span> <span class="s1">&#39;BADPIXELS&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_T2&#39;</span><span class="p">,</span> <span class="s1">&#39;SKY&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;OBSMODE&#39;</span><span class="p">,</span> <span class="s1">&#39;WIDE&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DATE-UTC&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-01-28T00:00:00.0&#39;</span><span class="p">,</span> <span class="s1">&#39;Product creation time&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CALTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;BADPIXELS&#39;</span><span class="p">,</span> <span class="s1">&#39;Calibration type&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_STA&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-12-01T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid start time for this product(UTC)&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_END&#39;</span><span class="p">,</span> <span class="s1">&#39;2028-12-31T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid end time for this product(UTC)&#39;</span><span class="p">)</span>
+
+        <span class="c1"># the Bad pixels value (at &#39;BAD&#39; = bit 8, &#39;DISCONNECTED&#39; = bit 2)</span>
+        <span class="c1">#badpixbit = MaskPlaneDict(EUC_MASK_DICT)[&quot;BAD&quot;]</span>
+        <span class="n">badpixbit</span> <span class="o">=</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;DISCONNECTED&quot;</span><span class="p">]</span>
+        <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">badpixbit</span>
+
+        <span class="c1"># loop over all 16 detectors</span>
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">):</span>
+            <span class="c1"># find the current detector ID</span>
+            <span class="n">did</span> <span class="o">=</span> <span class="n">detids</span><span class="p">[</span><span class="n">det</span><span class="p">]</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bp_detid</span> <span class="o">==</span> <span class="n">did</span><span class="p">)</span>
+
+            <span class="c1"># find current detector data</span>
+            <span class="n">xx</span> <span class="o">=</span> <span class="n">bp_x</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+            <span class="n">yy</span> <span class="o">=</span> <span class="n">bp_y</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="n">bp_flag</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+
+            <span class="c1"># print stats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">did</span><span class="p">,</span> <span class="n">xx</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, percentage of bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">did</span><span class="p">,</span> <span class="n">xx</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of disconnected bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, percentage of disconnected bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flag</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of zero fluence pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, percentage of zero fluence pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flag</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of noisy pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, percentage of noisy pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+            <span class="c1"># rid of duplicate due to some pixels may occur in more than one of the 3 cases (disconnecte, zero fluence, noisy)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xx</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">yy</span><span class="p">},</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">appendDetTableHdu</span><span class="p">(</span><span class="n">hdul</span><span class="p">,</span> <span class="n">did</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="p">[</span>
+                                   <span class="n">badpixvalue</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">))</span>  <span class="c1"># as a table extension</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of bad pixels after dropping duplicates: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, percentage of bad pixels after dropping duplicates: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">did</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">/</span><span class="n">imgwidth</span><span class="o">/</span><span class="n">imgheight</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+        <span class="c1"># output both Fits and associated XML files</span>
+        <span class="n">badpixelspath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeFits</span><span class="p">(</span><span class="n">hdul</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_writeXml</span><span class="p">(</span><span class="n">badpixelspath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.from2048to2040">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.from2048to2040">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from2048to2040</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">xpix</span><span class="p">,</span> <span class="n">ypix</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Subset image from 2048x2048 to 2040x2040.</span>
+<span class="sd">         Args:</span>
+<span class="sd">             detid -- 1D numpy array, list of detector id</span>
+<span class="sd">             xpix, ypix -- 1D numpy array, (x,y) pixel index for bad pixels</span>
+<span class="sd">             flags -- 1D number array, flags at the bad pixels</span>
+
+<span class="sd">         Returns:</span>
+<span class="sd">             detid, xpix, ypix, flags -- 1D numpy array as above, but</span>
+<span class="sd">                    subset only the center [4, 2043] pixels</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">xpix</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">xpix</span> <span class="o">&lt;</span> <span class="mi">2044</span><span class="p">))</span>
+        <span class="n">detid</span> <span class="o">=</span> <span class="n">detid</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">xpix</span> <span class="o">=</span> <span class="n">xpix</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">ypix</span> <span class="o">=</span> <span class="n">ypix</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">ypix</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ypix</span> <span class="o">&lt;</span> <span class="mi">2044</span><span class="p">))</span>
+        <span class="n">detid</span> <span class="o">=</span> <span class="n">detid</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">xpix</span> <span class="o">=</span> <span class="n">xpix</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">ypix</span> <span class="o">=</span> <span class="n">ypix</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">detid</span><span class="p">,</span> <span class="n">xpix</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">ypix</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">flags</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.appendDetTableHdu">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.appendDetTableHdu">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">appendDetTableHdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdul</span><span class="p">,</span> <span class="n">detid</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Append detector data as a table to the existing HDU</span>
+
+<span class="sd">         Args:</span>
+<span class="sd">            hdul: HDU list to be appended</span>
+<span class="sd">            detid: the detector ID for the extension</span>
+<span class="sd">            x, y: 1D numpy array, (x,y) bad pixel index</span>
+<span class="sd">            flag: list of bad pixel value, same size as x &amp; y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span>    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">c2</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span>    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">c3</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;FLAG&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">flag</span><span class="p">)</span>
+        <span class="n">chdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">BinTableHDU</span><span class="o">.</span><span class="n">from_columns</span><span class="p">([</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">])</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">chdu</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">detid</span>
+        <span class="n">hdr</span><span class="p">[</span><span class="s1">&#39;EXTNAME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DQ_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">detid</span><span class="p">)</span>
+        <span class="n">hdul</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chdu</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CreateBadPixelsMask.create_badpixel_list">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.CreateBadPixelsMask.CreateBadPixelsMask.create_badpixel_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_badpixel_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         For SC456, GFSC&#39;s detector data were used to create a list of bad pixels.</span>
+<span class="sd">         These detector data consist of the dis-connected pixels, zero-fluence pixels </span>
+<span class="sd">         and noisy pixels.</span>
+
+<span class="sd">         Returns</span>
+<span class="sd">           detlist,xlist,ylist,flaglist -- columns of (detid, x, y, flag) for the bad pixels</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># the list of detector file names and detector slots info</span>
+        <span class="n">bad_pixel_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indatafiles</span>
+        <span class="n">detslots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detslots</span>
+
+        <span class="n">detlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">xlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ylist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">flaglist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_num_badpixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># loop through all detectors in the detector slots list</span>
+        <span class="k">for</span> <span class="n">detid</span><span class="p">,</span> <span class="n">scaid</span> <span class="ow">in</span> <span class="n">detslots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># read the disconected pixels and record them in a table (dpix_SCA_*)</span>
+            <span class="n">bad_reason</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">bad_threshold</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">xoffset</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># dpix_SCA*.fits are 2048x2048</span>
+            <span class="n">yoffset</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1">#xfile_start = &#39;dpix_SCA_&#39; + scaid</span>
+            <span class="c1">#xfile = [x for x in bad_pixel_array if xfile_start in x]</span>
+            <span class="n">xfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bpflavorfitsfiles</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="c1"># check for NaN in the data</span>
+            <span class="c1"># where it is NaN, dimension num_nan x 2</span>
+            <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> NaNs in data file </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">),</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">inan</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="c1"># check for threshold</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bad_threshold</span><span class="p">,</span>
+                            <span class="n">out</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">where</span><span class="o">=~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+
+            <span class="c1"># read the zero_fluence pixels and record (full_well_SCA_*)</span>
+            <span class="n">bad_reason</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">bad_threshold</span> <span class="o">=</span> <span class="mi">5000</span>  <span class="c1"># full well/pixel</span>
+            <span class="n">xoffset</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># full_well_SCA*.fits are 2040x2040</span>
+            <span class="n">yoffset</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="c1">#xfile_start = &#39;full_well_SCA_&#39; + scaid</span>
+            <span class="c1">#xfile = [x for x in bad_pixel_array if xfile_start in x]</span>
+            <span class="n">xfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bpflavorfitsfiles</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">xfile</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="c1"># check for NaN in the data</span>
+            <span class="c1"># where it is NaN, dimension num_nan x 2</span>
+            <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> NaNs in data file </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">),</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">inan</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="c1"># check for threshold</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bad_threshold</span><span class="p">,</span>
+                            <span class="n">out</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">where</span><span class="o">=~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+
+            <span class="c1"># read the noise map and mask noisy pixels (stand in for RTS for now) (cds_noise_SCA_*)</span>
+            <span class="n">bad_reason</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="n">bad_threshold</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># e-/read</span>
+            <span class="n">xoffset</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># cds_noise_SCA*.fits are 2040x2040</span>
+            <span class="n">yoffset</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="c1">#xfile_start = &#39;cds_noise_SCA_&#39; + scaid</span>
+            <span class="c1">#xfile = [x for x in bad_pixel_array if xfile_start in x]</span>
+            <span class="n">xfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bpflavorfitsfiles</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">xfile</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="c1"># check for NaN in the data</span>
+            <span class="c1"># where it is NaN, dimension num_nan x 2</span>
+            <span class="n">nan_ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;There are </span><span class="si">{}</span><span class="s2"> NaNs in data file </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">),</span> <span class="n">xfile</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">inan</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">)):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nan_ind</span><span class="p">[</span><span class="n">inan</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+            <span class="c1"># check for threshold</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">greater</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bad_threshold</span><span class="p">,</span>
+                               <span class="n">out</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">where</span><span class="o">=~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hdu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+            <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">total_num_badpixels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">total_num_badpixels_det</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">detlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detid</span><span class="p">))</span>
+                <span class="n">xlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">xoffset</span><span class="p">)</span>
+                <span class="n">ylist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_pixels</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">pixel</span><span class="p">]</span> <span class="o">+</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">flaglist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bad_reason</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, there are total </span><span class="si">{}</span><span class="s2"> bad pixles&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">total_num_badpixels_det</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, total percentage of bad pixles is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">detid</span><span class="p">,</span> <span class="n">total_num_badpixels_det</span><span class="o">/</span><span class="mi">2048</span><span class="o">/</span><span class="mi">2048</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;There are total </span><span class="si">{}</span><span class="s2"> bad pixles&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total_num_badpixels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Total percentage of bad pixles is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">total_num_badpixels</span><span class="o">/</span><span class="mi">2048</span><span class="o">/</span><span class="mi">2048</span><span class="o">/</span><span class="mi">16</span><span class="o">*</span><span class="mf">100.</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detlist</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xlist</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ylist</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flaglist</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

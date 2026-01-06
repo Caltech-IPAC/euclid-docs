@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_BadPixelMasking.FindSuperQEPixelsProg &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_BadPixelMasking.FindSuperQEPixelsProg</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_BadPixelMasking.FindSuperQEPixelsProg</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file FindSuperQEPixelsProg.py</span>
+<span class="sd">@date July 22, 2021</span>
+<span class="sd">@author Cate Liu &lt;xliu@@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">readDetectorLayout</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.FindSuperQEPixels</span><span class="w"> </span><span class="kn">import</span> <span class="n">FindSuperQEPixels</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.FitsManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">NIR_module_name</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_DMInterface.XmlReader</span><span class="w"> </span><span class="kn">import</span> <span class="n">XmlReader</span>
+
+
+<div class="viewcode-block" id="defineSpecificProgramOptions">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindSuperQEPixelsProg.defineSpecificProgramOptions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">defineSpecificProgramOptions</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief</span>
+<span class="sd">      Define the command line and configuration file options</span>
+<span class="sd">        specific to this program</span>
+<span class="sd">    @details</span>
+<span class="sd">        Input options definition for FindSuperQEPixelsProg</span>
+<span class="sd">    @return</span>
+<span class="sd">        An ArgumentParser</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Find super QE pixels.  Usage syntax:</span>
+<span class="s2">                ~&gt; ERun NIR_BadPixelMasking findSuperQEPixels        </span><span class="se">\\</span>
+<span class="s2">                   --mdbfile=$workdir/theMDBfile.xml                 </span><span class="se">\\</span>
+<span class="s2">                   --config=$workdir/theNIRconfigset.xml             </span><span class="se">\\</span>
+<span class="s2">                   [--scaid=18221,18453,...]                         </span><span class="se">\\</span>
+<span class="s2">                   --outfile=./maskfile.fits                         </span><span class="se">\\</span>
+<span class="s2">                   --workdir=./                                      </span><span class="se">\\</span>
+<span class="s2">                   --logdir=./</span>
+<span class="s2">              &quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mdbfile&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;mdbfile&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;MDB XML file name&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;config&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;NIR configuration set file name&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--scaid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;scaid&#39;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;SCA ID, optional argument if config file provided&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--outfile&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;outfile&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Output mask file name for this SCAID&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--workdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;workdir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Working directory path&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--logdir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;logdir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Logging directory path&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+
+<div class="viewcode-block" id="mainMethod">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindSuperQEPixelsProg.mainMethod">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mainMethod</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @brief</span>
+<span class="sd">        The &quot;main&quot; method</span>
+
+<span class="sd">    @details</span>
+<span class="sd">        This method is the entry point to the program</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;FindSuperQEPixelsProg&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Entering FindSuperQEPixelsProg mainMethod&#39;</span><span class="p">)</span>
+
+    <span class="c1"># the MDB XML file</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mdbfile</span><span class="p">:</span>
+        <span class="n">mdbfn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">mdbfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">mdbfn</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The MDB XML file: &#39;</span> <span class="o">+</span> <span class="n">mdbfn</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The MDB XML file </span><span class="si">{}</span><span class="s1"> not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mdbfn</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Missing MDB file!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># the configuration file containing the parameters</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+        <span class="n">config_set</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;NIR configuration set file: &#39;</span> <span class="o">+</span> <span class="n">config_set</span><span class="p">)</span>
+
+        <span class="n">module_name</span> <span class="o">=</span> <span class="n">NIR_module_name</span><span class="o">.</span><span class="n">NIR_BadPixelMasking</span>
+        <span class="n">conf_file</span> <span class="o">=</span> <span class="n">XmlReader</span><span class="p">()</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="n">xml_conf_file</span><span class="o">=</span><span class="n">config_set</span><span class="p">,</span>
+                                                <span class="n">module_name</span><span class="o">=</span><span class="n">module_name</span><span class="p">,</span> <span class="n">sub_module</span><span class="o">=</span><span class="s1">&#39;superqepixel_parameters&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">conf_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;NIR configuration set file is not specified.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">conf_file</span><span class="p">:</span>
+        <span class="n">configfn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;User input parameter file: &#39;</span> <span class="o">+</span> <span class="n">configfn</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">configfn</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No user parameters specified.  Using default.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># scaids</span>
+    <span class="c1"># there are a few ways specifying the SCAIDs:</span>
+    <span class="c1"># on the command line using ERun, one can specify a list of SCAIDs</span>
+    <span class="c1"># or using a config file to specify a list of SCAIDs</span>
+    <span class="c1"># or if config file is present by no SCAID params is empty, then</span>
+    <span class="c1"># the code will loop through all 16 SCAIDs.</span>
+    <span class="n">scaids</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">configfn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">configfn</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;SCAID&#39;</span><span class="p">]:</span>
+                <span class="n">scaids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">readDetectorLayout</span><span class="p">(</span><span class="n">mdbfn</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scaids</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;SCAID&#39;</span><span class="p">]</span>
+                <span class="c1">#scaids = params[&#39;SCAID&#39;].split(&quot;,&quot;).strip()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">scaid</span><span class="p">:</span>
+        <span class="n">scaids</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">scaid</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">scaids</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scaids</span><span class="p">]</span>
+
+    <span class="c1"># output file</span>
+    <span class="n">output_json</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">outfile</span><span class="p">)</span>
+    <span class="n">parent_task_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outfile</span><span class="p">)</span>
+
+    <span class="n">output_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">det_id</span> <span class="ow">in</span> <span class="n">scaids</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_task_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;outfile_</span><span class="si">{</span><span class="n">det_id</span><span class="si">}</span><span class="s2">.xml&quot;</span><span class="p">)</span>
+        <span class="n">out_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Output file for </span><span class="si">{</span><span class="n">det_id</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">out_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">FindSuperQEPixels</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span> <span class="n">mdbfn</span><span class="p">,</span>
+                                <span class="n">configfn</span><span class="p">,</span> <span class="n">det_id</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">findthem</span><span class="p">()</span>
+        <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_json</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_xml_list</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">json_xml_list</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Exiting FindSuperQEPixelsProg mainMethod&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

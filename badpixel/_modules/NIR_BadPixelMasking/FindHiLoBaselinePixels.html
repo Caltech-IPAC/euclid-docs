@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_BadPixelMasking.FindHiLoBaselinePixels &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_BadPixelMasking.FindHiLoBaselinePixels</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_BadPixelMasking.FindHiLoBaselinePixels</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file FindHiLoBaselinePixels.py</span>
+<span class="sd">@date March 19, 2020</span>
+<span class="sd">@author Cate Liu &lt;xliu@ipac.caltech.edu&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ST_DM_FilenameProvider.FilenameProvider</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileNameProvider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ST_DM_MDBTools.Mdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mdb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_BadPixelMasking.utils</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+
+<span class="c1"># bad pixel flavor</span>
+<span class="c1">#BAD_REASON = 6</span>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FindHiLoBaselinePixels</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class FindHiLoBaselinePixels</span>
+<span class="sd">     This class identifies pixels which have first MACC group averages (the so-called baseline)</span>
+<span class="sd">     which are out of differential nonlinearity (DNL) limits at the low or high end.  Such</span>
+<span class="sd">     pixels do not have a reliable charge transfer function, as DNL expresses the usable</span>
+<span class="sd">     range in ADU of the readout integrated circuit.  </span>
+
+<span class="sd">     The inputs are: (1) either a 2D image file contianing the measured baselines for each</span>
+<span class="sd">     detector on a pixel basis or a set of RAW mode (full ramp) data files from which the</span>
+<span class="sd">     baselines can be computed; and (2) a table of DNL limits on a detector basis.</span>
+
+<span class="sd">     The output is a 2D mask with pixels out of DNL limits, stored as FITS, named</span>
+<span class="sd">     hiloBaseline_SCAID_[timestamp].fits.  </span>
+
+<span class="sd">     This task works on a detector basis, since: (a) this allows each</span>
+<span class="sd">     to be monitored on their own timescales; (b) it is easier to define a smaller</span>
+<span class="sd">     homogenous set of ground or on orbit observations to be processed; (c) runs</span>
+<span class="sd">     faster with simpler I/O.</span>
+
+<span class="sd">     Bad Pixel flavors:</span>
+<span class="sd">     1 = Disconnected</span>
+<span class="sd">     2 = Zero QE (formerly Zero Full Well)</span>
+<span class="sd">     3 = High CDS noise (stand-in for RTN)</span>
+<span class="sd">     4 = Snowball</span>
+<span class="sd">     5 = Hot (formerly &#39;Halo&#39;)</span>
+<span class="sd">     6 = High Low Baseline</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">mdbfile</span><span class="p">,</span> <span class="n">configfn</span><span class="p">,</span> <span class="n">blmapfn</span><span class="p">,</span> <span class="n">scaid</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @brief Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;FindHiLoBaselinePixels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">workdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span> <span class="o">=</span> <span class="n">mdbfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span> <span class="o">=</span> <span class="n">configfn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blmapfn</span> <span class="o">=</span> <span class="n">blmapfn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="n">scaid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span> <span class="o">=</span> <span class="n">outfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dnllow</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dnlhigh</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParams</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.setParams">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.setParams">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setParams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">:</span>  <span class="c1"># if scaid not given as well</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="mi">18221</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_configfn</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">:</span>  <span class="c1"># if scaid is not given</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;SCAID&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;BAD_REASON&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parameters to be used:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Bad reason: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SCA ID: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.get_detid">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.get_detid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_detid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the detector id from the detector slot table.</span>
+<span class="sd">        The DET_ID will be in the input exposure FITS header.</span>
+
+<span class="sd">        :return: string, detector id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read in the detector slots table</span>
+        <span class="n">detslots</span> <span class="o">=</span> <span class="n">readDetectorLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+
+        <span class="c1"># find the detector id corresponding to the scaid</span>
+        <span class="n">detid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">detslots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">):</span>
+                <span class="n">detid</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">if</span> <span class="n">detid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span> <span class="o">=</span> <span class="n">detid</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Can not find the corresponding detector ID for SCA_ID </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">detid</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.setBaselinefile">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.setBaselinefile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setBaselinefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span> <span class="o">=</span> <span class="n">infile</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.getBaselinefileFromMDB">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.getBaselinefileFromMDB">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getBaselinefileFromMDB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding baseline file from the MDB XML file for the SCA_ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mdb</span> <span class="o">=</span> <span class="n">Mdb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span>
+                <span class="s2">&quot;SpaceSegment.Instrument.NISP.NISPDetectorBaselineFile&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Baseline file: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.getBaselinefile">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.getBaselinefile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getBaselinefile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the corresponding baseline data file from the input XML file for the SCA_ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blmapfn</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;FileName&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">text</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Baseline file: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.getBaselineDataFromMDB">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.getBaselineDataFromMDB">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getBaselineDataFromMDB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the data array for this SCAID from the baseline data in MDB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># open file</span>
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span><span class="p">))</span>
+
+        <span class="c1"># find the hdu for the corresponding scaid</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">17</span><span class="p">]</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># there should be only 1 extension (SCI) containing the SCA_ID</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No extension found for SCA_ID=&quot;</span> <span class="o">+</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; in expousre file: &quot;</span> <span class="o">+</span> <span class="n">fn</span><span class="p">)</span>
+
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># read in the hdu data</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">dat</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.getBaselineData">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.getBaselineData">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getBaselineData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the data array for this SCAID from the NISP fligt baseline map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># open file</span>
+        <span class="n">hdus</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span><span class="p">))</span>
+
+        <span class="c1"># find the hdu for the corresponding scaid</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdu</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># there should be only 1 extension (SCI) containing the SCA_ID</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No extension found for SCA_ID=&quot;</span> <span class="o">+</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; in expousre file: &quot;</span> <span class="o">+</span> <span class="n">fn</span><span class="p">)</span>
+
+        <span class="c1"># read in the hdu data</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">hdus</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">dat</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.setDNLlimits">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.setDNLlimits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setDNLlimits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dnllow</span><span class="p">,</span> <span class="n">dnlhigh</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dnllow</span> <span class="o">=</span> <span class="n">dnllow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dnlhigh</span> <span class="o">=</span> <span class="n">dnlhigh</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.getDNLlimits">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.getDNLlimits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getDNLlimits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the detector nonlinearity (DNL) limits table from the MDB XML file for the SCA_ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnlhigh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># get the table from MDB</span>
+            <span class="n">mdb</span> <span class="o">=</span> <span class="n">Mdb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdbfile</span><span class="p">)</span>
+            <span class="n">colnames</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_table_col_names</span><span class="p">(</span>
+                <span class="s2">&quot;SpaceSegment.Instrument.NISP.NISPDetectorDNL&quot;</span><span class="p">)</span>
+            <span class="n">lowhighs</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span>
+                <span class="s2">&quot;SpaceSegment.Instrument.NISP.NISPDetectorDNL&quot;</span><span class="p">)</span>
+
+            <span class="c1"># parse for low and high limits for SCA_ID</span>
+            <span class="n">scaids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;18&#39;</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
+
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">scaids</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dnllow</span> <span class="o">=</span> <span class="n">lowhighs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ind</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dnlhigh</span> <span class="o">=</span> <span class="n">lowhighs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">ind</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnllow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnlhigh</span></div>
+
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">   def parseDNLtable(self):</span>
+<span class="sd">       &quot;&quot;&quot;Parse the DNL table for the low &amp; high limits at SCA_ID</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+<span class="sd">       #read in the table</span>
+<span class="sd">       dnltb = np.recfromtxt(os.path.join(self._workdir, &quot;data&quot;, self._dnlfile), delimiter=&#39;,&#39;,dtype=str)</span>
+
+<span class="sd">       #get the corresponding SCAIDs for the high &amp; low limits</span>
+<span class="sd">       scas    = dnltb[0,:].tolist()</span>
+<span class="sd">       scaids = [&#39;18&#39; + x[0:3] for x in scas]</span>
+
+<span class="sd">       #get the low &amp; high limits for the SCA_ID</span>
+<span class="sd">       ind = scaids.index(self._scaid)</span>
+<span class="sd">       dnllow = dnltb[1, ind]</span>
+<span class="sd">       dnlhigh = dnltb[2, ind]</span>
+<span class="sd">       </span>
+<span class="sd">       return dnllow, dnlhigh</span>
+<span class="sd">   &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.findthem">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.findthem">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">findthem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to find High Low baseline pixels for the SCAID</span>
+
+<span class="sd">        :return: int, 2D numpy array, the high low baseline pixel mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># find the corresponding baseline data file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getBaselinefile</span><span class="p">()</span>
+
+        <span class="c1"># find the DNL table file form the MDB</span>
+        <span class="n">dnllow</span><span class="p">,</span> <span class="n">dnlhigh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDNLlimits</span><span class="p">()</span>
+
+        <span class="c1"># get detector id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_detid</span><span class="p">()</span>
+
+        <span class="c1"># make a table HDU containing the list of input exposure file names</span>
+        <span class="n">t_hdu</span> <span class="o">=</span> <span class="n">make_files_hdu</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_baselinefile</span><span class="p">])</span>
+
+        <span class="c1"># read in the data</span>
+        <span class="n">baselinedata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBaselineData</span><span class="p">()</span>
+
+        <span class="c1"># do the selection</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">baselinedata</span> <span class="o">&lt;</span> <span class="n">dnllow</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">baselinedata</span> <span class="o">&gt;</span> <span class="n">dnlhigh</span><span class="p">))</span>
+
+        <span class="c1"># make the mask</span>
+        <span class="n">badBasemask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">baselinedata</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">badBasemask</span><span class="p">[</span><span class="n">bad</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># check for dimensions</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">badBasemask</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">badBasemask</span> <span class="o">=</span> <span class="n">badBasemask</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># remove border if present</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">2040</span><span class="p">:</span>
+            <span class="n">badBasemask</span> <span class="o">=</span> <span class="n">badBasemask</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:</span><span class="mi">2044</span><span class="p">]</span>  <span class="c1"># remove border if present</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">badBasemask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Number of pixels out of DNL limits: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">))</span>
+
+        <span class="c1"># write out the final output</span>
+        <span class="n">badpixpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">badBasemask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">t_hdu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_badBasePath</span> <span class="o">=</span> <span class="n">badpixpath</span>
+
+        <span class="c1"># write out the XML file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating XML file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">writeXml</span><span class="p">(</span><span class="n">badpixpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+
+        <span class="c1"># check the result</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote XML file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;FindDeadPixels Xml Creation error.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ERROR: FindDeadPixels.writeXml(): &quot;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.get_badbaselinepath">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.get_badbaselinepath">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_badbaselinepath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;return bad baseline pixel mask FITS file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_badBasePath</span></div>
+
+
+<div class="viewcode-block" id="FindHiLoBaselinePixels.write">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.FindHiLoBaselinePixels.FindHiLoBaselinePixels.write">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zeroqepixmask</span><span class="p">,</span> <span class="n">files_hdu</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write out the final output</span>
+
+<span class="sd">        :param zeroqepixmask: 2D numpy array, the dead pixel mask, 0=good, 1=bad</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># init the FITS data structure</span>
+        <span class="c1"># this FITS file contains one extension, for the combined maks for this DET_ID/SCAID</span>
+        <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">HDUList</span><span class="p">([</span><span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()])</span>
+
+        <span class="c1"># update primary header of hdu</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">,</span> <span class="s1">&#39;Euclid&#39;</span><span class="p">,</span> <span class="s1">&#39;Telescope name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">,</span> <span class="s1">&#39;NISP&#39;</span><span class="p">,</span> <span class="s1">&#39;Instrument name&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ORIGIN&#39;</span><span class="p">,</span> <span class="s1">&#39;OU-NIR&#39;</span><span class="p">,</span> <span class="s1">&#39;SGS-OU origin&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;IMG_CAT&#39;</span><span class="p">,</span> <span class="s1">&#39;CALIB&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADTYPE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">,</span> <span class="s1">&#39;See COMMENT&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;COMMENT&#39;</span><span class="p">,</span> <span class="s1">&#39;Badtypes: 1=Disconnected, 2=ZeroQE, 3=HighNoise/RTN, &#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;4=Snowball, 5=Hot, 6=BaselineOOL, 7=LowQE, 8=SuperQE&#39;</span><span class="p">)</span>
+        <span class="c1">#hdr.set(&#39;NUMEXP&#39;, self._num_exposures, &#39;Number of input exposures&#39;)</span>
+        <span class="c1">#hdr.set(&#39;EXPTHRES&#39;, 0., &#39;Not used for this BADTYPE&#39;)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBASOOL&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span>
+                <span class="s1">&#39;Number of flagged pixels of BADTYPE&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DATEUTC&#39;</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">(</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;File creation date&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_DEF&#39;</span><span class="p">,</span> <span class="s1">&#39;nir.logicBadPixelFlavorMask&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;FITS name definition&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;FITS_VER&#39;</span><span class="p">,</span> <span class="s1">&#39;0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;FITS version&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_STA&#39;</span><span class="p">,</span> <span class="s1">&#39;2020-12-01T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid start time for this product(UTC)&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;VAL_END&#39;</span><span class="p">,</span> <span class="s1">&#39;2028-12-31T00:00:00.0&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Valid end time for this product(UTC)&#39;</span><span class="p">)</span>
+
+        <span class="n">imghdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">zeroqepixmask</span><span class="p">)</span>
+        <span class="n">imghdu</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;High and Low Baseline Pixels&#39;</span>
+        <span class="n">ihdr</span> <span class="o">=</span> <span class="n">imghdu</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA Identifier&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;BADTYPE&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bad_reason</span><span class="p">,</span> <span class="s1">&#39;See COMMENT&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;COMMENT&#39;</span><span class="p">,</span> <span class="s1">&#39;Badtypes: 1=Disconnected, 2=ZeroQE, 3=HighNoise/RTN, &#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;4=Snowball, 5=Hot, 6=BaselineOOL, 7=LowQE, 8=SuperQE&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NUMBAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span>
+                 <span class="s1">&#39;Number of flagged pixels of BADTYPE&#39;</span><span class="p">)</span>
+        <span class="n">ihdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBASOOL&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbdpix</span><span class="p">,</span>
+                 <span class="s1">&#39;Number of flagged pixels of BADTYPE&#39;</span><span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imghdu</span><span class="p">)</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">files_hdu</span><span class="p">)</span>
+
+        <span class="c1"># write the FITS file for the mask for this SCAID</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># outfile = &#39;badBasemask_SCA_&#39; + scaID + &#39;_&#39; + str(now)+&#39;.fits&#39;     #TODO this is the output file name</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">FileNameProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_allowed_filename</span><span class="p">(</span><span class="n">type_name</span><span class="o">=</span><span class="s2">&quot;C-BadPixelFlavor&quot;</span><span class="p">,</span>
+                                                          <span class="n">instance_id</span><span class="o">=</span><span class="s1">&#39;MASK&#39;</span><span class="p">,</span>
+                                                          <span class="n">processing_function</span><span class="o">=</span><span class="s1">&#39;NIR&#39;</span><span class="p">,</span>
+                                                          <span class="n">release</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+        <span class="n">hdu</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Written to file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outfile</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">outfile</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

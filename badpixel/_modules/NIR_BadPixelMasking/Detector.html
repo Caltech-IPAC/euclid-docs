@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIR_BadPixelMasking.Detector &mdash; NIR_BadPixelMasking 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> NIR_BadPixelMasking
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">NIR_BadPixelMasking</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NIR_BadPixelMasking</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NIR_BadPixelMasking.Detector</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NIR_BadPixelMasking.Detector</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright (C) 2012-2020 Euclid Science Ground Segment</span>
+<span class="c1">#</span>
+<span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file Detector.py</span>
+<span class="sd">@date July 8, 2020</span>
+<span class="sd">@author Cate Liu &lt;xliu@@ipac.caltech.edu&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
+<span class="c1">#from EL_ImageBinding import EUC_MASK_DICT, MaskPlaneDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NIR_MaskingBinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">EUC_NIR_MASK_DICT</span>
+
+
+<div class="viewcode-block" id="Detector">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Detector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for one detector, storing its bad pixel information.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;Detector&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numdeadpixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numzeroqepixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numcdsnosepixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numhotpixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numbadblpixels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numflowerpixels</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsdeadpixels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputszeroqepixels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputshighcdsnoisepixels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputshotpixels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsbadblpixels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsflowerpixels</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deadpixels</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroqe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdsnoise</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hot</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_badbl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_superqe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lowqe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sat</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flower</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setDetId">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setDetId">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setDetId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----</span>
+<span class="sd">        detid: String</span>
+<span class="sd">        Detector ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span> <span class="o">=</span> <span class="n">detid</span></div>
+
+
+<div class="viewcode-block" id="Detector.getDetId">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getDetId">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getDetId</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setScaId">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setScaId">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setScaId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----</span>
+<span class="sd">        scaid: String</span>
+<span class="sd">        SCA ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span> <span class="o">=</span> <span class="n">scaid</span></div>
+
+
+<div class="viewcode-block" id="Detector.getScaId">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getScaId">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getScaId</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setNumDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of dis-connected/dead pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numdeadpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numdeadpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of zero QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numzeroqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numzeroqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of low QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numlowqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numlowqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of super QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numsuperqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numsuperqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of high CDS noise pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numcdsnosepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numcdsnosepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of hot pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numhotpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numhotpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of saturated pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numsatpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numsatpixels</span></div>
+
+    
+<div class="viewcode-block" id="Detector.setNumFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of flower pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numflowerpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+        
+<div class="viewcode-block" id="Detector.getNumFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numflowerpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the number of bad baseline pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numbadblpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbadblpixels</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setInputsDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the dis-connectedd pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsdeadpixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputsdeadpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the zero QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputszeroqepixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputszeroqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the low QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputslowqepixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputslowqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the super QE pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputssuperqepixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputssuperqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the high CDS noise pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputshighcdsnoisepixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputshighcdsnoisepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the hot pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputshotpixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputshotpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the saturated pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputssatpixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputssatpixels</span></div>
+
+    
+<div class="viewcode-block" id="Detector.setInputsFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the flower pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsflowerpixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+        
+<div class="viewcode-block" id="Detector.getInputsFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputsflowerpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setInputsBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setInputsBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setInputsBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the input files list for the bad baseline pixels&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputsbadblpixels</span> <span class="o">=</span> <span class="n">inlist</span></div>
+
+
+<div class="viewcode-block" id="Detector.getInputsBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getInputsBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getInputsBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputsbadblpixels</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setDeadPixelsArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setDeadPixelsArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setDeadPixelsArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the dis-connected pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of dis-connected pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deadpixels</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getDeadPixelsArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getDeadPixelsArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getDeadPixelsArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deadpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setZeroQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setZeroQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setZeroQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the zero QE pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of zero QE pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zeroqe</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getZeroQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getZeroQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getZeroQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroqe</span></div>
+
+
+<div class="viewcode-block" id="Detector.setLowQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setLowQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setLowQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the low QE pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of low QE pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lowqe</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getLowQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getLowQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getLowQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowqe</span></div>
+
+
+<div class="viewcode-block" id="Detector.setSuperQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setSuperQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setSuperQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the super QE pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of super QE pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_superqe</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getSuperQEArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getSuperQEArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getSuperQEArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_superqe</span></div>
+
+
+<div class="viewcode-block" id="Detector.setHighCDSNoiseArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setHighCDSNoiseArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setHighCDSNoiseArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the high CDS noise pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of high CDS noise pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdsnoise</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getHighCDSNoiseArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getHighCDSNoiseArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getHighCDSNoiseArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdsnoise</span></div>
+
+
+<div class="viewcode-block" id="Detector.setHotArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setHotArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setHotArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the hot pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of hot pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hot</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getHotArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getHotArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getHotArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hot</span></div>
+
+
+<div class="viewcode-block" id="Detector.setSatArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setSatArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setSatArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the saturated pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of saturated pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sat</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getSatArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getSatArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getSatArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sat</span></div>
+
+    
+<div class="viewcode-block" id="Detector.setFlowerArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setFlowerArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setFlowerArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the flower pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of flower pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flower</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+        
+<div class="viewcode-block" id="Detector.getFlowerArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getFlowerArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getFlowerArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flower</span></div>
+
+
+<div class="viewcode-block" id="Detector.setBadBLArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setBadBLArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setBadBLArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inarr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the bad baseline pixels mask array.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        inarr: 2D numpy array</span>
+<span class="sd">         Mask of bad baseline pixels, value of 0 or 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_badbl</span> <span class="o">=</span> <span class="n">inarr</span></div>
+
+
+<div class="viewcode-block" id="Detector.getBadBLArray">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getBadBLArray">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getBadBLArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_badbl</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.setNumNaNsDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnansdeadpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsDeadPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsDeadPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsDeadPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnansdeadpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanszeroqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsZeroQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsZeroQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsZeroQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanszeroqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanslowqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsLowQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsLowQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsLowQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanslowqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanssuperqepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsSuperQEPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsSuperQEPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsSuperQEPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanssuperqepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanshighcdsnoisepixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsHighCDSNoisePixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsHighCDSNoisePixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsHighCDSNoisePixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanshighcdsnoisepixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanshotpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsHotPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsHotPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsHotPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanshotpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnanssatpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsSatPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsSatPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsSatPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnanssatpixels</span></div>
+
+    
+<div class="viewcode-block" id="Detector.setNumNaNsFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnansflowerpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+        
+<div class="viewcode-block" id="Detector.getNumNaNsFlowerPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsFlowerPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsFlowerPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnansflowerpixels</span></div>
+
+
+<div class="viewcode-block" id="Detector.setNumNaNsBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.setNumNaNsBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setNumNaNsBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numnansbadblpixels</span> <span class="o">=</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="Detector.getNumNaNsBadBLPixels">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.getNumNaNsBadBLPixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getNumNaNsBadBLPixels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numnansbadblpixels</span></div>
+
+
+    <span class="c1">###</span>
+<div class="viewcode-block" id="Detector.makeTableHDU1">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.makeTableHDU1">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">makeTableHDU1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a Table HDU for the combined mask for this detector.&quot;&quot;&quot;</span>
+
+        <span class="c1"># first combine all the masks</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combineByBits</span><span class="p">()</span>
+
+        <span class="c1"># make a Table HDU</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
+
+        <span class="n">c1</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span>    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">c2</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span>    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">c3</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;FLAG&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">flag</span><span class="p">)</span>
+
+        <span class="n">thdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">BinTableHDU</span><span class="o">.</span><span class="n">from_columns</span><span class="p">([</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">])</span>
+        <span class="n">hdr</span> <span class="o">=</span> <span class="n">thdu</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;DET_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="s1">&#39;Detector ID&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;SCA_ID&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaid</span><span class="p">,</span> <span class="s1">&#39;SCA identifier&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;EXTNAME&#39;</span><span class="p">,</span> <span class="s2">&quot;DQ_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">))</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX1&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX1</span><span class="p">,</span> <span class="s1">&#39;Number of dis-connected pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX2&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX2</span><span class="p">,</span> <span class="s1">&#39;Number of zero QE pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX3&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX3</span><span class="p">,</span> <span class="s1">&#39;Number of RTN noise pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX4&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX4</span><span class="p">,</span> <span class="s1">&#39;Number of snowball pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX5&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX5</span><span class="p">,</span> <span class="s1">&#39;Number of hot pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX6&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX6</span><span class="p">,</span> <span class="s1">&#39;Number of bad baseline pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX7&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX7</span><span class="p">,</span> <span class="s1">&#39;Number of low QE pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX8&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX8</span><span class="p">,</span> <span class="s1">&#39;Number of super QE pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX9&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX9</span><span class="p">,</span> <span class="s1">&#39;Number of saturated pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIX10&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX10</span><span class="p">,</span> <span class="s1">&#39; Number of flower pixels&#39;</span><span class="p">)</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;NBADPIXT&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIXT</span><span class="p">,</span>
+                <span class="s1">&#39;Total number of bad pixels for this detector&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">thdu</span></div>
+
+
+<div class="viewcode-block" id="Detector.combineByBits">
+<a class="viewcode-back" href="../../NIR_BadPixelMasking.html#NIR_BadPixelMasking.Detector.Detector.combineByBits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">combineByBits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine bad pixels types/flavors.</span>
+<span class="sd">        These 8 bad pixels types are combined:</span>
+<span class="sd">        Dis-connected, zero-qe (previously full well), RTN (previously high cds noise), snowball pixels, hot,</span>
+<span class="sd">        low-qe, super-qe.</span>
+<span class="sd">        Bits assignments:</span>
+<span class="sd">        1. Dis-connected = Dead = 2</span>
+<span class="sd">        2. Zero-QE = 3</span>
+<span class="sd">        3. Bad Baseline = 4</span>
+<span class="sd">        4. Low-QE = 5</span>
+<span class="sd">        5. Super-QE = 6</span>
+<span class="sd">        6. Hot = 7</span>
+<span class="sd">        7. RTN = 8</span>
+<span class="sd">        8. Snowball = 9</span>
+<span class="sd">        9. Saturated = 10</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#bits = {&quot;HOT&quot;:0, &quot;DEAD&quot;:8, &quot;RTN&quot;:22, &quot;SNOWBALL&quot;:24}</span>
+        <span class="c1">#bits = {&quot;DEAD&quot;: 2, &quot;ZeroQE&quot;: 3, &quot;BadBL&quot;: 4, &quot;LowQE&quot;: 5, &quot;SuperQE&quot;: 6, &quot;HOT&quot;: 7, &quot;RTN&quot;: 8, &quot;SnowBall&quot;: 9}</span>
+
+        <span class="c1"># init the combined mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">2048</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># dead pixels(disconnected pixles)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deadpixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deadpixels</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;DISCONNECTED&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># invalid flag on if any of (DISCONNECTED/ZEROQE/SuperQE/BADBASE)</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX1</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># zero QE (previously zero full well) pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroqe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroqe</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;ZEROQE&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># invalid flag on if any of (DISCONNECTED/ZEROQE/SuperQE/BADBASE/SATURATED)</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX2</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># bad baseline pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_badbl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_badbl</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX6</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;BADBASE&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># invalid flag on if any of (DISCONNECTED/ZEROQE/SuperQE/BADBASE/SATURATED)</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX6</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># low QE pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowqe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowqe</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX7</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;LOWQE&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX7</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># super QE pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_superqe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_superqe</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX8</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SUPERQE&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># invalid flag on if any of (DISCONNECTED/ZEROQE/SuperQE/BADBASE/SATURATED)</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX8</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># hot pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hot</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX5</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;HOT&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX5</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># saturated pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sat</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX9</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;SATUR&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># invalid flag on if any of (DISCONNECTED/ZEROQE/SuperQE/BADBASE/SATURATED)</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX9</span> <span class="o">=</span> <span class="mi">0</span>
+            
+        <span class="c1"># flower pixels</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flower</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX10</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;FLOWER&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>
+            <span class="c1"># setting also the invalidity for flower pixels</span>
+            <span class="n">badpixvalue</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">EUC_NIR_MASK_DICT</span><span class="p">[</span><span class="s2">&quot;INVALID&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">|=</span> <span class="n">badpixvalue</span>     
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX10</span> <span class="o">=</span> <span class="mi">0</span>      
+
+        <span class="c1"># RTN (previously high cds noise) pixels</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       if self._cdsnoise is not None:</span>
+<span class="sd">          arr = self._cdsnoise</span>
+<span class="sd">          ind = np.where(arr)</span>
+<span class="sd">          self._NBADPIX3 = len(ind[0])</span>
+<span class="sd">          badpixvalue = 1 &lt;&lt; EUC_NIR_MASK_DICT[&quot;RTN&quot;]</span>
+<span class="sd">          self._mask[ind] |= badpixvalue</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX3</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># snowball pixels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX4</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIXT</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of disconnected bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of zero QE bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of RTN noise bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX3</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of snowball pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX4</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of hot pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of bad baseline pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX6</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of low QE bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX7</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of super QE bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX8</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of saturated bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX9</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, number of flower bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIX10</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detector </span><span class="si">{}</span><span class="s2">, total number of bad pixels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NBADPIXT</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span></div>
+</div>
+
+
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">   def combine123(self):</span>
+<span class="sd">       &quot;&quot;&quot;Combine bad pixels types.</span>
+<span class="sd">       These 3 bad pixels types are combined:</span>
+<span class="sd">       Dis-connected, zero-fluence, and high cds noise pixels.</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+<span class="sd">       arr1 = self._deadpixels</span>
+<span class="sd">       arr2 = self._zeroqe</span>
+<span class="sd">       arr3 = self._cdsnoise</span>
+
+<span class="sd">       #since they are int array with 0 or 1, we can sum them up</span>
+<span class="sd">       arrsum = arr1 + arr2 + arr3</span>
+
+<span class="sd">       #get the combined mask</span>
+<span class="sd">       ind = np.where(arrsum)</span>
+<span class="sd">       self._mask = np.zeros(arrsum.shape, dtype=np.int32)</span>
+<span class="sd">       self._mask[ind] = 1</span>
+
+<span class="sd">       #get some statistics</span>
+<span class="sd">       ind = np.where(arr1)</span>
+<span class="sd">       self._NBADPIX1 = len(ind[0])</span>
+<span class="sd">       ind = np.where(arr2)</span>
+<span class="sd">       self._NBADPIX2 = len(ind[0])</span>
+<span class="sd">       ind = np.where(arr3)</span>
+<span class="sd">       self._NBADPIX3 = len(ind[0])</span>
+<span class="sd">       ind = np.where(arrsum)</span>
+<span class="sd">       self._NBADPIXT = len(ind[0])</span>
+<span class="sd">       self.logger.info(&quot;Detector {}, number of disconnected bad pixels: {}&quot;.format(self._detid, self._NBADPIX1))</span>
+<span class="sd">       self.logger.info(&quot;Detector {}, number of zero fluence bad pixels: {}&quot;.format(self._detid, self._NBADPIX2))</span>
+<span class="sd">       self.logger.info(&quot;Detector {}, number of high CDS noise bad pixels: {}&quot;.format(self._detid, self._NBADPIX3))</span>
+<span class="sd">       self.logger.info(&quot;Detector {}, total number of bad pixels: {}&quot;.format(self._detid, self._NBADPIXT))</span>
+<span class="sd"> </span>
+<span class="sd">       #TODO this is stupid!</span>
+<span class="sd">       #SC8 DM requires _NBADPIX4!!  Fill in with 0</span>
+<span class="sd">       self._NBADPIX4 = 0</span>
+
+<span class="sd">       return self._mask</span>
+
+<span class="sd">   def makeTableHDU(self):</span>
+<span class="sd">       &quot;&quot;&quot;Create a Table HDU for the combined mask for this detector.&quot;&quot;&quot;</span>
+
+<span class="sd">       #first combine all the masks</span>
+<span class="sd">       mask = self.combine123()</span>
+
+<span class="sd">       #the Bad pixels value (at &#39;BAD&#39; = bit 8)</span>
+<span class="sd">       badpixbit = MaskPlaneDict(EUC_MASK_DICT)[&quot;BAD&quot;]</span>
+<span class="sd">       badpixvalue = 1 &lt;&lt; badpixbit</span>
+
+<span class="sd">       #make a Table HDU</span>
+<span class="sd">       x,y = np.where(mask)</span>
+<span class="sd">       flag = [badpixvalue] * len(x) </span>
+
+<span class="sd">       c1 = fits.Column(name=&#39;X&#39;,    format=&#39;I&#39;, array=x)</span>
+<span class="sd">       c2 = fits.Column(name=&#39;Y&#39;,    format=&#39;I&#39;, array=y)</span>
+<span class="sd">       c3 = fits.Column(name=&#39;FLAG&#39;, format=&#39;J&#39;, array=flag)</span>
+
+<span class="sd">       thdu = fits.BinTableHDU.from_columns([c1, c2, c3])</span>
+<span class="sd">       hdr = thdu.header</span>
+<span class="sd">       hdr.set(&#39;DET_ID&#39;, self._detid, &#39;Detector ID&#39;)</span>
+<span class="sd">       hdr.set(&#39;SCA_ID&#39;, self._scaid, &#39;SCA identifier&#39;)</span>
+<span class="sd">       hdr.set(&#39;EXTNAME&#39;, &quot;DQ_&quot; + str(self._detid))</span>
+<span class="sd">       hdr.set(&#39;NBADPIX1&#39;, self._NBADPIX1, &#39;Number of disconnected pixels&#39;)</span>
+<span class="sd">       hdr.set(&#39;NBADPIX2&#39;, self._NBADPIX2, &#39;Number of low full well pixels&#39;)</span>
+<span class="sd">       hdr.set(&#39;NBADPIX3&#39;, self._NBADPIX3, &#39;Number of high CDS noise pixels&#39;)</span>
+<span class="sd">       hdr.set(&#39;NBADPIX4&#39;, self._NBADPIX4, &#39;Number of snowball pixels&#39;)</span>
+<span class="sd">       hdr.set(&#39;NBADPIXT&#39;, self._NBADPIXT, &#39;Total number of bad pixels for this detector&#39;)</span>
+<span class="sd">   </span>
+<span class="sd">       return thdu</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Cate Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
