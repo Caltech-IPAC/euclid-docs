@@ -1,7 +1,0 @@
-SIR_DetectorScalingCalibration
-==============================
-
-.. toctree::
-   :maxdepth: 4
-
-   SIR_DetectorScalingCalibration
