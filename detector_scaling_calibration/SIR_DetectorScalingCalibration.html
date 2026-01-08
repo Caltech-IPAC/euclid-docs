@@ -139,14 +139,18 @@ similar to a main and hence called mainMethod().</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">
 <span class="sig-name descname"><span class="pre">load_grism_transmission_curves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grism_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SIR_DetectorScalingCalibration/FlatMaker.html#FlatMaker.load_grism_transmission_curves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves" title="Link to this definition"></a></dt>
-<dd><p>Interpolates transmission values from input grism curves</p>
-<p>Reads in NISP grism transmission data for various wavelengths
-from input FITS file. Subsequently, interpolates that data
-for <cite>self.wavelengths</cite> points, Ends by passing the transmission
-values to <cite>_calculate_weights()</cite></p>
+<dd><p>Interpolate NISP grism transmission curves and compute per-grism weights.</p>
+<p>Reads transmission data from the FITS extensions specified in
+<cite>grism_parameters[‘hdu_extn’]</cite>.</p>
+<p>Determines the useful wavelength interval via <cite>_get_wavelength_range()</cite>
+(throughput &gt; 10% of max), maps that interval onto <cite>self._wave</cite>,
+interpolates transmission to this internal grid using cubic interpolation,
+and computes weights with <cite>_calculate_weights()</cite> using the corresponding <cite>alpha</cite>.</p>
+<p>Populates <cite>self._wavelength_ranges[grism]</cite>, <cite>self._wavelengths[grism]</cite>,
+and <cite>self._weights[grism]</cite> for each grism.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grism_file_path</strong> (<em>str</em>) – full path for NISP Grism Curve FITS file</p>
+<dd class="field-odd"><p><strong>grism_file_path</strong> (<em>str</em>) – Full path to the NISP grism transmission FITS file.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
