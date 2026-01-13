@@ -77,8 +77,8 @@ One example run could be submitted with the following command,
 There are also several example scripts (named ``run_script*``) available under SIR_Pipeline project directory.
 
 
-UML Diagrams
-============
+Activity Flow Diagram
+=====================
 
 
 .. figure:: activity-APPLY-DS.png
