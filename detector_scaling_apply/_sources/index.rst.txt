@@ -81,7 +81,7 @@ UML Diagrams
 ============
 
 
-.. figure:: activity-APPLY-DS.pdf
+.. figure:: activity-APPLY-DS.png
    :alt: Detector Scaling activity flow diagram
     :scale: 50%
 
