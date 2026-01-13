@@ -82,6 +82,13 @@ UML Diagrams
 
 TODO: Put a summary of the UML diagrams.
 
+.. figure: activity-APPLY-DS.pdf
+   :alt: Detector Scaling activity flow diagram
+   :scale: 50 %
+
+   Detector Scaling activity flow diagram
+
+
 
 Index
 ==================
