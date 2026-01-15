@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Science goals for SIR Detector Scaling
+SScience goals for SIR Detector Scaling
 ========================================
-SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
+RSIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
 
 (a) Pixel-to-pixel variations resulting from intrinsic QE differences across each detector
 (b) Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.
