@@ -18,6 +18,7 @@ SIR\_DetectorScalingCalibration.FlatMaker module
 .. automodule:: SIR_DetectorScalingCalibration.FlatMaker
    :members:
    :undoc-members:
+   :private-members:
    :show-inheritance:
 
 Module contents
