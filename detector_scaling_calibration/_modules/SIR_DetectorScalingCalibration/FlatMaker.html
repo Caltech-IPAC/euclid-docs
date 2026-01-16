@@ -95,7 +95,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlatMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates weighted 2D QE maps, per detetor, from 3D </span>
 <span class="sd">    (wavelength dependent) input QE maps &quot;&quot;&quot;</span>
@@ -147,7 +147,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker._load_wavelengths">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._load_wavelengths">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._load_wavelengths">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_wavelengths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qe_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load the wavelength grid from a QE FITS cube.</span>
@@ -175,7 +175,7 @@
 
     
 <div class="viewcode-block" id="FlatMaker._get_wavelength_range">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_wavelength_range">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_wavelength_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_wavelength_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                               <span class="n">transmissions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -215,7 +215,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker.load_grism_transmission_curves">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_grism_transmission_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grism_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate NISP grism transmission curves and compute per-grism weights.</span>
@@ -266,7 +266,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker._calculate_weights">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._calculate_weights">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._calculate_weights">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                            <span class="n">transmissions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                            <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -309,7 +309,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker._check_delta_nu">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._check_delta_nu">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._check_delta_nu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_delta_nu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Compute Δν across the wavelength grid via Nyquist sampling.</span>
@@ -370,7 +370,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker._get_detid_scaid_qefilename_dict">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_detid_scaid_qefilename_dict">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_detid_scaid_qefilename_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_detid_scaid_qefilename_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a mapping from detector ID to SCA ID and QE filename.</span>
 
@@ -402,7 +402,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker._get_mask">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_mask">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grism</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">qe_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a boolean mask of valid pixels across all wavelengths.</span>
 
@@ -454,7 +454,7 @@
 
 
 <div class="viewcode-block" id="FlatMaker.write_fits">
-<a class="viewcode-back" href="../../index.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.write_fits">[docs]</a>
+<a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.write_fits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
                    <span class="n">output_fits_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">text_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 

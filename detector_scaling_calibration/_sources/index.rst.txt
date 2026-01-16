@@ -59,15 +59,16 @@ Inputs and Outputs
 
    modules
 
-FlatMaker API
-=============
+..
+    FlatMaker API
+    =============
 
-.. autoclass:: SIR_DetectorScalingCalibration.FlatMaker.FlatMaker
-    :members: __init__, load_grism_transmission_curves, write_fits, _load_wavelengths, _get_wavelength_range, _calculate_weights, _check_delta_nu, _get_detid_scaid_qefilename_dict, _get_mask
-    :undoc-members:
-    :private-members:
-    :show-inheritance:
-    :no-index:
+    .. autoclass:: SIR_DetectorScalingCalibration.FlatMaker.FlatMaker
+        :members: __init__, load_grism_transmission_curves, write_fits, _load_wavelengths, _get_wavelength_range, _calculate_weights, _check_delta_nu, _get_detid_scaid_qefilename_dict, _get_mask
+        :undoc-members:
+        :private-members:
+        :show-inheritance:
+        :no-index:
 
 
 Example Run
