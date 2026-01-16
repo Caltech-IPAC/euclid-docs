@@ -154,6 +154,10 @@
 <span class="sd">        qe_file_path : str</span>
 <span class="sd">            Full path to the QE FITS file.</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        Reads the &#39;WAVELEN&#39; header from each image HDU (skipping the</span>
@@ -224,6 +228,12 @@
 <span class="sd">        ----------</span>
 <span class="sd">        grism_file_path : str</span>
 <span class="sd">            Full path to the NISP grism transmission FITS file.</span>
+
+<span class="sd">        </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">grism_file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdu</span><span class="p">:</span>
@@ -291,23 +301,24 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_delta_nu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Compute Δν across the wavelength grid via Nyquist sampling.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
-<span class="sd">        wavelengths : numpy array of floats</span>
+<span class="sd">        wavelengths : np.ndarray of floats</span>
 <span class="sd">            requisite range of wavelengths </span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
-<span class="sd">        delta_nu : numpy array of floats</span>
+<span class="sd">        delta_nu : np.ndarray of floats</span>
 <span class="sd">            change in nu values interpolated for `wavelengths`</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 
-<span class="sd">        `resolution` is nyquist sampled</span>
+<span class="sd">        `resolution` is Nyquist sampled</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">lambda0</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
@@ -347,7 +358,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_detid_scaid_qefilename_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates dictionary between Detector ID with SCA ID &amp; QE input file</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a mapping from detector ID to SCA ID and QE filename.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -356,8 +367,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        detid_scaid_qefilename_dict : dict</span>
-<span class="sd">            dictionary for {Detector ID : List[SCA ID, QE filename]}</span>
+<span class="sd">        detid_scaid_qefilename_dict : dict[str, list]</span>
+<span class="sd">            Mapping {detector_id: [sca_id (str), qe_filename (str)]}.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -376,7 +387,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grism</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">qe_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates mask of good pixels for a detector for all wavelengths</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a boolean mask of valid pixels across all wavelengths.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -384,22 +395,23 @@
 <span class="sd">        grism : str</span>
 <span class="sd">            grism color - BGS or RGS</span>
 
-<span class="sd">        qe_filepath : full path for a detector&#39;s QE input file</span>
+<span class="sd">        qe_filepath : str</span>
+<span class="sd">            full path for a detector&#39;s QE input file</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
-<span class="sd">        mask : numpy array</span>
-<span class="sd">            boolean mask of all pixels within acceptable QE range</span>
-<span class="sd">            (self._qe_lo, self._qe_hi) for all wavelengths</span>
+<span class="sd">        mask : np.ndarray</span>
+<span class="sd">            boolean array of shape ((2040, 2040), dtype=bool) of all pixels within </span>
+<span class="sd">            acceptable QE range (self._qe_lo, self._qe_hi) for all wavelengths</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 
-<span class="sd">        A pixel is dubbed as &quot;bad&quot; at ALL wavelengths, as soon as its</span>
-<span class="sd">        QE value is found to be outside of self._qe_lo &gt; QE &gt; self._qe_hi</span>
-<span class="sd">        range for ANY single wavelength. That pixel is subsequently</span>
-<span class="sd">        thrown out of the mask</span>
+<span class="sd">        A pixel is dubbed as &quot;bad&quot; at ALL wavelengths, as soon as its QE value</span>
+<span class="sd">        is found to be outside the inclusive range [self._qe_lo, self._qe_hi]</span>
+<span class="sd">        for any single wavelength. That pixel is subsequently thrown out of </span>
+<span class="sd">        the mask. </span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -428,19 +440,24 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">write_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
                    <span class="n">output_fits_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">text_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes flat-fielded QE maps into grism-specific FITS files</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write flat-fielded QE maps into grism-specific FITS files.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
 <span class="sd">        data_dir : str</span>
-<span class="sd">            Directory for Input QE maps FITS files</span>
+<span class="sd">            Directory for input QE maps FITS files</span>
 
 <span class="sd">        output_fits_filepath : str</span>
 <span class="sd">            output FITS filepath </span>
 <span class="sd">  </span>
-<span class="sd">        text_history: List[str]</span>
+<span class="sd">        text_history : List[str]</span>
 <span class="sd">            line-by-line text, as List, to describe the history</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        None</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
