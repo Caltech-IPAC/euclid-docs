@@ -5,6 +5,8 @@
 
 Science goals for SIR Detector Scaling
 ========================================
+it's working!!!!!!
+
 SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
 
 (a) Pixel-to-pixel variations resulting from intrinsic QE differences across each detector
