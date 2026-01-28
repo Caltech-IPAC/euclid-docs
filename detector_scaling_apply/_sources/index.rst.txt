@@ -30,9 +30,13 @@ GRISM information, and finds the appropriate key for the calibration layer exten
 in calibration layer, has 0.0 value, that pixel is set numpy NAN. The sciance layer of the input exposure 
 is divided by the apppropriate calibration layer to obtain the corresponding flatfielded science layer. 
 If the resulting flatfielded science layer has any pixels with numpy infinity values, those 
-are also set to numpy NANs. Variance layer of the input exposure is then divided by the square of the 
-corresponding calibration layer to obtain the flatfielded variance layer. For this too, any pixels 
-with numpy infinity values are set to numpy NANs. Then, SIR INVALID pixel's bit is transferred to any pixel, in the mask layer of the input exposure, 
+are also set to numpy NANs. 
+
+Variance layer of the input exposure is then divided by the square of the corresponding calibration layer 
+to obtain the flatfielded variance layer. This process ensures that the signal-to-noise ratio on a given 
+pixel is preserved. It also assumes that there is no intrinsic uncertainities in the QE measurements. This 
+is likely an approximation. For variance layer too, any pixels with numpy infinity values are set to numpy 
+NANs. Then, SIR INVALID pixel's bit is transferred to any pixel, in the mask layer of the input exposure, 
 which has 0.0 value in the corresponding calibration layer. Finally, these flatfielded sicence and 
 flatfielded variance layers, along with the updated mask layers are written in the output FITS file. 
 This output file is set as input to the SIR Initialization step.
