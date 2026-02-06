@@ -82,6 +82,14 @@
 <span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
 <span class="c1">#</span>
 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">:file: python/SIR_DetectorScalingCalibration/FlatMaker.py</span>
+
+<span class="sd">:date: 12/14/22</span>
+<span class="sd">:author: Indrajit Das &lt;idas@ipac.caltech.edu&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
@@ -90,41 +98,43 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.constants</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">consts</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ElementsKernel.Logging</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">log</span>
 
 
 <div class="viewcode-block" id="FlatMaker">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlatMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates weighted 2D QE maps, per detetor, from 3D </span>
-<span class="sd">    (wavelength dependent) input QE maps &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates flat fields from input QE maps&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">grism_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-                 <span class="n">qe_files_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-                 <span class="n">qe_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">qe_files_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">qe_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="s1">&#39;ElementsKernel.Logging&#39;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a FlatMaker instance.</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;         </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">            </span>
 <span class="sd">        data_dir : str</span>
-<span class="sd">            Directory containing the QE FITS files.</span>
-<span class="sd">        grism_parameters : dict</span>
-<span class="sd">            Per-grism configuration with required keys &#39;alpha&#39; and &#39;hdu_extn&#39;, e.g.::</span>
+<span class="sd">            full paths for the input QE maps FITS files</span>
 
-<span class="sd">                {&#39;RGS&#39;: {&#39;alpha&#39;: -0.9, &#39;hdu_extn&#39;: &#39;RGS000_ORDER_1&#39;},</span>
-<span class="sd">                 &#39;BGS&#39;: {&#39;alpha&#39;: -0.75, &#39;hdu_extn&#39;: &#39;BGS000_ORDER_1&#39;}}</span>
-<span class="sd">        qe_files_list : list[str]</span>
-<span class="sd">            Filenames of QE FITS cubes located under `data_dir`.</span>
-<span class="sd">            The first entry is used to load the wavelength grid.</span>
-<span class="sd">        qe_range : tuple[float, float]</span>
-<span class="sd">            QE cutoff bounds provided as (max_qe, min_qe) in this order.</span>
-<span class="sd">            Pixels with QE outside [min_qe, max_qe] at any wavelength are masked.</span>
-<span class="sd">        logger : ElementsKernel.Logging</span>
-<span class="sd">            Logger used to report messages and progress.</span>
+<span class="sd">        grism_parameters: dict</span>
+<span class="sd">             nested dictionary having grism (blue/red specific entries </span>
+<span class="sd">             { &#39;RGS&#39; : {&#39;alpha&#39;      : -0.9,</span>
+<span class="sd">                        &#39;hdu_extn&#39;   : &#39;RGS000_ORDER_1&#39;</span>
+<span class="sd">                       },</span>
+<span class="sd">               &#39;BGS&#39;: {&#39;alpha&#39;      : -0.75,</span>
+<span class="sd">                        &#39;hdu_extn&#39;   : &#39;BGS000_ORDER_1&#39;</span>
+<span class="sd">                       }</span>
+<span class="sd">             }</span>
+
+<span class="sd">        qe_files_list : List[str]</span>
+<span class="sd">            A list of input QE FITS files</span>
+
+<span class="sd">        qe_range : Tuple[float, float]</span>
+<span class="sd">            A tuple of (max_qe, min_qe) cutoff values</span>
+
+<span class="sd">        logger: ElementsKernel.Logging</span>
+<span class="sd">            logs various messages and actions</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
@@ -149,22 +159,14 @@
 <div class="viewcode-block" id="FlatMaker._load_wavelengths">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._load_wavelengths">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_wavelengths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qe_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Load the wavelength grid from a QE FITS cube.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; loads full range of wavelengths from input QE maps</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">  </span>
 <span class="sd">        qe_file_path : str</span>
-<span class="sd">            Full path to the QE FITS file.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Reads the &#39;WAVELEN&#39; header from each image HDU (skipping the</span>
-<span class="sd">        primary HDU) and populates `self._wave` with the wavelength grid.</span>
+<span class="sd">            full path of QE input FITS file</span>
+<span class="sd"> </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">qe_file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdu</span><span class="p">:</span>
@@ -178,26 +180,30 @@
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_wavelength_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_wavelength_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                               <span class="n">transmissions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Determine indices on the internal wavelength grid where transmission is significant.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Identifies useful range from the full range of wavelengths</span>
 
-<span class="sd">        Selects the wavelength interval on the input transmission curve where</span>
-<span class="sd">        throughput exceeds 10% of its maximum, then maps that interval onto</span>
-<span class="sd">        `self._wave` and returns the inclusive start/end indices.</span>
+<span class="sd">        From input transmission curve, covering the full wavelength </span>
+<span class="sd">        range where throughput is &gt; 10% of max. value</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        wavelengths : np.ndarray</span>
-<span class="sd">            Wavelengths for the provided transmission curve.</span>
-<span class="sd">        transmissions : np.ndarray</span>
-<span class="sd">            Transmission values corresponding to `wavelengths`.</span>
+
+<span class="sd">        wavelengths : numpy array of floats</span>
+<span class="sd">            contains complete set of wavelengths available in input</span>
+<span class="sd">            QE map for a grism</span>
+
+<span class="sd">        transmissions : numpy array of floats</span>
+<span class="sd">            contains complete set of transmission values available in </span>
+<span class="sd">            input QE map for a grism</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
+
 <span class="sd">        index_start : int</span>
-<span class="sd">            Inclusive start index into `self._wave` for the selected interval.</span>
+<span class="sd">            starting index for wavelengths</span>
+
 <span class="sd">        index_end : int</span>
-<span class="sd">            Inclusive end index into `self._wave` for the selected interval.</span>
+<span class="sd">            ending index for wavelengths</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">transmissions_cutoff</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">transmissions</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -217,30 +223,19 @@
 <div class="viewcode-block" id="FlatMaker.load_grism_transmission_curves">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker.load_grism_transmission_curves">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_grism_transmission_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grism_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Interpolate NISP grism transmission curves and compute per-grism weights.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Interpolates transmission values from input grism curves</span>
 
-<span class="sd">        Reads transmission data from the FITS extensions specified in</span>
-<span class="sd">        `grism_parameters[&#39;hdu_extn&#39;]`. </span>
-<span class="sd">        </span>
-<span class="sd">        Determines the useful wavelength interval via `_get_wavelength_range()` </span>
-<span class="sd">        (throughput &gt; 10% of max), maps that interval onto `self._wave`, </span>
-<span class="sd">        interpolates transmission to this internal grid using cubic interpolation, </span>
-<span class="sd">        and computes weights with `_calculate_weights()` using the corresponding `alpha`.</span>
-<span class="sd">        </span>
-<span class="sd">        Populates `self._wavelength_ranges[grism]`, `self._wavelengths[grism]`,</span>
-<span class="sd">        and `self._weights[grism]` for each grism.</span>
+<span class="sd">        Reads in NISP grism transmission data for various wavelengths</span>
+<span class="sd">        from input FITS file. Subsequently, interpolates that data </span>
+<span class="sd">        for `self.wavelengths` points, Ends by passing the transmission </span>
+<span class="sd">        values to `_calculate_weights()`</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+
 <span class="sd">        grism_file_path : str</span>
-<span class="sd">            Full path to the NISP grism transmission FITS file.</span>
+<span class="sd">            full path for NISP Grism Curve FITS file</span>
 
-<span class="sd">        </span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">grism_file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdu</span><span class="p">:</span>
@@ -270,28 +265,33 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                            <span class="n">transmissions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
                            <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute normalized weights per wavelength based on zodiacal-light photon flux.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Calculates weights for QE transmissions for each wavelength</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        wavelengths : np.ndarray</span>
-<span class="sd">            Wavelengths on the internal grid for the selected grism.</span>
-<span class="sd">        transmissions : np.ndarray</span>
-<span class="sd">            Transmission values corresponding to `wavelengths`.</span>
+
+<span class="sd">        wavelengths : numpy array of floats</span>
+<span class="sd">            requisite wavelength range for a grism</span>
+
+<span class="sd">        transmissions : numpy array of floats</span>
+<span class="sd">            transmission values for aforementioned wavelengths</span>
+
 <span class="sd">        alpha : float</span>
 <span class="sd">            a constant (see Notes below for more)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        weights : np.ndarray</span>
-<span class="sd">            Normalized weights (sum to 1) for each wavelength.</span>
+
+<span class="sd">        weights : numpy array of floats</span>
+<span class="sd">            weights calculated for corresponding input wavelengths</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 
-<span class="sd">        - Uses :math:`I_\\nu \\sim \\lambda^\\alpha` to model median zodiacal spectrum intensity.</span>
-<span class="sd">        - :math:`\\Delta \\nu` varies with wavelength; approximately 2.4 at 12.5 µm, decreasing to ~1.12 toward the red end.</span>
+<span class="sd">        alpha used to estimate the following,</span>
+<span class="sd">        Median zody spectrum intensity I_nu ~ lambda^alpha</span>
+
+<span class="sd">        Delta nu also varies from 2.4 at 12500 to 1.12 at the red end</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -312,24 +312,23 @@
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._check_delta_nu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_delta_nu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Compute Δν across the wavelength grid via Nyquist sampling.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
-<span class="sd">        wavelengths : np.ndarray of floats</span>
+<span class="sd">        wavelengths : numpy array of floats</span>
 <span class="sd">            requisite range of wavelengths </span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
-<span class="sd">        delta_nu : np.ndarray of floats</span>
+<span class="sd">        delta_nu : numpy array of floats</span>
 <span class="sd">            change in nu values interpolated for `wavelengths`</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 
-<span class="sd">        `resolution` is Nyquist sampled</span>
+<span class="sd">        `resolution` is nyquist sampled</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">lambda0</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
@@ -372,7 +371,7 @@
 <div class="viewcode-block" id="FlatMaker._get_detid_scaid_qefilename_dict">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_detid_scaid_qefilename_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_detid_scaid_qefilename_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a mapping from detector ID to SCA ID and QE filename.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates dictionary between Detector ID with SCA ID &amp; QE input file</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -381,8 +380,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        detid_scaid_qefilename_dict : dict[str, list]</span>
-<span class="sd">            Mapping {detector_id: [sca_id (str), qe_filename (str)]}.</span>
+<span class="sd">        detid_scaid_qefilename_dict : dict</span>
+<span class="sd">            dictionary for {Detector ID : List[SCA ID, QE filename]}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -404,7 +403,7 @@
 <div class="viewcode-block" id="FlatMaker._get_mask">
 <a class="viewcode-back" href="../../SIR_DetectorScalingCalibration.html#SIR_DetectorScalingCalibration.FlatMaker.FlatMaker._get_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grism</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">qe_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a boolean mask of valid pixels across all wavelengths.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates mask of good pixels for a detector for all wavelengths</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -412,23 +411,22 @@
 <span class="sd">        grism : str</span>
 <span class="sd">            grism color - BGS or RGS</span>
 
-<span class="sd">        qe_filepath : str</span>
-<span class="sd">            full path for a detector&#39;s QE input file</span>
+<span class="sd">        qe_filepath : full path for a detector&#39;s QE input file</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
-<span class="sd">        mask : np.ndarray</span>
-<span class="sd">            boolean array of shape ((2040, 2040), dtype=bool) of all pixels within </span>
-<span class="sd">            acceptable QE range (self._qe_lo, self._qe_hi) for all wavelengths</span>
+<span class="sd">        mask : numpy array</span>
+<span class="sd">            boolean mask of all pixels within acceptable QE range</span>
+<span class="sd">            (self._qe_lo, self._qe_hi) for all wavelengths</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 
-<span class="sd">        A pixel is dubbed as &quot;bad&quot; at ALL wavelengths, as soon as its QE value</span>
-<span class="sd">        is found to be outside the inclusive range [self._qe_lo, self._qe_hi]</span>
-<span class="sd">        for any single wavelength. That pixel is subsequently thrown out of </span>
-<span class="sd">        the mask. </span>
+<span class="sd">        A pixel is dubbed as &quot;bad&quot; at ALL wavelengths, as soon as its</span>
+<span class="sd">        QE value is found to be outside of self._qe_lo &gt; QE &gt; self._qe_hi</span>
+<span class="sd">        range for ANY single wavelength. That pixel is subsequently</span>
+<span class="sd">        thrown out of the mask</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -458,24 +456,19 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">write_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
                    <span class="n">output_fits_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">text_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write flat-fielded QE maps into grism-specific FITS files.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes flat-fielded QE maps into grism-specific FITS files</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
 <span class="sd">        data_dir : str</span>
-<span class="sd">            Directory for input QE maps FITS files</span>
+<span class="sd">            Directory for Input QE maps FITS files</span>
 
 <span class="sd">        output_fits_filepath : str</span>
 <span class="sd">            output FITS filepath </span>
 <span class="sd">  </span>
-<span class="sd">        text_history : List[str]</span>
+<span class="sd">        text_history: List[str]</span>
 <span class="sd">            line-by-line text, as List, to describe the history</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-
-<span class="sd">        None</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 

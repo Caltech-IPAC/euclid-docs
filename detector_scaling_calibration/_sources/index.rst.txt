@@ -6,20 +6,67 @@
 Science goals for SIR Detector Scaling
 ========================================
 
-SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:
+SIR Detector Scaling has two components - a calibration module and an apply module. In totality, 
+the goal is to apply a multiplicative correction to the detector response to a uniform illumination. 
+The correction is applied and tailored to each detector. This correction attempts to reduce 
+detector-dependent variations on different spatial scales including:
 
-(a) Pixel-to-pixel variations resulting from intrinsic QE differences across each detector
-(b) Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.
-(c) Large scales QE corrections (> 100 px, up to detector scale), to account for detector-scale intrinsic gradients in the response of the detector to uniform light. The magnitude of these variations are generally small (< 1-2%) and vary from one detector to another.
+(a) Pixel-to-pixel variations resulting from intrinsic QE differences across each detector.
 
-This specific documentation handles only the calibration module, appropriately named as SIR_DetectorScalingCalibration, where the calibration product is generated. In the apply module, this calibration product is applied. For the apply module, please visit https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/
+(b) Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response
+    which are present at the few percent level in localized areas on each detector. These “void” structures
+    are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.
+
+(c) Large scales QE corrections (> 100 px, up to detector scale), to account for detector-scale intrinsic
+    gradients in the response of the detector to uniform light. The magnitude of these variations are generally
+    small (< 1-2%) and vary from one detector to another.
+
+This specific documentation handles only the calibration module, appropriately named as 
+SIR_DetectorScalingCalibration, where the calibration product is generated. In the apply module, this 
+calibration product is applied. For the apply module, please visit 
+https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/
 
 
 Documentation for SIR DetectorScalingCalibration (calibration module)
 =====================================================================
 
 In this document, you will find the documentation for Euclid's SIR DetectorScalingCalibration module 
-as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication correction factor to the detector response to a uniform illumination and is tailored to each detector. This multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module under SIR Pipeline. 
+as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication 
+correction factor to the detector response to a uniform illumination and is tailored to each detector. This 
+multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module 
+under SIR Pipeline. 
+
+The output calibration product has both blue and red grism specific correction factors which can be accessed
+via FITS extension name with structure 'DET_{det_id}.{grism}.FLAT' where det_id runs from 11, 21, .... 43, 
+44 and grism can be 'RGS' or 'BGS'. As input, we use :math:`{\alpha}` values -0.9 for RGS and 
+-0.75 for BGS.  
+
+First, the code opens one QE input FITS file to read in the full wavelength range for which it was tested
+in the lab. This full wavelength range remains the same for all 16 detectors. Then, opening the grism 
+tranmission curves file, it estimates the specific section of the wavelength range for which the 
+transmission curve throughput is more than 10% of its maximum throughput value, for a specific detector. 
+This wavelength range is set as the useful wavelength range, :math:`\lambda_\text{useful}` for a specific detector. 
+Transmission values are calculated from the input grism transmission curve, at various points of 
+:math:`\lambda_\text{useful}`, by interpolating with a cubic function.  
+
+This :math:`\lambda_\text{useful}`, interpolated transmission values and the (grism specific) alpha are 
+used to calculate the weights for Quantum Efficiency (QE) values for each :math:`\lambda_\text{useful}`. 
+We used median Zody spectrum intensity :math:`I_{\nu} \propto \lambda^{\alpha}` to calculate 
+the weights. These wavelength-specific weights are then multiplied to the corresponding 
+wavelength-specific 2D QE input maps to generated wavelength-specific weighted 2D QE maps. Subsequently, 
+these wavelength-specific weighted 2D QE maps are summed over all :math:`\lambda_\text{useful}`, and
+normalized, to generate the final weighted 2D QE maps per detector.
+
+
+
+
+ 
+
+
+
+
+
+
 
 
 Module Usage
@@ -80,10 +127,15 @@ An example run can be submitted with the following command,
    E-Run SIR_Calibration CreateDetectorScalingFile --workdir /stage/euclid-staff-idas/dev-SIR/Ranga-project-data/data_all --outfile test_resources --mdb input/EUC_MDB_MISSIONCONFIGURATION_DEV_2023-12-15-1.xml
 
 
-UML Diagrams
-============
+Activity Flow Diagram
+=====================
 
-TODO: Put a summary of the UML diagrams.
+
+.. figure:: activity-CAL-DS.png
+   :alt: Detector Scaling activity flow diagram
+    :scale: 50%
+
+   Detector Scaling activity flow diagram
 
 
 Index

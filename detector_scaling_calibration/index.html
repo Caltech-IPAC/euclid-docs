@@ -67,18 +67,49 @@
              
   <section id="science-goals-for-sir-detector-scaling">
 <h1>Science goals for SIR Detector Scaling<a class="headerlink" href="#science-goals-for-sir-detector-scaling" title="Link to this heading"></a></h1>
-<p>SIR Detector Scaling has two components - a calibration module and an apply module. In totality, the goal is to apply a multiplicative correction to the detector response to a uniform illumination. The correction is applied and tailored to each detector. This correction attempts to reduce detector-dependent variations on different spatial scales including:</p>
+<p>SIR Detector Scaling has two components - a calibration module and an apply module. In totality,
+the goal is to apply a multiplicative correction to the detector response to a uniform illumination.
+The correction is applied and tailored to each detector. This correction attempts to reduce
+detector-dependent variations on different spatial scales including:</p>
 <ol class="loweralpha simple">
-<li><p>Pixel-to-pixel variations resulting from intrinsic QE differences across each detector</p></li>
-<li><p>Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response which are present at the few percent level in localized areas on each detector.  These “void” structures are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.</p></li>
-<li><p>Large scales QE corrections (&gt; 100 px, up to detector scale), to account for detector-scale intrinsic gradients in the response of the detector to uniform light. The magnitude of these variations are generally small (&lt; 1-2%) and vary from one detector to another.</p></li>
+<li><p>Pixel-to-pixel variations resulting from intrinsic QE differences across each detector.</p></li>
+<li><p>Small scale (~ 100 px) QE variations due to repeatable structures in the background detector response
+which are present at the few percent level in localized areas on each detector. These “void” structures
+are very repeatable and relate to missing epoxy layers in the manufacture of the H2RG detectors.</p></li>
+<li><p>Large scales QE corrections (&gt; 100 px, up to detector scale), to account for detector-scale intrinsic
+gradients in the response of the detector to uniform light. The magnitude of these variations are generally
+small (&lt; 1-2%) and vary from one detector to another.</p></li>
 </ol>
-<p>This specific documentation handles only the calibration module, appropriately named as SIR_DetectorScalingCalibration, where the calibration product is generated. In the apply module, this calibration product is applied. For the apply module, please visit <a class="reference external" href="https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/">https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/</a></p>
+<p>This specific documentation handles only the calibration module, appropriately named as
+SIR_DetectorScalingCalibration, where the calibration product is generated. In the apply module, this
+calibration product is applied. For the apply module, please visit
+<a class="reference external" href="https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/">https://caltech-ipac.github.io/euclid-docs/detector_scaling_apply/</a></p>
 </section>
 <section id="documentation-for-sir-detectorscalingcalibration-calibration-module">
 <h1>Documentation for SIR DetectorScalingCalibration (calibration module)<a class="headerlink" href="#documentation-for-sir-detectorscalingcalibration-calibration-module" title="Link to this heading"></a></h1>
 <p>In this document, you will find the documentation for Euclid’s SIR DetectorScalingCalibration module
-as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication correction factor to the detector response to a uniform illumination and is tailored to each detector. This multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module under SIR Pipeline.</p>
+as well as documentation for the underlying Python classes. This module derives a pixel-wise multiplication
+correction factor to the detector response to a uniform illumination and is tailored to each detector. This
+multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module
+under SIR Pipeline.</p>
+<p>The output calibration product has both blue and red grism specific correction factors which can be accessed
+via FITS extension name with structure ‘DET_{det_id}.{grism}.FLAT’ where det_id runs from 11, 21, …. 43,
+44 and grism can be ‘RGS’ or ‘BGS’. As input, we use <span class="math notranslate nohighlight">\({\alpha}\)</span> values -0.9 for RGS and
+-0.75 for BGS.</p>
+<p>First, the code opens one QE input FITS file to read in the full wavelength range for which it was tested
+in the lab. This full wavelength range remains the same for all 16 detectors. Then, opening the grism
+tranmission curves file, it estimates the specific section of the wavelength range for which the
+transmission curve throughput is more than 10% of its maximum throughput value, for a specific detector.
+This wavelength range is set as the useful wavelength range, <span class="math notranslate nohighlight">\(\lambda_\text{useful}\)</span> for a specific detector.
+Transmission values are calculated from the input grism transmission curve, at various points of
+<span class="math notranslate nohighlight">\(\lambda_\text{useful}\)</span>, by interpolating with a cubic function.</p>
+<p>This <span class="math notranslate nohighlight">\(\lambda_\text{useful}\)</span>, interpolated transmission values and the (grism specific) alpha are
+used to calculate the weights for Quantum Efficiency (QE) values for each <span class="math notranslate nohighlight">\(\lambda_\text{useful}\)</span>.
+We used median Zody spectrum intensity <span class="math notranslate nohighlight">\(I_{\nu} \propto \lambda^{\alpha}\)</span> to calculate
+the weights. These wavelength-specific weights are then multiplied to the corresponding
+wavelength-specific 2D QE input maps to generated wavelength-specific weighted 2D QE maps. Subsequently,
+these wavelength-specific weighted 2D QE maps are summed over all <span class="math notranslate nohighlight">\(\lambda_\text{useful}\)</span>, and
+normalized, to generate the final weighted 2D QE maps per detector.</p>
 </section>
 <section id="module-usage">
 <h1>Module Usage<a class="headerlink" href="#module-usage" title="Link to this heading"></a></h1>
@@ -120,9 +151,14 @@ the <code class="docutils literal notranslate"><span class="pre">workdir</span><
 </pre></div>
 </div>
 </section>
-<section id="uml-diagrams">
-<h1>UML Diagrams<a class="headerlink" href="#uml-diagrams" title="Link to this heading"></a></h1>
-<p>TODO: Put a summary of the UML diagrams.</p>
+<section id="activity-flow-diagram">
+<h1>Activity Flow Diagram<a class="headerlink" href="#activity-flow-diagram" title="Link to this heading"></a></h1>
+<figure class="align-default" id="id1">
+<img alt="Detector Scaling activity flow diagram :scale: 50%" src="_images/activity-CAL-DS.png" />
+<figcaption>
+<p><span class="caption-text">Detector Scaling activity flow diagram</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 <section id="index">
 <h1>Index<a class="headerlink" href="#index" title="Link to this heading"></a></h1>
