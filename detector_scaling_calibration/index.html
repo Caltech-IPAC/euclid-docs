@@ -93,7 +93,7 @@ correction factor to the detector response to a uniform illumination and is tail
 multiplication factor, generated as a 2D map, is needed as input by the SIR DetectorScaling (apply) module
 under SIR Pipeline.</p>
 <p>The output calibration product has both blue and red grism specific correction factors which can be accessed
-via FITS extension name with structure ‘DET_{det_id}.{grism}.FLAT’ where det_id runs from 11, 21, …. 43,
+via FITS extension name with structure DET_{det_id}.{grism}.FLAT where det_id runs from 11, 21, …. 43,
 44 and grism can be ‘RGS’ or ‘BGS’. As input, we use <span class="math notranslate nohighlight">\({\alpha}\)</span> values -0.9 for RGS and
 -0.75 for BGS.</p>
 <p>First, the code opens one QE input FITS file to read in the full wavelength range for which it was tested
